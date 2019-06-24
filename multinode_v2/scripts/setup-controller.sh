@@ -2,9 +2,9 @@
 
 set -x
 
-NODE_ONE_IP=$(hostname -I | awk '{ print $1 }' )
-NODE_TWO_IP=${NOTE_TWO_IP:-$1}
-NODE_THREE_IP=${NOTE_TWO_IP:-$2}
+NODE_ONE_IP=${NODE_ONE_IP:-""}
+NODE_TWO_IP=${NODE_TWO_IP:-$1}
+NODE_THREE_IP=${NODE_THREE_IP:-$2}
 ANSIBLE_USER=${ANSIBLE_USER:-ubuntu}
 ANSIBLE_USER_HOME=${ANSIBLE_USER_HOME:-/home/ubuntu}
 USE_PROXY=${USE_PROXY:-}
@@ -14,11 +14,11 @@ DNS_ADDRESS=${DNS_ADDRESS:-}
 
 SSH_KEY_PATH="${ANSIBLE_USER_HOME}/.ssh/id_rsa"
 
-export OSH_PATH=/opt/openstack-helm
-export OSH_INFRA_PATH=/opt/openstack-helm-infra
+OSH_PATH="/opt/openstack-helm"
+OSH_INFRA_PATH="/opt/openstack-helm-infra"
 
 
-if [ ! -f $SSH_KEY_PATH ]; then
+if [ ! -f "$SSH_KEY_PATH" ]; then
     echo -e "You didn't copy an ssh key to the host, \n"
     echo -e "so ansible can't connect to the node2. \n\n"
     echo -e "Generate that using: \n\nsudo -u ubuntu ssh-keygen -t rsa -b 2048 -f /home/ubuntu/.ssh/id_rsa -q -N \"\""
@@ -72,7 +72,6 @@ deb http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial-updates main restricted
 deb http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial-proposed main restricted universe multiverse
 deb http://nova.clouds.archive.ubuntu.com/ubuntu/ xenial-backports main restricted universe multiverse
 EOF
-
 fi
 
 # From https://docs.openstack.org/openstack-helm/latest/install/common-requirements.html
@@ -87,29 +86,26 @@ sudo DEBIAN_FRONTEND=noninteractive apt autoremove -y
 
 echo 'ubuntu  ALL=(ALL) NOPASSWD: ALL' | sudo tee -a /etc/sudoers
 
-function net_default_iface {
-# sudo ip -4 route list 0/0 | awk '{ print $5; exit }'
-echo "ens3"
-}
-
 sudo mkdir -p /etc/openstack-helm
 sudo cp "${SSH_KEY_PATH}" /etc/openstack-helm/deploy-key.pem
 sudo chown ubuntu: /etc/openstack-helm/deploy-key.pem
 
-if [ ! -d "${OSH_PATH}" ]; then
-    git clone https://git.openstack.org/openstack/openstack-helm.git $OSH_PATH
+if [ ! -d "$OSH_PATH" ]; then
+    echo "Cloning into $OSH_PATH"
+    git clone https://opendev.org/openstack/openstack-helm.git $OSH_PATH ;
 fi
 
-if [ ! -d "${OSH_INFRA_PATH}" ]; then
-    git clone https://git.openstack.org/openstack/openstack-helm-infra.git $OSH_INFRA_PATH
+if [ ! -d "$OSH_INFRA_PATH" ]; then
+    echo "CLoning into $OSH_INFRA_PATH"
+    git clone https://opendev.org/openstack/openstack-helm-infra.git $OSH_INFRA_PATH ;
 fi
-#
-#cd "${OSH_PATH}" || exit 1
-#make all &
-#cd "${OSH_INFRA_PATH}" || exit 1
-#make all &
 
-sudo chown -R ubuntu: /opt
+sudo chown -R ubuntu: /opt ;
+
+# Change interface ip address
+HOST_IFACE=$(ip route | grep "^default" | head -1 | awk '{ print $5 }');
+NODE_ONE_IP=$(ip addr | awk "/inet/ && /${HOST_IFACE}/{sub(/\/.*$/,\"\",\$2); print \$2}");
+echo "${NODE_ONE_IP} $(hostname)" | sudo tee -a /etc/hosts;
 
 # Contr will be also a node
 cat > "${OSH_INFRA_PATH}/tools/gate/devel/multinode-inventory.yaml" <<EOF
@@ -134,7 +130,7 @@ all:
 EOF
 
 if [ -n "${NODE_THREE_IP}" ]; then
-    cat > "${OSH_INFRA_PATH}/tools/gate/devel/multinode-inventory.yaml" <<EOF
+    cat >> "${OSH_INFRA_PATH}/tools/gate/devel/multinode-inventory.yaml" <<EOF
         node_three:
           ansible_port: 22
           ansible_host: $NODE_THREE_IP
@@ -144,16 +140,14 @@ if [ -n "${NODE_THREE_IP}" ]; then
 EOF
 fi
 
+function net_default_iface {
+ sudo ip -4 route list 0/0 | awk '{ print $5 }'
+}
+
 
 cat > $OSH_INFRA_PATH/tools/gate/devel/multinode-vars.yaml <<EOF
 kubernetes_network_default_device: $(net_default_iface)
 EOF
-
-# Change interface ip address
-#HOST_IFACE=$(ip route | grep "^default" | head -1 | awk '{ print $5 }');
-#LOCAL_IP=$(ip addr | awk "/inet/ && /${HOST_IFACE}/{sub(/\/.*$/,\"\",\$2); print \$2}");
-#echo "${LOCAL_IP} $(hostname)" | sudo tee -a /etc/hosts;
-echo "${NODE_ONE_IP} $(hostname)" | sudo tee -a /etc/hosts;
 
 export no_proxy=$NODE_ONE_IP,127.0.0.1,172.17.0.1,.svc.cluster.local
 export NO_PROXY=$NODE_ONE_IP,127.0.0.1,172.17.0.1,.svc.cluster.local
@@ -175,7 +169,14 @@ if [ -n "${DNS_ADDRESS}" ] ; then
     sed -i -e "s/8.8.8.8/$DNS_ADDRESS/g" "${OSH_INFRA_PATH}/tools/images/kubeadm-aio/assets/opt/playbooks/vars.yaml"
 fi
 
-rsync -i "${SSH_KEY_PATH}" -aq /opt/ "ubuntu@${NODE_TWO_IP}:/opt/"
+echo "" > /home/ubuntu/.ssh/known_hosts
+ssh-keyscan -H "$NODE_ONE_IP" >> /home/ubuntu/.ssh/known_hosts
+
+for IP_ADDRESS in $NODE_TWO_IP $NODE_THREE_IP;
+do
+    ssh-keyscan -H "$IP_ADDRESS" >> /home/ubuntu/.ssh/known_hosts
+    rsync  -e "ssh -o StrictHostKeyChecking=no" -i "${SSH_KEY_PATH}" -aq /opt/ "ubuntu@${IP_ADDRESS}:/opt/"
+done
 
 sudo chown -R ubuntu: /opt
 

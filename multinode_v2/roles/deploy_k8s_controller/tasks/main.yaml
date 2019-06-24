@@ -2,32 +2,31 @@
 - name: Prepare hosts
   hosts:
     - k8s_contr
-    - k8s_minion
   gather_facts: False
   remote_user: ubuntu
   become: True
   vars:
     ansible_host_key_checking: false
+    ansible_ssh_private_key_file: /home/ubuntu/.ssh/id_rsa_ansible
   tasks:
-    # temporary workaround
-    - name: Check if openrc file exist
-      stat:
-        path: /home/ubuntu/openrc
-      register: openrc_file
+    - name: Show current groups
+      debug:
+        var: groups
 
-    - when: openrc_file.stat.exists == False
-      name: Run scripts on k8s_contr
+    - name: Run scripts on k8s_contr
       become: true
       become_user: ubuntu
       command: |
-          /usr/bin/sudo -H -u ubuntu \
-          /bin/bash -c "export ANSIBLE_LOG_PATH=/home/ubuntu/ansible.logs ; \
-                        /home/ubuntu/setup-controller.sh \"{{ groups['k8s_minion'] | join(' ') }}\" > /home/ubuntu/logs"
+          /usr/bin/sudo -H -u ubuntu /bin/bash -c \
+          "export NODE_TWO_IP={{ groups['k8s_minion'][0] }} ; \
+           export NODE_THREE_IP={{ groups['k8s_minion'][1] }} ; \
+           bash -x /home/ubuntu/setup-controller.sh > /home/ubuntu/logs"
       environment:
         ANSIBLE_LOG_PATH: /home/ubuntu/ansible.logs
       ignore_errors: yes
-      register: k8s_deploy
-      failed_when: k8s_deploy.rc == 1
       delegate_to: "{{ item }}"
       delegate_facts: True
       loop: "{{ groups['k8s_contr'] }}"
+      register: k8s_deploy
+      failed_when: k8s_deploy.rc == 1
+      run_once: True

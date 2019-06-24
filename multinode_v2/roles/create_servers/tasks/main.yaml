@@ -1,4 +1,35 @@
 ---
+- name: Add ssh key
+  hosts: localhost
+  remote_user: ubuntu
+  gather_facts: False
+  tags:
+    - add_ansible_key
+  tasks:
+    - name: Generate SSH key used by ansible
+      user:
+        name: ubuntu
+        generate_ssh_key: yes
+        ssh_key_bits: 2048
+        ssh_key_file: .ssh/id_rsa_ansible
+      delegate_to: localhost
+      run_once: True
+      register: ssh_keygen_result
+
+    # NOTE: I use shell because os_keypair raise error when auth is provided
+    - name: Add keypair
+      command: |
+        openstack --os-region-name "{{ lookup('env', 'OS_REGION_NAME') }}" \
+                  --os-auth-url  "{{ lookup('env', 'OS_AUTH_URL') }}" \
+                  --os-username "{{ lookup('env', 'OS_USERNAME') }}" \
+                  --os-password "{{ lookup('env', 'OS_PASSWORD') }}" \
+                  --os-project-name "{{ lookup('env', 'OS_TENANT_NAME') }}" \
+                  --os-domain-name "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}" \
+                  --os-project-domain-name "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}" \
+                  keypair create ansible_key \
+                  --public-key /home/ubuntu/.ssh/id_rsa_ansible.pub
+      when: ssh_keygen_result.changed
+
 - name: Create servers
   hosts: localhost
   gather_facts: False
@@ -28,7 +59,6 @@
       loop_control:
         loop_var: server_name
       register: new_k8s_contr_result
-
 
     - when: "'k8s_contr' not in groups"
       name: Add contr into local inventory
@@ -63,7 +93,6 @@
       loop_control:
         loop_var: server_name
       register: new_k8s_minion_result
-
 
     - name: Add contr into local inventory
       add_host:

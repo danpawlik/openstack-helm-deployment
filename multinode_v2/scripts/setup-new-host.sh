@@ -44,8 +44,9 @@ sudo DEBIAN_FRONTEND=noninteractive \
 sudo DEBIAN_FRONTEND=noninteractive apt install -y python-pip python3-pip
 sudo DEBIAN_FRONTEND=noninteractive apt autoremove -y
 
-
 # test
 sudo DEBIAN_FRONTEND=noninteractive apt install -y ceph ceph-common nfs-common
 
 sudo chown -R ubuntu:ubuntu /opt/
+
+ln -s /opt/openstack-helm-infra/tools /home/ubuntu/tools
