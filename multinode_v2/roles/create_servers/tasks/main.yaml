@@ -1,0 +1,97 @@
+---
+- name: Create servers
+  hosts: localhost
+  gather_facts: False
+  tags:
+    - create_servers
+  tasks:
+    - when: "'k8s_contr' not in groups"
+      name: "Spawning k8s_contr node"
+      os_server:
+        state: present
+        auth:
+          auth_url: "{{ lookup('env', 'OS_AUTH_URL') }}"
+          username: "{{ lookup('env', 'OS_USERNAME') }}"
+          password: "{{ lookup('env', 'OS_PASSWORD') }}"
+          project_name: "{{ lookup('env', 'OS_TENANT_NAME') }}"
+          user_domain_name: "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}"
+          project_domain_name: "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}"
+        region_name: "{{ lookup('env', 'OS_REGION_NAME') }}"
+        image: "Ubuntu 18.04"
+        key_name: ansible_key
+        timeout: 200
+        flavor: c2-30
+        nics:
+          - net-name: Ext-Net
+        name: "{{ server_name }}"
+      with_items: "{{ k8s_hosts['k8s_contr'] }}"
+      loop_control:
+        loop_var: server_name
+      register: new_k8s_contr_result
+
+
+    - when: "'k8s_contr' not in groups"
+      name: Add contr into local inventory
+      add_host:
+        name: "{{ server_info.openstack.public_v4 }}"
+        hostname: "{{ server_info.openstack.name }}"
+        group: k8s_contr
+      with_items: "{{ new_k8s_contr_result.results | flatten(1) }}"
+      loop_control:
+        loop_var: server_info
+
+    - when: "'k8s_minion' not in groups"
+      name: "Spawning k8s_minion node"
+      os_server:
+        state: present
+        auth:
+          auth_url: "{{ lookup('env', 'OS_AUTH_URL') }}"
+          username: "{{ lookup('env', 'OS_USERNAME') }}"
+          password: "{{ lookup('env', 'OS_PASSWORD') }}"
+          project_name: "{{ lookup('env', 'OS_TENANT_NAME') }}"
+          user_domain_name: "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}"
+          project_domain_name: "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}"
+        region_name: "{{ lookup('env', 'OS_REGION_NAME') }}"
+        image: "Ubuntu 18.04"
+        key_name: ansible_key
+        timeout: 200
+        flavor: c2-30
+        nics:
+          - net-name: Ext-Net
+        name: "{{ server_name }}"
+      with_items: "{{ k8s_hosts['k8s_minion'] }}"
+      loop_control:
+        loop_var: server_name
+      register: new_k8s_minion_result
+
+
+    - name: Add contr into local inventory
+      add_host:
+        name: "{{ server_info.openstack.public_v4 }}"
+        hostname: "{{ server_info.openstack.name }}"
+        group: k8s_minion
+      with_items: "{{ new_k8s_minion_result.results | flatten(1) }}"
+      loop_control:
+        loop_var: server_info
+
+    - name: Show current groups
+      debug:
+        var: groups
+
+    - when: new_k8s_contr_result.results[0] != {}
+      name: wait for instances k8s_contr to be ready
+      wait_for:
+        port: 22
+        delay: 5
+        timeout: 150
+        host: "{{ item }}"
+      with_items: "{{ groups['k8s_contr'] }}"
+
+    - when: new_k8s_minion_result.results[0] != {}
+      name: wait for instances k8s_minion to be ready
+      wait_for:
+        port: 22
+        delay: 5
+        timeout: 150
+        host: "{{ item }}"
+      with_items: "{{ groups['k8s_minion'] }}"

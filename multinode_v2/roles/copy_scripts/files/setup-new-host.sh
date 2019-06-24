@@ -1,0 +1,1 @@
+../../../scripts/setup-new-host.sh

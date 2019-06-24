@@ -1,0 +1,83 @@
+
+- name: Add VMs to known hosts
+  hosts: localhost
+  remote_user: ubuntu
+  gather_facts: False
+  tags:
+    - ansible_host_ssh_known_hosts
+  tasks:
+    - name: Generate SSH key used by ansible
+      user:
+        name: ubuntu
+        generate_ssh_key: yes
+        ssh_key_bits: 2048
+        ssh_key_file: .ssh/id_rsa_ansible
+      delegate_to: localhost
+      run_once: True
+
+    - name: Add k8s_contr host key to known_hosts
+      shell: ssh-keyscan -H "{{ item }}" >> /home/ubuntu/.ssh/known_hosts
+      with_items: "{{ groups['k8s_contr'] }}"
+
+    - name: Add k8s_minion host key to known_hosts
+      shell: ssh-keyscan -H "{{ item }}" >> /home/ubuntu/.ssh/known_hosts
+      with_items: "{{ groups['k8s_minion'] }}"
+
+- name: Generate ansible ssh key and add known_hosts
+  hosts:
+    - k8s_contr
+    - k8s_minion
+  remote_user: ubuntu
+  gather_facts: False
+  tags:
+    - ssh_known_hosts
+  tasks:
+    - name: Set permissions to .ssh dir on contr
+      shell: sudo chown -R ubuntu:ubuntu -R /home/ubuntu/.ssh
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+
+    - name: Set permissions to .ssh dir on minions
+      shell: chown -R ubuntu:ubuntu -R /home/ubuntu/.ssh
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_minion'] }}"
+
+    - name: Accept SSH key between k8s_contr and own self
+      shell: |
+          for ip in "{{ groups['k8s_contr'] | join(' ') }}"; do
+              ssh-keyscan -H "$ip" >> /home/ubuntu/.ssh/known_hosts
+          done
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+
+    - name: Accept SSH key between k8s_minion and k8s_contr
+      shell: |
+          for ip in "{{ groups['k8s_minion'] | join(' ') }}"; do
+              ssh-keyscan -H "$ip" >> /home/ubuntu/.ssh/known_hosts
+          done
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+
+    - name: Accept SSH key self k8s_contr
+      shell: cat /home/ubuntu/.ssh/id_rsa.pub >> /home/ubuntu/.ssh/authorized_keys
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+
+    - name: "Ensure SSH connectivity between k8s_contr and k8s_minion"
+      shell: |
+          for ip in "{{groups['k8s_minion'] | join(' ') }}"; do
+              ssh -oBatchMode=yes -i /home/ubuntu/.ssh/id_rsa -oStrictHostKeyChecking=no "ubuntu@$ip" uptime || exit 1
+          done
+      retries: 5
+      delay: 10
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+      run_once: True
+      register: command_result
+      failed_when: "command_result.rc == 1"
