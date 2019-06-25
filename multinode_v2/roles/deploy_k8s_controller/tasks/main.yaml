@@ -16,13 +16,13 @@
     - name: Run scripts on k8s_contr
       become: true
       become_user: ubuntu
-      command: |
-          /usr/bin/sudo -H -u ubuntu /bin/bash -c \
-          "export NODE_TWO_IP={{ groups['k8s_minion'][0] }} ; \
-           export NODE_THREE_IP={{ groups['k8s_minion'][1] }} ; \
-           bash -x /home/ubuntu/setup-controller.sh > /home/ubuntu/logs"
+      shell: /home/ubuntu/setup-controller.sh > /home/ubuntu/logs
+      args:
+        executable: /bin/bash
       environment:
         ANSIBLE_LOG_PATH: /home/ubuntu/ansible.logs
+        NODE_TWO_IP: "{{ groups['k8s_minion'][0] }}"
+        NODE_THREE_IP: "{{ groups['k8s_minion'][1] }}"
       ignore_errors: yes
       delegate_to: "{{ item }}"
       delegate_facts: True

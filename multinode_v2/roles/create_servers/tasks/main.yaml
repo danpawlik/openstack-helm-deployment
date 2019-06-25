@@ -30,14 +30,15 @@
                   --public-key /home/ubuntu/.ssh/id_rsa_ansible.pub
       when: ssh_keygen_result.changed
 
+# os_server module spawns vm and get if vm was spawned earlier, thats
+# why os_server_facts module is not required to use.
 - name: Create servers
   hosts: localhost
   gather_facts: False
   tags:
     - create_servers
   tasks:
-    - when: "'k8s_contr' not in groups"
-      name: "Spawning k8s_contr node"
+    - name: "Spawning k8s_contr node"
       os_server:
         state: present
         auth:
@@ -60,8 +61,7 @@
         loop_var: server_name
       register: new_k8s_contr_result
 
-    - when: "'k8s_contr' not in groups"
-      name: Add contr into local inventory
+    - name: Add contr into local inventory
       add_host:
         name: "{{ server_info.openstack.public_v4 }}"
         hostname: "{{ server_info.openstack.name }}"
@@ -70,8 +70,7 @@
       loop_control:
         loop_var: server_info
 
-    - when: "'k8s_minion' not in groups"
-      name: "Spawning k8s_minion node"
+    - name: "Spawning k8s_minion node"
       os_server:
         state: present
         auth:
@@ -94,7 +93,7 @@
         loop_var: server_name
       register: new_k8s_minion_result
 
-    - name: Add contr into local inventory
+    - name: Add minions into local inventory
       add_host:
         name: "{{ server_info.openstack.public_v4 }}"
         hostname: "{{ server_info.openstack.name }}"
@@ -115,6 +114,7 @@
         timeout: 150
         host: "{{ item }}"
       with_items: "{{ groups['k8s_contr'] }}"
+      run_once: true
 
     - when: new_k8s_minion_result.results[0] != {}
       name: wait for instances k8s_minion to be ready
@@ -124,3 +124,4 @@
         timeout: 150
         host: "{{ item }}"
       with_items: "{{ groups['k8s_minion'] }}"
+      run_once: true

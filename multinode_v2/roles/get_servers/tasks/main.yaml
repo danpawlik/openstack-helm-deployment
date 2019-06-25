@@ -33,12 +33,12 @@
       debug:
         var: k8s_contr_result
 
-    - when: k8s_contr_result.ansible_fact is defined
+    - when: k8s_contr_result.results[0].ansible_facts.openstack_servers != []
       name: Add contr into inventory
       add_host:
          name: "{{ item.public_v4 }}"
          group: k8s_contr
-      with_items: "{{ k8s_contr_result.ansible_facts.openstack_servers }}"
+      with_items: "{{ k8s_contr_result.results[0].ansible_facts.openstack_servers }}"
 
     - name: "Getting info about k8s_minion if exist"
       os_server_facts:
@@ -56,13 +56,13 @@
         loop_var: server_name
       register: k8s_minion_result
 
-    - name: display contr hosts
+    - name: display minion hosts
       debug:
         var: k8s_minion_result
 
-    - when: k8s_minion_result.ansible_facts is defined
+    - when: k8s_minion_result.results[0].ansible_facts.openstack_servers != []
       name: Add minions into inventory
       add_host:
          name: "{{ item.public_v4 }}"
          group: k8s_minion
-      with_items: "{{ k8s_minion_result.ansible_facts.openstack_servers }}"
+      with_items: "{{ k8s_minion_result.results[1].ansible_facts.openstack_servers }}"

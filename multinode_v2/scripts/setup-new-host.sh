@@ -49,4 +49,4 @@ sudo DEBIAN_FRONTEND=noninteractive apt install -y ceph ceph-common nfs-common
 
 sudo chown -R ubuntu:ubuntu /opt/
 
-ln -s /opt/openstack-helm-infra/tools /home/ubuntu/tools
+ln -f -s /opt/openstack-helm-infra/tools /home/ubuntu/tools

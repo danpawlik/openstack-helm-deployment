@@ -169,13 +169,13 @@ if [ -n "${DNS_ADDRESS}" ] ; then
     sed -i -e "s/8.8.8.8/$DNS_ADDRESS/g" "${OSH_INFRA_PATH}/tools/images/kubeadm-aio/assets/opt/playbooks/vars.yaml"
 fi
 
-echo "" > /home/ubuntu/.ssh/known_hosts
+echo " " > /home/ubuntu/.ssh/known_hosts
 ssh-keyscan -H "$NODE_ONE_IP" >> /home/ubuntu/.ssh/known_hosts
 
 for IP_ADDRESS in $NODE_TWO_IP $NODE_THREE_IP;
 do
     ssh-keyscan -H "$IP_ADDRESS" >> /home/ubuntu/.ssh/known_hosts
-    rsync  -e "ssh -o StrictHostKeyChecking=no" -i "${SSH_KEY_PATH}" -aq /opt/ "ubuntu@${IP_ADDRESS}:/opt/"
+    rsync  -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" -i "${SSH_KEY_PATH}" -aq /opt/ "ubuntu@${IP_ADDRESS}:/opt/"
 done
 
 sudo chown -R ubuntu: /opt
@@ -183,15 +183,14 @@ sudo chown -R ubuntu: /opt
 sudo DEBIAN_FRONTEND=noninteractive apt install -y ceph ceph-common nfs-common
 sudo ln -s /home/ubuntu/.kube /root/.kube
 
-###
-set +e
-
-# Install helm controller, k8s and join host
-cd "${OSH_INFRA_PATH}" || exit 1
-make dev-deploy setup-host multinode
-make dev-deploy k8s multinode
-
-set -e
+if [ -d "$OSH_PATH" ] && [ -d "$OSH_INFRA_PATH" ] ; then
+    # Install helm controller, k8s and join host
+    cd "${OSH_INFRA_PATH}" && ls
+    set +e
+    make dev-deploy setup-host multinode
+    make dev-deploy k8s multinode
+    set -e
+fi
 
 # Export openrc file
 cat << EOF > "${HOME}/openrc"

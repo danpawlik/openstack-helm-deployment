@@ -26,7 +26,9 @@
           nohup ./tools/deployment/multinode/010-setup-client.sh &
           nohup ./tools/deployment/multinode/020-ingress.sh &
           wait
-      delegate_to: "{{ k8s_contr }}"
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
       ignore_errors: yes
       register: client_setup
       run_once: True
@@ -40,7 +42,9 @@
           cd /opt/openstack-helm
           nohup ./tools/deployment/multinode/030-ceph.sh &
           wait
-      delegate_to: "{{ k8s_contr }}"
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
       ignore_errors: yes
       register: ceph_result
       run_once: True
@@ -54,7 +58,9 @@
           cd /opt/openstack-helm
           nohup ./tools/deployment/multinode/040-ceph-ns-activate.sh &
           wait
-      delegate_to: "{{ k8s_contr }}"
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
       ignore_errors: yes
       register: ceph_ns_activate_result
       run_once: True
@@ -70,7 +76,9 @@
         nohup ./tools/deployment/multinode/060-rabbitmq.sh &
         nohup ./tools/deployment/multinode/070-memcached.sh &
         wait
-      delegate_to: "{{ k8s_contr }}"
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
       ignore_errors: yes
       register: basic_services_result
       run_once: True
@@ -93,7 +101,9 @@
         nohup ./tools/deployment/multinode/160-barbican.sh &
         nohup ./tools/deployment/multinode/900-tempest.sh &
         wait
-      delegate_to: "{{ k8s_contr }}"
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
       ignore_errors: yes
       register: os_services_result
       run_once: True
@@ -108,7 +118,9 @@
         nohup ./tools/deployment/multinode/120-openvswitch.sh &
         nohup ./tools/deployment/multinode/130-libvirt.sh &
         wait
-      delegate_to: "{{ k8s_contr }}"
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
       ignore_errors: yes
       register: os_compute_result
       run_once: True
