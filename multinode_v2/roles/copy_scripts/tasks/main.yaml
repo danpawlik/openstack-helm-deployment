@@ -20,6 +20,17 @@
       delegate_facts: True
       loop: "{{ groups['k8s_contr'] }}"
 
+    - name: "Copy controller script"
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/multinode_v2/scripts/clone-osh-repo.sh
+        dest: /home/ubuntu/
+        mode: 0755
+        group: ubuntu
+        owner: ubuntu
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+
     - name: "Copy minion script"
       copy:
         src: /home/ubuntu/openstack-helm-deployment/multinode_v2/scripts/setup-new-host.sh
@@ -30,3 +41,11 @@
       delegate_to: "{{ item }}"
       delegate_facts: True
       loop: "{{ groups['k8s_minion'] }}"
+
+    - name: "Copy controller script"
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/multinode_v2/scripts/upgrade-host.sh
+        dest: /home/ubuntu/
+        mode: 0755
+        group: ubuntu
+        owner: ubuntu

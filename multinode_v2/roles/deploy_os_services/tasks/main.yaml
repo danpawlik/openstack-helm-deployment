@@ -2,7 +2,7 @@
 - name: Prepare hosts
   hosts:
     - k8s_contr
-    - k8s_minion
+      #    - k8s_minion
   gather_facts: False
   remote_user: ubuntu
   become: True
@@ -84,8 +84,8 @@
       run_once: True
 
     ###########################################################################
-    - when: "{{ lookup('env', 'OS_DEPLOY_ALL') | default(false) | bool }}"
-      name: Run Keystone, RadosGW, Cinder, Glance, Heat, Barbican and tempest on k8s_contr
+    - when: "{{ lookup('env', 'OS_DEPLOY_ALL') | default(true) | bool }}"
+      name: Run Keystone, RadosGW, Cinder, Glance on k8s_contr
       become: true
       become_user: ubuntu
       shell: |
@@ -96,7 +96,22 @@
         nohup ./tools/deployment/multinode/090-ceph-radosgateway.sh &
         nohup ./tools/deployment/multinode/100-glance.sh &
         nohup ./tools/deployment/multinode/110-cinder.sh &
-        nohup ./tools/deployment/multinode/140-compute-kit.sh &
+        wait
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+      ignore_errors: yes
+      register: os_services_result
+      run_once: True
+
+    - when: "{{ lookup('env', 'OS_DEPLOY_ALL') | default(true) | bool }}"
+      name: Run Heat, Barbican and tempest on k8s_contr
+      become: true
+      become_user: ubuntu
+      shell: |
+        set timeout 300
+        cd /opt/openstack-helm
+        export GLANCE_BACKEND=rbd
         nohup ./tools/deployment/multinode/150-heat.sh &
         nohup ./tools/deployment/multinode/160-barbican.sh &
         nohup ./tools/deployment/multinode/900-tempest.sh &
@@ -108,13 +123,14 @@
       register: os_services_result
       run_once: True
 
-    - when: "{{ lookup('env', 'OS_DEPLOY_ALL') | default(false) | bool }} and (os_services_result | success)"
+    - when: "{{ lookup('env', 'OS_DEPLOY_ALL') | default(true) | bool }} and (os_services_result | success)"
       name: Configure minions to use OVS and libvirt
       become: true
       become_user: ubuntu
       shell: |
         set timeout 300
         cd /opt/openstack-helm
+        nohup ./tools/deployment/multinode/140-compute-kit.sh &
         nohup ./tools/deployment/multinode/120-openvswitch.sh &
         nohup ./tools/deployment/multinode/130-libvirt.sh &
         wait

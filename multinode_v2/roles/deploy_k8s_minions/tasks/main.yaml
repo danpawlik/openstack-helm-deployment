@@ -12,7 +12,7 @@
     - name: Run scripts on k8s_minion
       sudo: yes
       sudo_user: ubuntu
-      shell: /bin/bash -x /home/ubuntu/setup-new-host.sh > /home/ubuntu/logs
+      shell: /bin/bash -x /home/ubuntu/setup-new-host.sh >> /home/ubuntu/logs
       register: current_status
       delegate_to: "{{ item }}"
       delegate_facts: True

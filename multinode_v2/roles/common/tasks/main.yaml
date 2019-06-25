@@ -18,6 +18,11 @@
         jump: ACCEPT
         action: insert
       run_once: True
-      delegate_to: "{{ item }}"
-      delegate_facts: True
-      loop: "{{ groups['k8s_minion'] }}"
+
+    - name: Upgrade minion
+      sudo: yes
+      sudo_user: ubuntu
+      shell: /bin/bash -x /home/ubuntu/upgrade-host.sh >> /home/ubuntu/logs
+      register: upgrade_status
+      ignore_errors: yes
+      run_once: True
