@@ -2,6 +2,9 @@
 
 set -x
 
+OSH_PATH="/opt/openstack-helm"
+OSH_INFRA_PATH="/opt/openstack-helm-infra"
+
 if [ ! -d "$OSH_PATH" ]; then
     echo "Cloning into $OSH_PATH"
     git clone https://opendev.org/openstack/openstack-helm.git $OSH_PATH ;

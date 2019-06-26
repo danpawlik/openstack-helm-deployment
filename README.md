@@ -60,7 +60,7 @@ NOTE: for now it works with 1 controller and 2 minions or just 1 minion.
 
 4. Execute ansible playbook
 ```
-ansible-playbook run.yaml -vv
+ansible-playbook deploy-all.yml -vv
 ```
 
 

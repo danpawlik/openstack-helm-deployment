@@ -1,0 +1,12 @@
+---
+- import_playbook: roles/local_inventory/tasks/main.yaml
+  #- import_playbook: roles/get_servers/tasks/main.yaml
+- import_playbook: roles/create_servers/tasks/main.yaml
+- import_playbook: roles/ssh_common/tasks/main.yaml
+- import_playbook: roles/common/tasks/main.yaml
+- import_playbook: roles/copy_scripts/tasks/main.yaml
+- import_playbook: roles/docker_install/tasks/main.yaml
+- import_playbook: roles/deploy_k8s_minions/tasks/main.yaml
+- import_playbook: roles/deploy_k8s_controller/tasks/main.yaml
+- import_playbook: roles/deploy_basic_services/tasks/main.yaml
+- import_playbook: roles/deploy_os_services/tasks/main.yaml

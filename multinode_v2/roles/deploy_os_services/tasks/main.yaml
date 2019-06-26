@@ -2,7 +2,6 @@
 - name: Prepare hosts
   hosts:
     - k8s_contr
-      #    - k8s_minion
   gather_facts: False
   remote_user: ubuntu
   become: True
@@ -17,55 +16,6 @@
       register: openrc_file
 
     - when: openrc_file.stat.exists == True
-      name: Run setup-client and ingress on k8s_contr
-      become: true
-      become_user: ubuntu
-      shell: |
-          set timeout 300
-          cd /opt/openstack-helm
-          nohup ./tools/deployment/multinode/010-setup-client.sh &
-          nohup ./tools/deployment/multinode/020-ingress.sh &
-          wait
-      delegate_to: "{{ item }}"
-      delegate_facts: True
-      loop: "{{ groups['k8s_contr'] }}"
-      ignore_errors: yes
-      register: client_setup
-      run_once: True
-
-    - when: (client_setup | success)
-      name: Run Ceph on k8s_contr
-      become: true
-      become_user: ubuntu
-      shell: |
-          set timeout 500
-          cd /opt/openstack-helm
-          nohup ./tools/deployment/multinode/030-ceph.sh &
-          wait
-      delegate_to: "{{ item }}"
-      delegate_facts: True
-      loop: "{{ groups['k8s_contr'] }}"
-      ignore_errors: yes
-      register: ceph_result
-      run_once: True
-
-    - when: (ceph_result | success)
-      name: Run Ceph-NS-Activate on k8s_contr
-      become: true
-      become_user: ubuntu
-      shell: |
-          set timeout 500
-          cd /opt/openstack-helm
-          nohup ./tools/deployment/multinode/040-ceph-ns-activate.sh &
-          wait
-      delegate_to: "{{ item }}"
-      delegate_facts: True
-      loop: "{{ groups['k8s_contr'] }}"
-      ignore_errors: yes
-      register: ceph_ns_activate_result
-      run_once: True
-
-    - when: (ceph_ns_activate_result | success)
       name: Run mariaDB rabbitMQ memcached on k8s_contr
       become: true
       become_user: ubuntu
@@ -76,9 +26,12 @@
         nohup ./tools/deployment/multinode/060-rabbitmq.sh &
         nohup ./tools/deployment/multinode/070-memcached.sh &
         wait
-      delegate_to: "{{ item }}"
-      delegate_facts: True
-      loop: "{{ groups['k8s_contr'] }}"
+      environment:
+        OSH_EXTRA_HELM_ARGS: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS') }}"
+        OSH_EXTRA_HELM_ARGS_MARIADB: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_MARIADB') }}"
+        OSH_EXTRA_HELM_ARGS_RABBITMQ: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_RABBITMQ') }}"
+        OSH_EXTRA_HELM_ARGS_MEMCACHED: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_MEMCACHED') }}"
+      delegate_to: "{{ groups['k8s_contr'][0] }}"
       ignore_errors: yes
       register: basic_services_result
       run_once: True
@@ -97,9 +50,13 @@
         nohup ./tools/deployment/multinode/100-glance.sh &
         nohup ./tools/deployment/multinode/110-cinder.sh &
         wait
-      delegate_to: "{{ item }}"
-      delegate_facts: True
-      loop: "{{ groups['k8s_contr'] }}"
+      environment:
+        OSH_EXTRA_HELM_ARGS: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS') }}"
+        OSH_EXTRA_HELM_ARGS_KEYSTONE: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_KEYSTONE') }}"
+        OSH_EXTRA_HELM_ARGS_HEAT: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_HEAT') }}"
+        OSH_EXTRA_HELM_ARGS_GLANCE: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_GLANCE') }}"
+        OSH_EXTRA_HELM_ARGS_CINDER: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_CINDER') }}"
+      delegate_to: "{{ groups['k8s_contr'][0] }}"
       ignore_errors: yes
       register: os_services_result
       run_once: True
@@ -114,11 +71,14 @@
         export GLANCE_BACKEND=rbd
         nohup ./tools/deployment/multinode/150-heat.sh &
         nohup ./tools/deployment/multinode/160-barbican.sh &
-        nohup ./tools/deployment/multinode/900-tempest.sh &
+        #        nohup ./tools/deployment/multinode/900-tempest.sh &
         wait
-      delegate_to: "{{ item }}"
-      delegate_facts: True
-      loop: "{{ groups['k8s_contr'] }}"
+      environment:
+        OSH_EXTRA_HELM_ARGS: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS') }}"
+        OSH_EXTRA_HELM_ARGS_HEAT: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_HEAT') }}"
+        OSH_EXTRA_HELM_ARGS_BARBICAN: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_BARBICAN') }}"
+        #        OSH_EXTRA_HELM_ARGS_TEMPEST: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_TEMPEST') }}"
+      delegate_to: "{{ groups['k8s_contr'][0] }}"
       ignore_errors: yes
       register: os_services_result
       run_once: True
@@ -134,9 +94,13 @@
         nohup ./tools/deployment/multinode/120-openvswitch.sh &
         nohup ./tools/deployment/multinode/130-libvirt.sh &
         wait
-      delegate_to: "{{ item }}"
-      delegate_facts: True
-      loop: "{{ groups['k8s_contr'] }}"
+      environment:
+        OSH_EXTRA_HELM_ARGS: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS') }}"
+        OSH_EXTRA_HELM_ARGS_NOVA: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_NOVA') }}"
+        OSH_EXTRA_HELM_ARGS_NEUTRON: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_NEUTRON') }}"
+        OSH_EXTRA_HELM_ARGS_OPENVSWITCH: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_OPENVSWITCH') }}"
+        OSH_EXTRA_HELM_ARGS_LIBVIRT: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_LIBVIRT') }}"
+      delegate_to: "{{ groups['k8s_contr'][0] }}"
       ignore_errors: yes
       register: os_compute_result
       run_once: True
