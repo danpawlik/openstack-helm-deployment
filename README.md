@@ -63,5 +63,29 @@ NOTE: for now it works with 1 controller and 2 minions or just 1 minion.
 ansible-playbook deploy-all.yml -vv
 ```
 
+## To deploy vm with airskiff:
+1. Install ansible
+```
+sudo apt update
+sudo apt install -y git python3-pip python3-dev
+sudo pip install ansible
+```
+
+2. Execute playbook - it will check if VM exists and if not, it will spawn
+new instances.
+NOTE: for now some values are hardcoded. In the future all will be set
+in external file.
+
+```
+source openrc
+git clone https://github.com/danpawlik/openstack-helm-deployment.git ~/openstack-helm-deployment
+cd ~/openstack-helm-deployment/airskiff
+```
+
+3. Execute ansible playbook
+```
+ansible-playbook deploy-airskiff.yml -vv
+```
+
 
 Please note, that repo and scripts are still under construction.

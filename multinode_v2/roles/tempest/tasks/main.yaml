@@ -39,7 +39,7 @@
       copy:
         src: /home/ubuntu/openstack-helm-deployment/multinode_v2/tempest/whitelist.list
         dest: /home/ubuntu/
-        mode: 0755
+        mode: 0644
         group: ubuntu
         owner: ubuntu
       delegate_to: "{{ groups['k8s_contr'][0] }}"
@@ -48,10 +48,23 @@
       copy:
         src: /home/ubuntu/openstack-helm-deployment/multinode_v2/tempest/blacklist.list
         dest: /home/ubuntu/
+        mode: 0644
+        group: ubuntu
+        owner: ubuntu
+      delegate_to: "{{ groups['k8s_contr'][0] }}"
+
+    - name: Copy prepare-tempest.sh script
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/multinode_v2/tempest/prepare-tempest.sh
+        dest: /home/ubuntu/
         mode: 0755
         group: ubuntu
         owner: ubuntu
       delegate_to: "{{ groups['k8s_contr'][0] }}"
+
+    - name: Execute tempest test
+      shell: bash -x /home/ubuntu/prepare-tempest.sh
+      register: tempest_output
 
     - name: Execute tempest test
       shell: bash -x /home/ubuntu/run-tempest.sh

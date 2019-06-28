@@ -2,6 +2,7 @@
 - name: Prepare hosts
   hosts:
     - k8s_minion
+  strategy: free
   gather_facts: False
   remote_user: ubuntu
   become: True

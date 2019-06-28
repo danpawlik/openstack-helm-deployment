@@ -24,6 +24,7 @@
       debug:
         var: groups
 
+    # Set k8s version: https://github.com/openstack/openstack-helm-infra/blob/master/tools/deployment/common/005-deploy-k8s.sh#L21
     - name: Run scripts on k8s_contr
       become: true
       become_user: ubuntu
@@ -34,6 +35,7 @@
         ANSIBLE_LOG_PATH: /home/ubuntu/ansible.logs
         NODE_TWO_IP: "{{ groups['k8s_minion'][0] }}"
         NODE_THREE_IP: "{{ groups['k8s_minion'][1] }}"
+        KUBE_VERSION: "{{ lookup('env', 'KUBE_VERSION') | default('v1.13.7') }}"
       ignore_errors: yes
       delegate_to: "{{ item }}"
       delegate_facts: True

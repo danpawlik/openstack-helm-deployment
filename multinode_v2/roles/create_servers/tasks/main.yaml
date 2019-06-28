@@ -1,6 +1,8 @@
 ---
 - name: Add ssh key
   hosts: localhost
+  serial:
+    - "100%"
   remote_user: ubuntu
   gather_facts: False
   tags:

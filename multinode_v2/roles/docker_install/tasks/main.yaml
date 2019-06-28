@@ -3,6 +3,7 @@
   hosts:
     - k8s_contr
     - k8s_minion
+  strategy: free
   gather_facts: False
   remote_user: ubuntu
   become: True

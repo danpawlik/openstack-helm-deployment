@@ -20,11 +20,10 @@
       become: true
       become_user: ubuntu
       shell: |
-        set timeout 300
         cd /opt/openstack-helm
-        nohup ./tools/deployment/multinode/050-mariadb.sh &
-        nohup ./tools/deployment/multinode/060-rabbitmq.sh &
-        nohup ./tools/deployment/multinode/070-memcached.sh &
+        nohup timeout 300 ./tools/deployment/multinode/050-mariadb.sh &
+        nohup timeout 300 ./tools/deployment/multinode/060-rabbitmq.sh &
+        nohup timeout 300 ./tools/deployment/multinode/070-memcached.sh &
         wait
       environment:
         OSH_EXTRA_HELM_ARGS: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS') }}"
@@ -37,18 +36,17 @@
       run_once: True
 
     ###########################################################################
-    - when: "{{ lookup('env', 'OS_DEPLOY_ALL') | default(true) | bool }}"
-      name: Run Keystone, RadosGW, Cinder, Glance on k8s_contr
+
+    - name: Run Keystone, RadosGW, openvswitch - test nova and neutron
       become: true
       become_user: ubuntu
       shell: |
-        set timeout 300
         cd /opt/openstack-helm
         export GLANCE_BACKEND=rbd
-        nohup ./tools/deployment/multinode/080-keystone.sh &
-        nohup ./tools/deployment/multinode/090-ceph-radosgateway.sh &
-        nohup ./tools/deployment/multinode/100-glance.sh &
-        nohup ./tools/deployment/multinode/110-cinder.sh &
+        nohup timeout 300 ./tools/deployment/multinode/080-keystone.sh &
+        nohup timeout 300 ./tools/deployment/multinode/090-ceph-radosgateway.sh &
+        nohup timeout 300 ./tools/deployment/multinode/120-openvswitch.sh  &
+        nohup timeout 800 ./tools/deployment/multinode/140-compute-kit.sh &
         wait
       environment:
         OSH_EXTRA_HELM_ARGS: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS') }}"
@@ -61,46 +59,40 @@
       register: os_services_result
       run_once: True
 
-    - when: "{{ lookup('env', 'OS_DEPLOY_ALL') | default(true) | bool }}"
-      name: Run Heat, Barbican and tempest on k8s_contr
+      #    - name: Run nova and neutron
+      #      become: true
+      #      become_user: ubuntu
+      #      shell: |
+      #        cd /opt/openstack-helm
+      #        nohup timeout 800 ./tools/deployment/multinode/140-compute-kit.sh &
+      #        wait
+      #      environment:
+      #        OSH_EXTRA_HELM_ARGS: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS') }}"
+      #        OSH_EXTRA_HELM_ARGS_KEYSTONE: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_KEYSTONE') }}"
+      #        OSH_EXTRA_HELM_ARGS_HEAT: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_HEAT') }}"
+      #        OSH_EXTRA_HELM_ARGS_GLANCE: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_GLANCE') }}"
+      #        OSH_EXTRA_HELM_ARGS_CINDER: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_CINDER') }}"
+      #      delegate_to: "{{ groups['k8s_contr'][0] }}"
+      #      ignore_errors: yes
+      #      register: os_services_result
+      #      run_once: True
+
+    - name: Run glance, cinder, heat, barbican and libvirt
       become: true
       become_user: ubuntu
       shell: |
-        set timeout 300
         cd /opt/openstack-helm
-        export GLANCE_BACKEND=rbd
-        nohup ./tools/deployment/multinode/150-heat.sh &
-        nohup ./tools/deployment/multinode/160-barbican.sh &
-        #        nohup ./tools/deployment/multinode/900-tempest.sh &
+        nohup timeout 300 ./tools/deployment/multinode/100-glance.sh &
+        nohup timeout 300 ./tools/deployment/multinode/110-cinder.sh &
+        nohup timeout 300 ./tools/deployment/multinode/150-heat.sh &
+        nohup timeout 300 ./tools/deployment/multinode/160-barbican.sh &
+        nohup timeout 300 ./tools/deployment/multinode/130-libvirt.sh &
         wait
       environment:
         OSH_EXTRA_HELM_ARGS: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS') }}"
         OSH_EXTRA_HELM_ARGS_HEAT: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_HEAT') }}"
         OSH_EXTRA_HELM_ARGS_BARBICAN: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_BARBICAN') }}"
-        #        OSH_EXTRA_HELM_ARGS_TEMPEST: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_TEMPEST') }}"
       delegate_to: "{{ groups['k8s_contr'][0] }}"
       ignore_errors: yes
       register: os_services_result
-      run_once: True
-
-    - when: "{{ lookup('env', 'OS_DEPLOY_ALL') | default(true) | bool }} and (os_services_result | success)"
-      name: Configure minions to use OVS and libvirt
-      become: true
-      become_user: ubuntu
-      shell: |
-        set timeout 300
-        cd /opt/openstack-helm
-        nohup ./tools/deployment/multinode/140-compute-kit.sh &
-        nohup ./tools/deployment/multinode/120-openvswitch.sh &
-        nohup ./tools/deployment/multinode/130-libvirt.sh &
-        wait
-      environment:
-        OSH_EXTRA_HELM_ARGS: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS') }}"
-        OSH_EXTRA_HELM_ARGS_NOVA: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_NOVA') }}"
-        OSH_EXTRA_HELM_ARGS_NEUTRON: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_NEUTRON') }}"
-        OSH_EXTRA_HELM_ARGS_OPENVSWITCH: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_OPENVSWITCH') }}"
-        OSH_EXTRA_HELM_ARGS_LIBVIRT: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_LIBVIRT') }}"
-      delegate_to: "{{ groups['k8s_contr'][0] }}"
-      ignore_errors: yes
-      register: os_compute_result
       run_once: True

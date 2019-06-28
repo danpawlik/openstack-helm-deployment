@@ -3,6 +3,8 @@
   hosts:
     - k8s_contr
     - k8s_minion
+  serial:
+    - "100%"
   gather_facts: False
   remote_user: ubuntu
   become: True
@@ -49,3 +51,14 @@
         mode: 0755
         group: ubuntu
         owner: ubuntu
+
+    - name: "Copy get pods script"
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/multinode_v2/scripts/get-pods.sh
+        dest: /home/ubuntu/
+        mode: 0755
+        group: ubuntu
+        owner: ubuntu
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"

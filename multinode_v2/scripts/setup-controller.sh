@@ -11,6 +11,7 @@ USE_PROXY=${USE_PROXY:-}
 PROXY_ADDRESS=${PROXY_ADDRESS:-}
 RELEASE=$(lsb_release -s -c)
 DNS_ADDRESS=${DNS_ADDRESS:-}
+KUBE_VERSION=${KUBE_VERSION:-}
 
 SSH_KEY_PATH="${ANSIBLE_USER_HOME}/.ssh/id_rsa"
 
@@ -167,6 +168,14 @@ fi
 # Set different DNS
 if [ -n "${DNS_ADDRESS}" ] ; then
     sed -i -e "s/8.8.8.8/$DNS_ADDRESS/g" "${OSH_INFRA_PATH}/tools/images/kubeadm-aio/assets/opt/playbooks/vars.yaml"
+fi
+
+# set new k8s version
+if [ -n "${KUBE_VERSION}" ]; then
+    sed -i "s/v1.13.4/$KUBE_VERSION/g" "${OSH_INFRA_PATH}/roles/build-images/defaults/main.yml"
+    sed -i "s/v1.13.4/$KUBE_VERSION/g" "${OSH_INFRA_PATH}/tools/images/kubeadm-aio/Dockerfile"
+    sed -i "s/v1.13.4/$KUBE_VERSION/g" "${OSH_INFRA_PATH}/tools/images/kubeadm-aio/assets/opt/playbooks/vars.yaml"
+    sed -i "s/v1.13.4/$KUBE_VERSION/g" "${OSH_INFRA_PATH}/tools/deployment/common/005-deploy-k8s.sh"
 fi
 
 echo " " > /home/ubuntu/.ssh/known_hosts
