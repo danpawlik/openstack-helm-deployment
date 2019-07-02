@@ -37,9 +37,28 @@
 - name: Create servers
   hosts: localhost
   gather_facts: False
+  vars:
+    contr_flavor: b2-60
+    contr_image: "Ubuntu 16.04"
+    contr_key_name: ansible_key
+    contr_net_name: Ext-Net
+    minion_flavor: b2-60
+    minion_image: "Ubuntu 16.04"
+    minion_key_name: ansible_key
+    minion_net_name: Ext-Net
   tags:
     - create_servers
   tasks:
+    - name: Set OS configuration as fact
+      set_fact:
+        contr_flavor: "{{ contr_flavor }}"
+        contr_image: "{{ contr_image }}"
+        contr_key_name: "{{ contr_key_name }}"
+        contr_net_name: "{{ contr_net_name }}"
+        minion_flavor: "{{ minion_flavor }}"
+        minion_image: "{{ minion_image }}"
+        minion_key_name: "{{ minion_key_name }}"
+        minion_net_name: "{{ minion_net_name }}"
     - name: "Spawning k8s_contr node"
       os_server:
         state: present
@@ -51,12 +70,12 @@
           user_domain_name: "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}"
           project_domain_name: "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}"
         region_name: "{{ lookup('env', 'OS_REGION_NAME') }}"
-        image: "Ubuntu 18.04"
-        key_name: ansible_key
+        image: "{{ contr_image }}"
+        key_name: "{{ contr_key_name }}"
         timeout: 200
-        flavor: c2-30
+        flavor: "{{ contr_flavor }}"
         nics:
-          - net-name: Ext-Net
+          - net-name: "{{ contr_net_name }}"
         name: "{{ server_name }}"
       with_items: "{{ k8s_hosts['k8s_contr'] }}"
       loop_control:
@@ -83,12 +102,12 @@
           user_domain_name: "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}"
           project_domain_name: "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}"
         region_name: "{{ lookup('env', 'OS_REGION_NAME') }}"
-        image: "Ubuntu 18.04"
-        key_name: ansible_key
+        image: "{{ minion_image }}"
+        key_name: "{{ minion_key_name }}"
         timeout: 200
-        flavor: c2-30
+        flavor: "{{ minion_flavor }}"
         nics:
-          - net-name: Ext-Net
+          - net-name: "{{ minion_net_name }}"
         name: "{{ server_name }}"
       with_items: "{{ k8s_hosts['k8s_minion'] }}"
       loop_control:

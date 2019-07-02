@@ -248,7 +248,7 @@
 
     - name: "Copy script to all nodes"
       copy:
-        src: /home/ubuntu/openstack-helm-deployment/multinode/scripts/
+        src: /home/ubuntu/openstack-helm-deployment/scripts/
         dest: /home/ubuntu/
         mode: 0755
         group: ubuntu

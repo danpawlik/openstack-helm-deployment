@@ -13,7 +13,7 @@
   tasks:
     - name: "Copy controller script"
       copy:
-        src: /home/ubuntu/openstack-helm-deployment/multinode_v2/scripts/setup-controller.sh
+        src: /home/ubuntu/openstack-helm-deployment/scripts/setup-controller.sh
         dest: /home/ubuntu/
         mode: 0755
         group: ubuntu
@@ -24,7 +24,7 @@
 
     - name: "Copy controller script"
       copy:
-        src: /home/ubuntu/openstack-helm-deployment/multinode_v2/scripts/clone-osh-repo.sh
+        src: /home/ubuntu/openstack-helm-deployment/scripts/clone-osh-repo.sh
         dest: /home/ubuntu/
         mode: 0755
         group: ubuntu
@@ -35,7 +35,7 @@
 
     - name: "Copy minion script"
       copy:
-        src: /home/ubuntu/openstack-helm-deployment/multinode_v2/scripts/setup-new-host.sh
+        src: /home/ubuntu/openstack-helm-deployment/scripts/setup-new-host.sh
         dest: /home/ubuntu/
         mode: 0755
         group: ubuntu
@@ -46,7 +46,7 @@
 
     - name: "Copy controller script"
       copy:
-        src: /home/ubuntu/openstack-helm-deployment/multinode_v2/scripts/upgrade-host.sh
+        src: /home/ubuntu/openstack-helm-deployment/scripts/upgrade-host.sh
         dest: /home/ubuntu/
         mode: 0755
         group: ubuntu
@@ -54,7 +54,7 @@
 
     - name: "Copy get pods script"
       copy:
-        src: /home/ubuntu/openstack-helm-deployment/multinode_v2/scripts/get-pods.sh
+        src: /home/ubuntu/openstack-helm-deployment/scripts/get-pods.sh
         dest: /home/ubuntu/
         mode: 0755
         group: ubuntu

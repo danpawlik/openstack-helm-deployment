@@ -46,7 +46,7 @@ in external file.
 ```
 source openrc
 git clone https://github.com/danpawlik/openstack-helm-deployment.git ~/openstack-helm-deployment
-cd ~/openstack-helm-deployment/multinode_v2
+cd ~/openstack-helm-deployment/multinode
 ```
 
 3. Modify "local" inventory in:

@@ -3,9 +3,20 @@
 - name: Create servers
   hosts: localhost
   gather_facts: False
+  vars:
+    flavor: b2-60
+    image: "Ubuntu 16.04"
+    key_name: ansible_key
+    net_name: Ext-Net
   tags:
     - create_servers
   tasks:
+    - name: Set OS configuration as fact
+      set_fact:
+        flavor: "{{ flavor }}"
+        image: "{{ image }}"
+        key_name: "{{ key_name }}"
+        net_name: "{{ net_name }}"
     - name: "Spawning airskiff node"
       os_server:
         state: present
@@ -17,12 +28,12 @@
           user_domain_name: "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}"
           project_domain_name: "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}"
         region_name: "{{ lookup('env', 'OS_REGION_NAME') }}"
-        image: "Ubuntu 16.04"
-        key_name: ansible_key
+        image: "{{ image }}"
+        key_name: "{{ key_name }}"
         timeout: 200
-        flavor: c2-30
+        flavor: "{{ flavor }}"
         nics:
-          - net-name: Ext-Net
+          - net-name: "{{ net_name }}"
         name: "{{ item }}"
       register: airskiff_result
       with_items:
@@ -65,16 +76,21 @@
   tags:
     - deplot
   tasks:
-    # https://airship-treasuremap.readthedocs.io/en/latest/airskiff.html
-    - name: Change sudoers
-      sudo: yes
-      sudo_user: ubuntu
-      shell: |
-        /bin/echo "ubuntu  ALL=(ALL) NOPASSWD: ALL" | /usr/bin/sudo tee -a /etc/sudoers && \
-        /usr/bin/sudo /bin/cat /etc/sudoers | /bin/sed "/^root/d" | /usr/bin/sudo tee /etc/sudoers && \
-        /bin/echo "root  ALL=(ALL) NOPASSWD: ALL" | /usr/bin/sudo tee -a /etc/sudoers
-      register: ubuntu_sudoers
-      ignore_errors: true
+    - name: "Copy upgrade script"
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/scripts/upgrade-host.sh
+        dest: /home/ubuntu/
+        mode: 0755
+        group: ubuntu
+        owner: ubuntu
+
+    - name: "Change sudoers"
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/airskiff/change-sudoers.sh
+        dest: /home/ubuntu/
+        mode: 0755
+        group: ubuntu
+        owner: ubuntu
 
     - name: check if sudoers is correct
       sudo: yes
@@ -84,19 +100,11 @@
       ignore_errors: true
 
     - when: sudoers_result.rc == 1
-      fail:
-        msg: |
-            Please add into sudoers this lines:
-            "root ALL=(ALL) NOPASSWD: ALL"
-            "ubuntu ALL=(ALL) NOPASSWD: ALL"
-
-    - name: "Copy upgrade script"
-      copy:
-        src: /home/ubuntu/openstack-helm-deployment/multinode_v2/scripts/upgrade-host.sh
-        dest: /home/ubuntu/
-        mode: 0755
-        group: ubuntu
-        owner: ubuntu
+      sudo: yes
+      sudo_user: ubuntu
+      shell: sudo bash /home/ubuntu/change-sudoers.sh
+      register: ubuntu_sudoers
+      ignore_errors: true
 
     - name: remove nano
       sudo: yes
@@ -107,61 +115,87 @@
     - name: Upgrade host
       sudo: yes
       sudo_user: ubuntu
-      shell: /bin/ /home/ubuntu/upgrade-host.sh >> /home/ubuntu/logs
+      shell: /bin/bash /home/ubuntu/upgrade-host.sh >> /home/ubuntu/logs
       register: upgrade_status
       ignore_errors: yes
       run_once: True
 
     - name: Clone repo
       shell: |
-        /usr/bin/git clone https://opendev.org/airship/treasuremap.git /home/ubuntu/treasuremap | tee -a /home/ubuntu/logs
+        /usr/bin/git clone https://opendev.org/airship/treasuremap.git /home/ubuntu/treasuremap >> /home/ubuntu/logs 2>&1
       ignore_errors: yes
       run_once: True
 
-      #    - name: Change commit ID for airskiff
-      #      shell: /bin/sed -i "s/6d0a9c21b0455e9d674d525c5e0cd0d5d53f0f85/d5655e95ea5043e5330f0a56fbed5ecf19e52808/g" /home/ubuntu/treasuremap/tools/deployment/airskiff/developer/005-clone-dependencies.sh
-      #      ignore_errors: yes
-      #      run_once: True
 
+    #############################################333
+      # change versions.yaml to new one https://review.opendev.org/#/c/664469
+
+    - name: "New project versions"
+      shell: |
+        cd /home/ubuntu/treasuremap &&
+        git fetch https://review.opendev.org/airship/treasuremap refs/changes/69/664469/24 && git checkout FETCH_HEAD
+
+    ##################################################
 
     - name: 000-install-packages.sh
       shell: |
         cd /home/ubuntu/treasuremap && \
-         ./tools/deployment/airskiff/developer/000-install-packages.sh | tee -a /home/ubuntu/logs
+         ./tools/deployment/airskiff/developer/000-install-packages.sh >> /home/ubuntu/logs 2>&1
       ignore_errors: yes
       run_once: True
 
     - name: 005-clone-dependencies.sh
       shell: |
         cd /home/ubuntu/treasuremap && \
-         ./tools/deployment/airskiff/developer/005-clone-dependencies.sh | tee -a /home/ubuntu/logs
+         ./tools/deployment/airskiff/developer/005-clone-dependencies.sh >> /home/ubuntu/logs 2>&1
       ignore_errors: yes
       run_once: true
 
     - name: 010-deploy-k8s.sh
       shell: |
         cd /home/ubuntu/treasuremap && \
-         ./tools/deployment/airskiff/developer/010-deploy-k8s.sh | tee -a /home/ubuntu/logs
+         ./tools/deployment/airskiff/developer/010-deploy-k8s.sh >> /home/ubuntu/logs 2>&1
       ignore_errors: yes
       run_once: true
+
+
+    #############################################333
+
+    - name: "Copy new charts - more pods for main services + increase timeouts"
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/airskiff/charts
+        dest: /home/ubuntu/treasuremap/site/airskiff/software/
+        mode: 0644
+        group: ubuntu
+        owner: ubuntu
+
+    ##################################################
 
     - name: 020-setup-client.sh
       shell: |
         cd /home/ubuntu/treasuremap && \
-        sudo  ./tools/deployment/airskiff/developer/020-setup-client.sh | tee -a /home/ubuntu/logs
+        sudo  ./tools/deployment/airskiff/developer/020-setup-client.sh >> /home/ubuntu/logs 2>&1
       ignore_errors: yes
       run_once: true
 
     - name: 030-armada-bootstrap.sh
       shell: |
         cd /home/ubuntu/treasuremap && \
-        sudo ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh | tee -a /home/ubuntu/logs
+        sudo ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh >> /home/ubuntu/logs 2>&1
       ignore_errors: yes
       run_once: true
 
     - name: 100-deploy-osh.sh
       shell: |
         cd /home/ubuntu/treasuremap && \
-        sudo  ./tools/deployment/airskiff/developer/100-deploy-osh.sh | tee -a /home/ubuntu/logs
+        sudo  ./tools/deployment/airskiff/developer/100-deploy-osh.sh >> /home/ubuntu/logs 2>&1
+      ignore_errors: yes
+      run_once: true
+
+    - name: add bash completion
+      shell: |
+        echo "source <(kubectl completion bash)" >> /home/ubuntu/.bashrc
+        echo "alias k=kubectl" >> /home/ubuntu/.bashrc
+        echo "complete -F __start_kubectl k" >> /home/ubuntu/.bashrc
       ignore_errors: yes
       run_once: true

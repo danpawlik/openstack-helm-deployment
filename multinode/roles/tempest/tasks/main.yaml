@@ -17,7 +17,7 @@
     - when: openrc_file.stat.exists == True
       name: Copy tempest conf
       copy:
-        src: /home/ubuntu/openstack-helm-deployment/multinode_v2/tempest/tempest.conf
+        src: /home/ubuntu/openstack-helm-deployment/multinode/tempest/tempest.conf
         dest: /home/ubuntu/
         mode: 0755
         group: ubuntu
@@ -28,7 +28,7 @@
 
     - name: Copy tempest conf
       copy:
-        src: /home/ubuntu/openstack-helm-deployment/multinode_v2/tempest/run-tempest.sh
+        src: /home/ubuntu/openstack-helm-deployment/multinode/tempest/run-tempest.sh
         dest: /home/ubuntu/
         mode: 0755
         group: ubuntu
@@ -37,7 +37,7 @@
 
     - name: Copy whitelist
       copy:
-        src: /home/ubuntu/openstack-helm-deployment/multinode_v2/tempest/whitelist.list
+        src: /home/ubuntu/openstack-helm-deployment/multinode/tempest/whitelist.list
         dest: /home/ubuntu/
         mode: 0644
         group: ubuntu
@@ -46,7 +46,7 @@
 
     - name: Copy blacklist
       copy:
-        src: /home/ubuntu/openstack-helm-deployment/multinode_v2/tempest/blacklist.list
+        src: /home/ubuntu/openstack-helm-deployment/multinode/tempest/blacklist.list
         dest: /home/ubuntu/
         mode: 0644
         group: ubuntu
@@ -55,7 +55,7 @@
 
     - name: Copy prepare-tempest.sh script
       copy:
-        src: /home/ubuntu/openstack-helm-deployment/multinode_v2/tempest/prepare-tempest.sh
+        src: /home/ubuntu/openstack-helm-deployment/multinode/tempest/prepare-tempest.sh
         dest: /home/ubuntu/
         mode: 0755
         group: ubuntu
