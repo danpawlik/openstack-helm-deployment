@@ -26,3 +26,26 @@
       register: upgrade_status
       ignore_errors: yes
       run_once: True
+
+    - name: add bash completion
+      shell: |
+        echo "source <(kubectl completion bash)" >> /home/ubuntu/.bashrc
+        echo "alias k=kubectl" >> /home/ubuntu/.bashrc
+        echo "complete -F __start_kubectl k" >> /home/ubuntu/.bashrc
+      ignore_errors: yes
+      run_once: true
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+
+    - name: remove nano
+      sudo: yes
+      sudo_user: ubuntu
+      shell: /usr/bin/sudo /usr/bin/apt remove -y nano
+      ignore_errors: true
+
+    - name: install other packages
+      sudo: yes
+      sudo_user: ubuntu
+      shell: /usr/bin/sudo /usr/bin/apt install -y vim htop ccze
+      ignore_errors: true

@@ -38,11 +38,11 @@
   hosts: localhost
   gather_facts: False
   vars:
-    contr_flavor: b2-60
+    contr_flavor: b2-30
     contr_image: "Ubuntu 16.04"
     contr_key_name: ansible_key
     contr_net_name: Ext-Net
-    minion_flavor: b2-60
+    minion_flavor: b2-30
     minion_image: "Ubuntu 16.04"
     minion_key_name: ansible_key
     minion_net_name: Ext-Net

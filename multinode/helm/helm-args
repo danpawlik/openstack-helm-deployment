@@ -1,0 +1,11 @@
+#!/bin/bash
+
+export OSH_EXTRA_HELM_ARGS="--values /home/ubuntu/helm/common.yaml"
+export OSH_EXTRA_HELM_ARGS_MARIADB="--values /home/ubuntu/helm/mariadb.yaml"
+export OSH_EXTRA_HELM_ARGS_RABBITMQ="--values /home/ubuntu/helm/rabbitmq.yaml"
+export OSH_EXTRA_HELM_ARGS_MEMCACHED="--values /home/ubuntu/helm/memcached.yaml"
+export OSH_EXTRA_HELM_ARGS_KEYSTONE="--values /home/ubuntu/helm/keystone.yaml"
+export OSH_EXTRA_HELM_ARGS_HEAT="--values /home/ubuntu/helm/heat.yaml"
+export OSH_EXTRA_HELM_ARGS_GLANCE="--values /home/ubuntu/helm/glance.yaml"
+export OSH_EXTRA_HELM_ARGS_CINDER="--values /home/ubuntu/helm/cinder.yaml"
+export OSH_EXTRA_HELM_ARGS_BARBICAN="--values /home/ubuntu/helm/barbican.yaml"

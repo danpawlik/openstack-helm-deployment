@@ -1,10 +1,9 @@
-
 ---
 - name: Create servers
   hosts: localhost
   gather_facts: False
   vars:
-    flavor: b2-60
+    flavor: b2-30
     image: "Ubuntu 16.04"
     key_name: ansible_key
     net_name: Ext-Net
@@ -74,7 +73,7 @@
     ansible_host_key_checking: false
     ansible_ssh_private_key_file: /home/ubuntu/.ssh/id_rsa_ansible
   tags:
-    - deplot
+    - deploy
   tasks:
     - name: "Copy upgrade script"
       copy:
@@ -115,27 +114,39 @@
     - name: Upgrade host
       sudo: yes
       sudo_user: ubuntu
-      shell: /bin/bash /home/ubuntu/upgrade-host.sh >> /home/ubuntu/logs
+      shell: |
+        /bin/bash /home/ubuntu/upgrade-host.sh >> /home/ubuntu/logs
       register: upgrade_status
       ignore_errors: yes
       run_once: True
+
+    - name: install other packages
+      sudo: yes
+      sudo_user: ubuntu
+      shell: /usr/bin/sudo /usr/bin/apt install -y vim htop ccze
+      ignore_errors: true
+
+    #################################################################
+    #
+    ####################### RAMDISK #################################
+    #
+    #################################################################
+
+    - name: install other packages
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        sudo mkdir -p /data
+        sudo mount -t tmpfs -o nodev,nosuid,size=512M tmpfs /data
+      ignore_errors: true
+
+    #################################################################
 
     - name: Clone repo
       shell: |
         /usr/bin/git clone https://opendev.org/airship/treasuremap.git /home/ubuntu/treasuremap >> /home/ubuntu/logs 2>&1
       ignore_errors: yes
       run_once: True
-
-
-    #############################################333
-      # change versions.yaml to new one https://review.opendev.org/#/c/664469
-
-    - name: "New project versions"
-      shell: |
-        cd /home/ubuntu/treasuremap &&
-        git fetch https://review.opendev.org/airship/treasuremap refs/changes/69/664469/24 && git checkout FETCH_HEAD
-
-    ##################################################
 
     - name: 000-install-packages.sh
       shell: |
@@ -151,25 +162,29 @@
       ignore_errors: yes
       run_once: true
 
+    - name: Remove docker.io name
+      shell: |
+          find /home/ubuntu -type f -exec sed -i -e 's/docker.io=18.06.1-0ubuntu1.2~16.04.1/docker.io/g' {} \;
+      ignore_errors: yes
+      run_once: true
+
+
+    ################################################
+    # WORKAROUND #
+    - name: Change bad image
+      shell: |
+          find /home/ubuntu -type f -exec sed -i -e 's/e79672987e646957aa937242592e0918c2829934/6c07c70decb48bf7ca902ed802991a754b1cc592/g' {} \;
+      ignore_errors: yes
+      run_once: true
+
+    ################################################
+
     - name: 010-deploy-k8s.sh
       shell: |
         cd /home/ubuntu/treasuremap && \
          ./tools/deployment/airskiff/developer/010-deploy-k8s.sh >> /home/ubuntu/logs 2>&1
       ignore_errors: yes
       run_once: true
-
-
-    #############################################333
-
-    - name: "Copy new charts - more pods for main services + increase timeouts"
-      copy:
-        src: /home/ubuntu/openstack-helm-deployment/airskiff/charts
-        dest: /home/ubuntu/treasuremap/site/airskiff/software/
-        mode: 0644
-        group: ubuntu
-        owner: ubuntu
-
-    ##################################################
 
     - name: 020-setup-client.sh
       shell: |
@@ -184,6 +199,17 @@
         sudo ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh >> /home/ubuntu/logs 2>&1
       ignore_errors: yes
       run_once: true
+
+#    ########################################################
+#    # WORKAROUND #
+#
+#    - name: Increase timeout
+#      shell: |
+#        kubectl get deployment -n ucp -o yaml | sed 's/timeoutSeconds: 1/timeoutSeconds: 30/g' | sed 's/periodSeconds: [0-9][0-9]/periodSeconds: 60/g' | kubectl apply -f -
+#      ignore_errors: yes
+#      run_once: true
+#
+#    #######################################################
 
     - name: 100-deploy-osh.sh
       shell: |

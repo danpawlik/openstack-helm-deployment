@@ -20,6 +20,9 @@
       become: true
       become_user: ubuntu
       shell: |
+        if [ -f '/home/ubuntu/helm/helm-args' ]; then
+          source /home/ubuntu/helm/helm-args
+        fi
         cd /opt/openstack-helm
         nohup timeout 300 ./tools/deployment/multinode/050-mariadb.sh &
         nohup timeout 300 ./tools/deployment/multinode/060-rabbitmq.sh &
@@ -41,6 +44,10 @@
       become: true
       become_user: ubuntu
       shell: |
+        if [ -f '/home/ubuntu/helm/helm-args' ]; then
+          source /home/ubuntu/helm/helm-args
+        fi
+
         cd /opt/openstack-helm
         export GLANCE_BACKEND=rbd
         nohup timeout 300 ./tools/deployment/multinode/080-keystone.sh &
@@ -59,28 +66,13 @@
       register: os_services_result
       run_once: True
 
-      #    - name: Run nova and neutron
-      #      become: true
-      #      become_user: ubuntu
-      #      shell: |
-      #        cd /opt/openstack-helm
-      #        nohup timeout 800 ./tools/deployment/multinode/140-compute-kit.sh &
-      #        wait
-      #      environment:
-      #        OSH_EXTRA_HELM_ARGS: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS') }}"
-      #        OSH_EXTRA_HELM_ARGS_KEYSTONE: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_KEYSTONE') }}"
-      #        OSH_EXTRA_HELM_ARGS_HEAT: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_HEAT') }}"
-      #        OSH_EXTRA_HELM_ARGS_GLANCE: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_GLANCE') }}"
-      #        OSH_EXTRA_HELM_ARGS_CINDER: "{{ lookup('env', 'OSH_EXTRA_HELM_ARGS_CINDER') }}"
-      #      delegate_to: "{{ groups['k8s_contr'][0] }}"
-      #      ignore_errors: yes
-      #      register: os_services_result
-      #      run_once: True
-
     - name: Run glance, cinder, heat, barbican and libvirt
       become: true
       become_user: ubuntu
       shell: |
+        if [ -f '/home/ubuntu/helm/helm-args' ]; then
+          source /home/ubuntu/helm/helm-args
+        fi
         cd /opt/openstack-helm
         nohup timeout 300 ./tools/deployment/multinode/100-glance.sh &
         nohup timeout 300 ./tools/deployment/multinode/110-cinder.sh &

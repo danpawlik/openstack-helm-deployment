@@ -17,5 +17,28 @@ data:
   values:
     pod:
       replicas:
-        api: 3
+        api: 1
+    conf:
+      logging:
+        logger_keystone:
+          level: DEBUG
+spec:
+  template:
+    spec:
+      containers:
+      - name: keystone-api
+        ports:
+        - containerPort: 5000
+          name: ks-pub
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 5000
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 120
+          successThreshold: 1
+          timeoutSeconds: 60
 ...

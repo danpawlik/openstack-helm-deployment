@@ -9,4 +9,5 @@
 - import_playbook: roles/deploy_k8s_minions/tasks/main.yaml
 - import_playbook: roles/deploy_k8s_controller/tasks/main.yaml
 - import_playbook: roles/deploy_basic_services/tasks/main.yaml
+- import_playbook: roles/helm_overwrite/tasks/main.yaml
 - import_playbook: roles/deploy_os_services/tasks/main.yaml

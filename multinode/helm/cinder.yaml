@@ -1,0 +1,16 @@
+storage: ceph
+
+images:
+  tags:
+    db_init: docker.io/openstackhelm/cinder:master-ubuntu_bionic
+    cinder_db_sync: docker.io/openstackhelm/cinder:master-ubuntu_bionic
+    cinder_api: docker.io/openstackhelm/cinder:master-ubuntu_bionic
+    cinder_scheduler: docker.io/openstackhelm/cinder:master-ubuntu_bionic
+    cinder_volume: docker.io/openstackhelm/cinder:master-ubuntu_bionic
+    cinder_volume_usage_audit: docker.io/openstackhelm/cinder:master-ubuntu_bionic
+    cinder_backup: docker.io/openstackhelm/cinder:master-ubuntu_bionic
+
+conf:
+  cinder:
+    DEFAULT:
+      backup_driver: "cinder.backup.drivers.ceph.CephBackupDriver"

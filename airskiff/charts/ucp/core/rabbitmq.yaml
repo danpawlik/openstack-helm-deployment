@@ -22,5 +22,16 @@ data:
   values:
     pod:
       replicas:
-        server: 3
+        server: 1
+spec:
+  template:
+    spec:
+      containers:
+      - name: rabbitmq
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 60
 ...

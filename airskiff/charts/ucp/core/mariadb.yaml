@@ -19,6 +19,17 @@ data:
   values:
     pod:
       replicas:
-        server: 3
-        ingress: 3
+        server: 1
+        ingress: 1
+spec:
+  template:
+    spec:
+      containers:
+      - name: mariadb
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          successThreshold: 1
+          timeoutSeconds: 60
 ...

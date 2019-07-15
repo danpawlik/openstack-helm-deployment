@@ -4,10 +4,10 @@
   vars:
     k8s_hosts:
       k8s_contr:
-        - k8s_contr_1
+        - "{{ lookup('env', 'CONTR_NAME') if lookup('env', 'CONTR_NAME') != '' else 'k8s_contr_1' }}"
       k8s_minion:
-        - k8s_minion_1
-        - k8s_minion_2
+        - "{{ lookup('env', 'MINION_1') if lookup('env', 'MINION_1') != '' else 'k8s_minion_1'  }}"
+        - "{{ lookup('env', 'MINION_2') if lookup('env', 'MINION_2') != '' else 'k8s_minion_2'  }}"
   tasks:
     - name: Info about defined hosts
       debug:

@@ -17,6 +17,6 @@ data:
   values:
     pod:
       replicas:
-        ingress: 3
-        error_page: 3
+        ingress: 1
+        error_page: 1
 ...
