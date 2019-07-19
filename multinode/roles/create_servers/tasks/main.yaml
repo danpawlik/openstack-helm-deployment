@@ -5,6 +5,8 @@
     - "100%"
   remote_user: ubuntu
   gather_facts: False
+  vars:
+    ansible_ssh_keyname: id_rsa_ansible
   tags:
     - add_ansible_key
   tasks:
@@ -13,7 +15,7 @@
         name: ubuntu
         generate_ssh_key: yes
         ssh_key_bits: 2048
-        ssh_key_file: .ssh/id_rsa_ansible
+        ssh_key_file: ".ssh/{{ ansible_ssh_keyname }}"
       delegate_to: localhost
       run_once: True
       register: ssh_keygen_result
@@ -29,7 +31,7 @@
                   --os-domain-name "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}" \
                   --os-project-domain-name "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}" \
                   keypair create ansible_key \
-                  --public-key /home/ubuntu/.ssh/id_rsa_ansible.pub
+                  --public-key "/home/ubuntu/.ssh/{{ ansible_ssh_keyname }}.pub"
       when: ssh_keygen_result.changed
 
 # os_server module spawns vm and get if vm was spawned earlier, thats
@@ -59,6 +61,7 @@
         minion_image: "{{ minion_image }}"
         minion_key_name: "{{ minion_key_name }}"
         minion_net_name: "{{ minion_net_name }}"
+
     - name: "Spawning k8s_contr node"
       os_server:
         state: present

@@ -1,0 +1,13 @@
+storage: rbd
+
+images:
+  tags:
+    db_init: docker.io/openstackhelm/heat:master-ubuntu_bionic
+    glance_db_sync: docker.io/openstackhelm/glance:master-ubuntu_bionic
+    db_drop: docker.io/openstackhelm/heat:master-ubuntu_bionic
+    ks_user: docker.io/openstackhelm/heat:master-ubuntu_bionic
+    ks_service: docker.io/openstackhelm/heat:master-ubuntu_bionic
+    ks_endpoints: docker.io/openstackhelm/heat:master-ubuntu_bionic
+    glance_api: docker.io/openstackhelm/glance:master-ubuntu_bionic
+    glance_registry: docker.io/openstackhelm/glance:master-ubuntu_bionic
+    bootstrap: docker.io/openstackhelm/heat:master-ubuntu_bionic
