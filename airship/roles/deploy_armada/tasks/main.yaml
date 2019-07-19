@@ -1,0 +1,97 @@
+---
+- name: Prepare hosts
+  hosts:
+    - airship_contr
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+    ansible_ssh_private_key_file: /home/ubuntu/.ssh/id_rsa_ansible
+  tasks:
+    - name: Install 010-armada-host-setup.sh
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        cd /opt/openstack-helm-infra
+        bash -x ./tools/deployment/armada/010-armada-host-setup.sh | tee -a /home/ubuntu/logs
+      ignore_errors: false
+      delegate_to: "{{ groups['airship_contr'][0] }}"
+      run_once: True
+
+      # workaround for new pip
+    - name: Install PyYAML
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        sudo -H pip3 install --ignore-installed PyYAML | tee -a /home/ubuntu/logs
+      ignore_errors: false
+      delegate_to: "{{ groups['airship_contr'][0] }}"
+      run_once: True
+      #####
+
+    - name: Install 015-armada-build.sh
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        cd /opt/openstack-helm-infra
+        bash -x ./tools/deployment/armada/015-armada-build.sh | tee -a /home/ubuntu/logs
+      ignore_errors: false
+      delegate_to: "{{ groups['airship_contr'][0] }}"
+      run_once: True
+
+    - name: Install 020-armada-render-manifests.sh
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        cd /opt/openstack-helm-infra
+        bash -x ./tools/deployment/armada/020-armada-render-manifests.sh | tee -a /home/ubuntu/logs
+      ignore_errors: false
+      delegate_to: "{{ groups['airship_contr'][0] }}"
+      run_once: True
+
+    - name: Install 025-armada-validate-manifests.sh
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        cd /opt/openstack-helm-infra
+        bash -x ./tools/deployment/armada/025-armada-validate-manifests.sh | tee -a /home/ubuntu/logs
+      ignore_errors: false
+      delegate_to: "{{ groups['airship_contr'][0] }}"
+      run_once: True
+
+#    # workaound for 1 node deploy
+#    - name: change OSD cluster size
+#      shell: |
+#        sed -i 's/\sosd: [0-9]/ osd: 1/g' /opt/openstack-helm-infra/tools/deployment/armada/manifests/armada-ceph.yaml
+#      ignore_errors: true
+
+    - name: Install 030-armada-apply-manifests.sh
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        cd /opt/openstack-helm-infra
+        bash -x ./tools/deployment/armada/030-armada-apply-manifests.sh | tee -a /home/ubuntu/logs
+      ignore_errors: false
+      delegate_to: "{{ groups['airship_contr'][0] }}"
+      run_once: True
+
+    - name: Install 035-armada-update-uuids.sh
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        cd /opt/openstack-helm-infra
+        bash -x ./tools/deployment/armada/035-armada-update-uuids.sh | tee -a /home/ubuntu/logs
+      ignore_errors: false
+      delegate_to: "{{ groups['airship_contr'][0] }}"
+      run_once: True
+
+    - name: Install 040-armada-update-passwords.sh
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        cd /opt/openstack-helm-infra
+        bash -x ./tools/deployment/armada/040-armada-update-passwords.sh | tee -a /home/ubuntu/logs
+      ignore_errors: false
+      delegate_to: "{{ groups['airship_contr'][0] }}"
+      run_once: True

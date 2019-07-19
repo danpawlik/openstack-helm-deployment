@@ -1,0 +1,68 @@
+---
+- name: Prepare hosts
+  hosts:
+    - airship_contr
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+    ansible_ssh_private_key_file: /home/ubuntu/.ssh/id_rsa_ansible
+  tasks:
+    - name: Set one more time ubuntu owner to opt
+      sudo: yes
+      sudo_user: ubuntu
+      shell: sudo chown -R ubuntu:ubuntu /opt
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['airship_contr'] }}"
+      ignore_errors: yes
+      run_once: True
+
+    - name: Clone OSH repo
+      sudo: yes
+      sudo_user: ubuntu
+      shell: /bin/bash -x /home/ubuntu/clone-osh-repo.sh >> /home/ubuntu/logs
+      register: clone_status
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['airship_contr'] }}"
+      ignore_errors: yes
+      run_once: True
+
+    - name: WORKAROUND cherry-pick patch
+      shell: |
+        git config --global user.email "you@example.com"
+        git config --global user.name "Your Name"
+        cd /opt/openstack-helm-infra
+        git fetch https://review.opendev.org/openstack/openstack-helm-infra refs/changes/88/671688/2 && git cherry-pick FETCH_HEAD
+      ignore_errors: yes
+
+    # workaound for 1 node deploy
+    - name: change OSD cluster size
+      shell: |
+        sed -i 's/\sosd: [0-9]/ osd: 2/g' /opt/openstack-helm-infra/tools/deployment/armada/manifests/armada-ceph.yaml
+      ignore_errors: true
+
+    - name: Show current groups
+      debug:
+        var: groups
+
+    # Set airship version: https://github.com/openstack/openstack-helm-infra/blob/master/tools/deployment/common/005-deploy-airship.sh#L21
+    - name: Run scripts on airship_contr
+      become: true
+      become_user: ubuntu
+      shell: /home/ubuntu/setup-armada-controller.sh >> /home/ubuntu/logs
+      args:
+        executable: /bin/bash
+      environment:
+        ANSIBLE_LOG_PATH: /home/ubuntu/ansible.logs
+        NODE_TWO_IP: "{{ groups['airship_minion'][0] }}"
+        KUBE_VERSION: "{{ lookup('env', 'KUBE_VERSION') | default('v1.13.7') }}"
+      ignore_errors: yes
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['airship_contr'] }}"
+      register: airship_deploy
+      failed_when: airship_deploy.rc == 1
+      run_once: True

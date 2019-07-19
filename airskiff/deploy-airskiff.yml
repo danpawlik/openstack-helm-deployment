@@ -140,8 +140,6 @@
         sudo mount -t tmpfs -o nodev,nosuid,size=512M tmpfs /data
       ignore_errors: true
 
-    #################################################################
-
     - name: Clone repo
       shell: |
         /usr/bin/git clone https://opendev.org/airship/treasuremap.git /home/ubuntu/treasuremap >> /home/ubuntu/logs 2>&1
@@ -173,7 +171,15 @@
     # WORKAROUND #
     - name: Change bad image
       shell: |
-          find /home/ubuntu -type f -exec sed -i -e 's/e79672987e646957aa937242592e0918c2829934/6c07c70decb48bf7ca902ed802991a754b1cc592/g' {} \;
+          #find /home/ubuntu -type f -exec sed -i -e 's/e79672987e646957aa937242592e0918c2829934/6c07c70decb48bf7ca902ed802991a754b1cc592/g' {} \;
+          #
+          #
+          find /home/ubuntu -type f -exec sed -i -e 's/e79672987e646957aa937242592e0918c2829934/2765415d82b2be3fdac275a959ee4f3b173a2566/g' {} \;
+          find /home/ubuntu -type f -exec sed -i -e 's/b5432ea39423a14ab41f218cb23301aeb3b1500d/caa75e403e1c6a671e65fe68c167ba0e9638f51e/g' {} \;
+          find /home/ubuntu -type f -exec sed -i -e 's/a2b296460886035a0db3a75a520caf405c8862e8/971c901c4da36e3e31be58d4be8b0e194e715d8f/g' {} \;
+          find /home/ubuntu -type f -exec sed -i -e 's/da4bdf535a56583f2e1340776461fe405c01db56/b417f422e9cd2a921646ee0af4a05fc4e211beab/g' {} \;
+          find /home/ubuntu -type f -exec sed -i -e 's/aeb0c198b196dbc69190299fe98df4137faf0333/9bf298fea7fe111f6807a2e6276f35289d2fd83c/g' {} \;
+          find /home/ubuntu -type f -exec sed -i -e 's/aeb0c198b196dbc69190299fe98df4137faf0333/9bf298fea7fe111f6807a2e6276f35289d2fd83c/g' {} \;
       ignore_errors: yes
       run_once: true
 
@@ -192,6 +198,14 @@
         sudo  ./tools/deployment/airskiff/developer/020-setup-client.sh >> /home/ubuntu/logs 2>&1
       ignore_errors: yes
       run_once: true
+
+    - name: change ownership of airskiff.yaml
+      shell: |
+        if [ ! -f /home/ubuntu/treasuremap/airskiff.yaml ]; then
+          touch /home/ubuntu/treasuremap/airskiff.yaml
+        fi
+        sudo chmod 0644 /home/ubuntu/treasuremap/airskiff.yaml
+      ignore_errors: true
 
     - name: 030-armada-bootstrap.sh
       shell: |

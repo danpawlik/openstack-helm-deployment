@@ -1,0 +1,34 @@
+---
+- name: Install newest Docker
+  hosts:
+    - airship_contr
+    - airship_minion
+  strategy: free
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+    ansible_ssh_private_key_file: /home/ubuntu/.ssh/id_rsa_ansible
+  tasks:
+    - name: "Copy docker repo script"
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/scripts/setup-docker-registry.sh
+        dest: /home/ubuntu/
+        mode: 0755
+        group: ubuntu
+        owner: ubuntu
+
+    - name: Check if docker is installed
+      shell: dpkg -l | grep -q 'docker-ce'
+      register: docker_check
+      ignore_errors: true
+
+    - when: docker_check.rc == 1
+      name: Get docker
+      #shell: curl -sSL https://get.docker.com/ | sh
+      shell: bash -x /home/ubuntu/setup-docker-registry.sh
+
+    - name: Get docker
+      shell: sudo usermod -aG docker ubuntu
+      ignore_errors: true

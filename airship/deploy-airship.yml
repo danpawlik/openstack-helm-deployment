@@ -129,7 +129,6 @@
       ignore_errors: true
 
     - name: set chown to ubuntu
-
       shell: sudo chown -R ubuntu:ubuntu /opt
       ignore_errors: true
 
