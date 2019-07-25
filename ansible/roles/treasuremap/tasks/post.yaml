@@ -1,0 +1,60 @@
+---
+- name: Do post treasuremap things
+  hosts:
+    - k8s_contr
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+  tasks:
+    - name: 020-setup-client.sh
+      shell: |
+        cd /home/ubuntu/treasuremap && \
+        sudo  ./tools/deployment/airskiff/developer/020-setup-client.sh >> /home/ubuntu/logs 2>&1
+      ignore_errors: yes
+      run_once: true
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+
+    - name: change ownership of airskiff.yaml
+      shell: |
+        if [ ! -f /home/ubuntu/treasuremap/airskiff.yaml ]; then
+          touch /home/ubuntu/treasuremap/airskiff.yaml
+        fi
+        sudo chmod 0644 /home/ubuntu/treasuremap/airskiff.yaml
+      ignore_errors: true
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+
+    - name: 030-armada-bootstrap.sh
+      shell: |
+        cd /home/ubuntu/treasuremap && \
+        sudo ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh >> /home/ubuntu/logs 2>&1
+      ignore_errors: yes
+      run_once: true
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+
+    - name: 100-deploy-osh.sh
+      shell: |
+        cd /home/ubuntu/treasuremap && \
+        sudo  ./tools/deployment/airskiff/developer/100-deploy-osh.sh >> /home/ubuntu/logs 2>&1
+      ignore_errors: yes
+      run_once: true
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+
+    - name: Setup openrc
+      shell: |
+        export OS_PASSWORD=$(grep 'password' /home/ubuntu/treasuremap/site/airskiff/secrets/passphrases/osh_keystone_admin_password.yaml | grep data | awk '{print $2}')
+        bash /home/ubuntu/scripts/set-openrc.sh
+      ignore_errors: yes
+      run_once: true
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"

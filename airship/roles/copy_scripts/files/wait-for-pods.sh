@@ -1,1 +1,0 @@
-../../../scripts/wait-for-pods.sh

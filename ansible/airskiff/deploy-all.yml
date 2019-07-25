@@ -1,0 +1,15 @@
+---
+- import_playbook: roles/local_inventory/tasks/main.yaml
+- import_playbook: roles/create_servers/tasks/main.yaml
+- import_playbook: roles/ssh_common/tasks/main.yaml
+- import_playbook: roles/copy_scripts/tasks/main.yaml
+- import_playbook: roles/change_sudoers/tasks/main.yaml
+- import_playbook: roles/common/tasks/main.yaml
+- import_playbook: roles/docker_install/tasks/main.yaml
+- import_playbook: roles/ramdisk_etcd/tasks/main.yaml
+- import_playbook: roles/deploy_minions/tasks/main.yaml
+- import_playbook: roles/treasuremap/tasks/pre.yaml
+- import_playbook: roles/treasuremap/tasks/additional_tasks.yaml
+- import_playbook: roles/install_k8s/tasks/main.yaml
+- import_playbook: roles/treasuremap/tasks/post.yaml
+  #- import_playbook: roles/deploy_controller/tasks/main.yaml

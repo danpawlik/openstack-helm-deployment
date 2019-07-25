@@ -1,0 +1,315 @@
+---
+- name: Create servers
+  hosts: localhost
+  gather_facts: False
+  vars:
+    flavor: b2-30
+    image: "Ubuntu 16.04"
+    key_name: ansible_key
+    net_name: Ext-Net
+  tags:
+    - create_servers
+  tasks:
+    - name: Set OS configuration as fact
+      set_fact:
+        flavor: "{{ flavor }}"
+        image: "{{ image }}"
+        key_name: "{{ key_name }}"
+        net_name: "{{ net_name }}"
+    - name: "Spawning airskiff node"
+      os_server:
+        state: present
+        auth:
+          auth_url: "{{ lookup('env', 'OS_AUTH_URL') }}"
+          username: "{{ lookup('env', 'OS_USERNAME') }}"
+          password: "{{ lookup('env', 'OS_PASSWORD') }}"
+          project_name: "{{ lookup('env', 'OS_TENANT_NAME') }}"
+          user_domain_name: "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}"
+          project_domain_name: "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}"
+        region_name: "{{ lookup('env', 'OS_REGION_NAME') }}"
+        image: "{{ image }}"
+        key_name: "{{ key_name }}"
+        timeout: 200
+        flavor: "{{ flavor }}"
+        nics:
+          - net-name: "{{ net_name }}"
+        name: "{{ item }}"
+      register: airskiff_result
+      with_items:
+        - "airskiff-contr"
+
+    - name: test
+      debug:
+        var: airskiff_result
+
+    - name: Add airskiff into local inventory
+      add_host:
+        name: "{{ airskiff_result.results[0].openstack.public_v4  }}"
+        hostname: "{{ airskiff_result.results[0].openstack.name }}"
+        group: airskiff
+
+    - name: wait for instances k8s_contr to be ready
+      wait_for:
+        port: 22
+        delay: 5
+        timeout: 150
+        host: "{{ item }}"
+      with_items: "{{ groups['airskiff'] }}"
+      run_once: true
+
+    - name: Add airskiff host key to known_hosts
+      shell: ssh-keyscan -H "{{ item }}" >> /home/ubuntu/.ssh/known_hosts
+      with_items: "{{ groups['airskiff'] }}"
+      args:
+        executable: /bin/bash
+      run_once: True
+
+
+- name: Deploy
+  hosts:
+    - airskiff
+  gather_facts: False
+  vars:
+    ansible_host_key_checking: false
+    ansible_ssh_private_key_file: /home/ubuntu/.ssh/id_rsa_ansible
+    setup_minikube: false
+  tags:
+    - deploy
+  tasks:
+    - name: "Copy upgrade script"
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/scripts/upgrade-host.sh
+        dest: /home/ubuntu/scripts/
+        mode: 0755
+        group: ubuntu
+        owner: ubuntu
+
+    - name: "Change sudoers"
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/scripts/change-sudoers.sh
+        dest: /home/ubuntu/scripts/
+        mode: 0755
+        group: ubuntu
+        owner: ubuntu
+
+    - name: "Copy helm serve script - for debuging"
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/scripts/helm-serve.sh
+        dest: /home/ubuntu/scripts/
+        mode: 0755
+        group: ubuntu
+        owner: ubuntu
+
+    - name: "Copy get pods script"
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/scripts/get-pods.sh
+        dest: /home/ubuntu/scripts/
+        mode: 0755
+        group: ubuntu
+        owner: ubuntu
+
+    - name: Copy openrc generator
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/scripts/set-openrc.sh
+        dest: /home/ubuntu/scripts/
+        mode: 0755
+        group: ubuntu
+        owner: ubuntu
+
+    ###############################################################
+
+
+    - name: check if sudoers is correct
+      sudo: yes
+      sudo_user: root
+      shell: /bin/grep -q 'ubuntu' /etc/sudoers
+      register: sudoers_result
+      ignore_errors: true
+
+    - when: sudoers_result.rc == 1
+      sudo: yes
+      sudo_user: root
+      shell: /home/ubuntu/scripts/change-sudoers.sh
+      register: ubuntu_sudoers
+      ignore_errors: true
+
+    - name: remove nano
+      sudo: yes
+      sudo_user: ubuntu
+      shell: /usr/bin/sudo /usr/bin/apt remove -y nano
+      ignore_errors: true
+
+    - name: Upgrade host
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        /bin/bash /home/ubuntu/scripts/upgrade-host.sh >> /home/ubuntu/logs
+      register: upgrade_status
+      ignore_errors: yes
+      run_once: True
+
+    - name: install other packages
+      sudo: yes
+      sudo_user: ubuntu
+      shell: /usr/bin/sudo /usr/bin/apt install -y vim htop ccze
+      ignore_errors: true
+
+    #################################################################
+    #
+    ####################### RAMDISK #################################
+    #
+    #################################################################
+
+    - name: install other packages
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        sudo mkdir -p /data
+        sudo mount -t tmpfs -o nodev,nosuid,size=512M tmpfs /data
+      ignore_errors: true
+
+    ################################################################
+
+    - name: Clone repo
+      shell: |
+        /usr/bin/git clone https://opendev.org/airship/treasuremap.git /home/ubuntu/treasuremap >> /home/ubuntu/logs 2>&1
+      ignore_errors: yes
+      run_once: True
+
+    - name: 000-install-packages.sh
+      shell: |
+        cd /home/ubuntu/treasuremap && \
+         ./tools/deployment/airskiff/developer/000-install-packages.sh >> /home/ubuntu/logs 2>&1
+      ignore_errors: yes
+      run_once: True
+
+    - name: 005-clone-dependencies.sh
+      shell: |
+        cd /home/ubuntu/treasuremap && \
+         ./tools/deployment/airskiff/developer/005-clone-dependencies.sh >> /home/ubuntu/logs 2>&1
+      ignore_errors: yes
+      run_once: true
+
+    ################ WORKAROUNDS ##################
+    #
+    - name: Cherry-pick shipyard patch
+      shell: |
+        cd /home/ubuntu/shipyard
+        git config --global user.email "you@example.com"
+        git config --global user.name "Your Name"
+        git fetch https://review.opendev.org/airship/shipyard refs/changes/56/672656/1 && git cherry-pick FETCH_HEAD
+      ignore_errors: true
+
+    - name: Remove docker.io name
+      shell: |
+          find /home/ubuntu -type f -exec sed -i -e 's/docker.io=18.06.1-0ubuntu1.2~16.04.1/docker.io/g' {} \;
+      ignore_errors: yes
+      run_once: true
+
+    - name: Switch repo to github
+      shell: |
+        find /home/ubuntu -type f -exec sed -i -e 's/opendev.org\/airship/github.com\/airshipit/g' {} \;
+        find /home/ubuntu -type f -exec sed -i -e 's/opendev.org\/openstack/github.com\/openstack/g' {} \;
+      ignore_errors: yes
+      run_once: true
+
+    - name: Disable services that are not required
+      shell: |
+        sed -i '/openstack-heat/d'  /home/ubuntu/treasuremap/global/software/manifests/full-site.yaml
+        sed -i '/openstack-heat/d'  /home/ubuntu/treasuremap/site/airskiff/software/manifests/full-site.yaml
+        sed -i 's/openstack-heat: enabled/openstack-heat: disabled/g' /home/ubuntu/treasuremap/site/airskiff/profiles/host/cp_r720.yaml
+        sed -i 's/openstack-heat: enabled/openstack-heat: disabled/g' /home/ubuntu/treasuremap/global/profiles/host/cp.yaml
+      ignore_errors: true
+      run_once: true
+
+    ################################################
+
+    - when: setup_minikube
+      name: 010-deploy-k8s.sh
+      shell: |
+        cd /home/ubuntu/treasuremap && \
+         ./tools/deployment/airskiff/developer/010-deploy-k8s.sh >> /home/ubuntu/logs 2>&1
+      ignore_errors: true
+      run_once: true
+
+    - when: not setup_minikube
+      name: "Copy install-kubernetes script"
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/scripts/install-kubernetes.sh
+        dest: /home/ubuntu/scripts/
+        mode: 0755
+        group: ubuntu
+        owner: ubuntu
+
+    - when: not setup_minikube
+      name: Deploy k8s
+      shell: |
+        bash -x /home/ubuntu/scripts/install-kubernetes.sh >> /home/ubuntu/logs 2>&1
+      ignore_errors: false
+
+    - when: not setup_minikube
+      name: Set node labels
+      shell: |
+        kubectl label nodes --all openstack-control-plane=enabled
+        kubectl label nodes --all openstack-compute-node=enabled
+        kubectl label nodes --all openvswitch=enabled
+        kubectl label nodes --all linuxbridge=enabled
+        kubectl label nodes --all ceph-mon=enabled
+        kubectl label nodes --all ceph-osd=enabled
+        kubectl label nodes --all ceph-mds=enabled
+        kubectl label nodes --all ceph-rgw=enabled
+        kubectl label nodes --all ceph-mgr=enabled
+        # from 010-deploy-k8s.sh
+        kubectl label nodes --all --overwrite ucp-control-plane=enabled
+      ignore_errors: false
+
+    - when: not setup_minikube
+      name: Install NFS common package
+      shell: sudo apt install -y nfs-common >> /home/ubuntu/logs 2>&1
+      ignore_errors: false
+
+    - name: add bash completion
+      shell: |
+        echo "source <(kubectl completion bash)" >> /home/ubuntu/.bashrc
+        echo "alias k=kubectl" >> /home/ubuntu/.bashrc
+        echo "complete -F __start_kubectl k" >> /home/ubuntu/.bashrc
+      ignore_errors: yes
+      run_once: true
+
+      ################################################
+
+    - name: 020-setup-client.sh
+      shell: |
+        cd /home/ubuntu/treasuremap && \
+        sudo  ./tools/deployment/airskiff/developer/020-setup-client.sh >> /home/ubuntu/logs 2>&1
+      ignore_errors: yes
+      run_once: true
+
+    - name: change ownership of airskiff.yaml
+      shell: |
+        if [ ! -f /home/ubuntu/treasuremap/airskiff.yaml ]; then
+          touch /home/ubuntu/treasuremap/airskiff.yaml
+        fi
+        sudo chmod 0644 /home/ubuntu/treasuremap/airskiff.yaml
+      ignore_errors: true
+
+    - name: 030-armada-bootstrap.sh
+      shell: |
+        cd /home/ubuntu/treasuremap && \
+        sudo ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh >> /home/ubuntu/logs 2>&1
+      ignore_errors: yes
+      run_once: true
+
+    - name: 100-deploy-osh.sh
+      shell: |
+        cd /home/ubuntu/treasuremap && \
+        sudo  ./tools/deployment/airskiff/developer/100-deploy-osh.sh >> /home/ubuntu/logs 2>&1
+      ignore_errors: yes
+      run_once: true
+
+    - name: Setup openrc
+      shell: |
+        export OS_PASSWORD=$(grep 'password' /home/ubuntu/treasuremap/site/airskiff/secrets/passphrases/osh_keystone_admin_password.yaml | grep data | awk '{print $2}')
+        bash /home/ubuntu/scripts/set-openrc.sh
+      ignore_errors: yes
+      run_once: true

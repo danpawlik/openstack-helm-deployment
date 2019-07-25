@@ -1,0 +1,151 @@
+---
+- name: Add ssh key
+  hosts: localhost
+  serial:
+    - "100%"
+  remote_user: ubuntu
+  gather_facts: False
+  vars:
+    ansible_ssh_keyname: id_rsa_ansible
+  tags:
+    - add_ansible_key
+  tasks:
+    - name: Generate SSH key used by ansible
+      user:
+        name: ubuntu
+        generate_ssh_key: yes
+        ssh_key_bits: 2048
+        ssh_key_file: ".ssh/{{ ansible_ssh_keyname }}"
+      delegate_to: localhost
+      run_once: True
+      register: ssh_keygen_result
+
+    # NOTE: I use shell because os_keypair raise error when auth is provided
+    - name: Add keypair
+      command: |
+        openstack --os-region-name "{{ lookup('env', 'OS_REGION_NAME') }}" \
+                  --os-auth-url  "{{ lookup('env', 'OS_AUTH_URL') }}" \
+                  --os-username "{{ lookup('env', 'OS_USERNAME') }}" \
+                  --os-password "{{ lookup('env', 'OS_PASSWORD') }}" \
+                  --os-project-name "{{ lookup('env', 'OS_TENANT_NAME') }}" \
+                  --os-domain-name "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}" \
+                  --os-project-domain-name "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}" \
+                  keypair create ansible_key \
+                  --public-key "/home/ubuntu/.ssh/{{ ansible_ssh_keyname }}.pub"
+      when: ssh_keygen_result.changed
+
+# os_server module spawns vm and get if vm was spawned earlier, thats
+# why os_server_facts module is not required to use.
+- name: Create servers
+  hosts: localhost
+  gather_facts: False
+  #  vars:
+  #    contr_flavor: b2-30
+  #    contr_image: "Ubuntu 16.04"
+  #    contr_key_name: ansible_key
+  #    contr_net_name: Ext-Net
+  #    minion_flavor: b2-30
+  #    minion_image: "Ubuntu 16.04"
+  #    minion_key_name: ansible_key
+  #    minion_net_name: Ext-Net
+  tags:
+    - create_servers
+  tasks:
+    - name: Set OS configuration as fact
+      set_fact:
+        contr_flavor: "{{ contr_flavor }}"
+        contr_image: "{{ contr_image }}"
+        contr_key_name: "{{ contr_key_name }}"
+        contr_net_name: "{{ contr_net_name }}"
+        minion_flavor: "{{ minion_flavor }}"
+        minion_image: "{{ minion_image }}"
+        minion_key_name: "{{ minion_key_name }}"
+        minion_net_name: "{{ minion_net_name }}"
+
+    - name: "Spawning k8s_contr node"
+      os_server:
+        state: present
+        auth:
+          auth_url: "{{ lookup('env', 'OS_AUTH_URL') }}"
+          username: "{{ lookup('env', 'OS_USERNAME') }}"
+          password: "{{ lookup('env', 'OS_PASSWORD') }}"
+          project_name: "{{ lookup('env', 'OS_TENANT_NAME') }}"
+          user_domain_name: "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}"
+          project_domain_name: "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}"
+        region_name: "{{ lookup('env', 'OS_REGION_NAME') }}"
+        image: "{{ contr_image }}"
+        key_name: "{{ contr_key_name }}"
+        timeout: 200
+        flavor: "{{ contr_flavor }}"
+        nics:
+          - net-name: "{{ contr_net_name }}"
+        name: "{{ server_name }}"
+      with_items: "{{ k8s_hosts['k8s_contr'] }}"
+      loop_control:
+        loop_var: server_name
+      register: new_k8s_contr_result
+
+    - name: Add contr into local inventory
+      add_host:
+        name: "{{ server_info.openstack.public_v4 }}"
+        hostname: "{{ server_info.openstack.name }}"
+        group: k8s_contr
+      with_items: "{{ new_k8s_contr_result.results | flatten(1) }}"
+      loop_control:
+        loop_var: server_info
+
+    - name: "Spawning k8s_minion node"
+      os_server:
+        state: present
+        auth:
+          auth_url: "{{ lookup('env', 'OS_AUTH_URL') }}"
+          username: "{{ lookup('env', 'OS_USERNAME') }}"
+          password: "{{ lookup('env', 'OS_PASSWORD') }}"
+          project_name: "{{ lookup('env', 'OS_TENANT_NAME') }}"
+          user_domain_name: "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}"
+          project_domain_name: "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}"
+        region_name: "{{ lookup('env', 'OS_REGION_NAME') }}"
+        image: "{{ minion_image }}"
+        key_name: "{{ minion_key_name }}"
+        timeout: 200
+        flavor: "{{ minion_flavor }}"
+        nics:
+          - net-name: "{{ minion_net_name }}"
+        name: "{{ server_name }}"
+      with_items: "{{ k8s_hosts['k8s_minion'] }}"
+      loop_control:
+        loop_var: server_name
+      register: new_k8s_minion_result
+
+    - name: Add minions into local inventory
+      add_host:
+        name: "{{ server_info.openstack.public_v4 }}"
+        hostname: "{{ server_info.openstack.name }}"
+        group: k8s_minion
+      with_items: "{{ new_k8s_minion_result.results | flatten(1) }}"
+      loop_control:
+        loop_var: server_info
+
+    - name: Show current groups
+      debug:
+        var: groups
+
+    - when: new_k8s_contr_result.results[0] != {}
+      name: wait for instances k8s_contr to be ready
+      wait_for:
+        port: 22
+        delay: 5
+        timeout: 150
+        host: "{{ item }}"
+      with_items: "{{ groups['k8s_contr'] }}"
+      run_once: true
+
+    - when: new_k8s_minion_result.results[0] != {}
+      name: wait for instances k8s_minion to be ready
+      wait_for:
+        port: 22
+        delay: 5
+        timeout: 150
+        host: "{{ item }}"
+      with_items: "{{ groups['k8s_minion'] }}"
+      run_once: true

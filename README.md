@@ -21,12 +21,12 @@ in external file.
 ```
 source openrc
 git clone https://github.com/danpawlik/openstack-helm-deployment.git ~/openstack-helm-deployment
-cd ~/openstack-helm-deployment/multinode
+cd ~/openstack-helm-deployment/openstack-helm-multinode
 ```
 
 3. Execute ansible playbook
 ```
-ansible-playbook deploy-multinode.yaml -vv
+ansible-playbook deploy-openstack-helm-multinode.yaml -vv
 ```
 
 
@@ -46,7 +46,7 @@ in external file.
 ```
 source openrc
 git clone https://github.com/danpawlik/openstack-helm-deployment.git ~/openstack-helm-deployment
-cd ~/openstack-helm-deployment/multinode
+cd ~/openstack-helm-deployment/openstack-helm-multinode
 ```
 
 3. Modify "local" inventory in:

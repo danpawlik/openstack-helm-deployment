@@ -1,0 +1,50 @@
+---
+- name: Remove, upgrade packages and set iptables
+  hosts:
+    - k8s_contr
+    - k8s_minion
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+    setup_minikube: "{{ lookup('env', 'SETUP_MINIKUBE') if lookup('env', 'SETUP_MINIKUBE') != '' else false }}"
+  tasks:
+    # FIXME: add new iptabls rules
+    - name: "Accept traffic on minions to k8s_contr"
+      iptables:
+        chain: INPUT
+        protocol: tcp
+        source: "{{ groups['k8s_contr'] | join(',') }}"
+        destination_port: '22'
+        jump: ACCEPT
+        action: insert
+      run_once: True
+
+    - name: Upgrade minion
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        /bin/bash -x /home/ubuntu/scripts/upgrade-host.sh >> /home/ubuntu/logs
+      register: upgrade_status
+      ignore_errors: yes
+      run_once: True
+
+    - name: remove nano
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        sudo apt remove -y nano >> /home/ubuntu/logs
+      ignore_errors: true
+
+    - name: install other packages
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        sudo apt install -y vim htop ccze >> /home/ubuntu/logs
+      ignore_errors: true
+
+    - when: not setup_minikube
+      name: Install NFS common package
+      shell: sudo apt install -y nfs-common >> /home/ubuntu/logs 2>&1
+      ignore_errors: false

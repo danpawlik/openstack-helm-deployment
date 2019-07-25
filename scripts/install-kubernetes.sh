@@ -87,7 +87,7 @@ LOCAL_IP=$(ip addr | awk "/inet/ && /${HOST_IFACE}/{sub(/\/.*$/,\"\",\$2); print
 echo "${LOCAL_IP} $(hostname)" | sudo tee -a /etc/hosts
 
 # Install Docker
-apt-get install docker.io -y
+sudo apt-get install docker.io -y
 
 # Setup daemon.
 cat << EOF | sudo tee -a /etc/docker/daemon.json
@@ -131,6 +131,7 @@ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 kubectl apply -f https://docs.projectcalico.org/v3.8/manifests/calico.yaml
+
 # allow master run pod:
 kubectl taint nodes --all node-role.kubernetes.io/master-
 
