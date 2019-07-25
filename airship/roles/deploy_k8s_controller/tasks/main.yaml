@@ -30,14 +30,6 @@
       ignore_errors: yes
       run_once: True
 
-    - name: WORKAROUND cherry-pick patch
-      shell: |
-        git config --global user.email "you@example.com"
-        git config --global user.name "Your Name"
-        cd /opt/openstack-helm-infra
-        git fetch https://review.opendev.org/openstack/openstack-helm-infra refs/changes/88/671688/2 && git cherry-pick FETCH_HEAD
-      ignore_errors: yes
-
     # workaound for 1 node deploy
     - name: change OSD cluster size
       shell: |
