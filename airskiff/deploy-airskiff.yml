@@ -36,7 +36,7 @@
         name: "{{ item }}"
       register: airskiff_result
       with_items:
-        - "airskiff-test"
+        - "airskiff-contr"
 
     - name: test
       debug:
@@ -79,18 +79,45 @@
     - name: "Copy upgrade script"
       copy:
         src: /home/ubuntu/openstack-helm-deployment/scripts/upgrade-host.sh
-        dest: /home/ubuntu/
+        dest: /home/ubuntu/scripts/
         mode: 0755
         group: ubuntu
         owner: ubuntu
 
     - name: "Change sudoers"
       copy:
-        src: /home/ubuntu/openstack-helm-deployment/airskiff/change-sudoers.sh
-        dest: /home/ubuntu/
+        src: /home/ubuntu/openstack-helm-deployment/scripts/change-sudoers.sh
+        dest: /home/ubuntu/scripts/
         mode: 0755
         group: ubuntu
         owner: ubuntu
+
+    - name: "Copy helm serve script - for debuging"
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/scripts/helm-serve.sh
+        dest: /home/ubuntu/scripts/
+        mode: 0755
+        group: ubuntu
+        owner: ubuntu
+
+    - name: "Copy get pods script"
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/scripts/get-pods.sh
+        dest: /home/ubuntu/scripts/
+        mode: 0755
+        group: ubuntu
+        owner: ubuntu
+
+    - name: Copy openrc generator
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/scripts/set-openrc.sh
+        dest: /home/ubuntu/scripts/
+        mode: 0755
+        group: ubuntu
+        owner: ubuntu
+
+    ###############################################################
+
 
     - name: check if sudoers is correct
       sudo: yes
@@ -102,7 +129,7 @@
     - when: sudoers_result.rc == 1
       sudo: yes
       sudo_user: root
-      shell: sudo bash /home/ubuntu/change-sudoers.sh
+      shell: /home/ubuntu/scripts/change-sudoers.sh
       register: ubuntu_sudoers
       ignore_errors: true
 
@@ -116,7 +143,7 @@
       sudo: yes
       sudo_user: ubuntu
       shell: |
-        /bin/bash /home/ubuntu/upgrade-host.sh >> /home/ubuntu/logs
+        /bin/bash /home/ubuntu/scripts/upgrade-host.sh >> /home/ubuntu/logs
       register: upgrade_status
       ignore_errors: yes
       run_once: True
@@ -186,6 +213,15 @@
       ignore_errors: yes
       run_once: true
 
+    - name: Disable services that are not required
+      shell: |
+        sed -i '/openstack-heat/d'  /home/ubuntu/treasuremap/global/software/manifests/full-site.yaml
+        sed -i '/openstack-heat/d'  /home/ubuntu/treasuremap/site/airskiff/software/manifests/full-site.yaml
+        sed -i 's/openstack-heat: enabled/openstack-heat: disabled/g' /home/ubuntu/treasuremap/site/airskiff/profiles/host/cp_r720.yaml
+        sed -i 's/openstack-heat: enabled/openstack-heat: disabled/g' /home/ubuntu/treasuremap/global/profiles/host/cp.yaml
+      ignore_errors: true
+      run_once: true
+
     ################################################
 
     - when: setup_minikube
@@ -200,7 +236,7 @@
       name: "Copy install-kubernetes script"
       copy:
         src: /home/ubuntu/openstack-helm-deployment/scripts/install-kubernetes.sh
-        dest: /home/ubuntu/
+        dest: /home/ubuntu/scripts/
         mode: 0755
         group: ubuntu
         owner: ubuntu
@@ -208,7 +244,8 @@
     - when: not setup_minikube
       name: Deploy k8s
       shell: |
-        bash -x /home/ubuntu/install-kubernetes.sh >> /home/ubuntu/logs 2>&1
+        bash -x /home/ubuntu/scripts/install-kubernetes.sh >> /home/ubuntu/logs 2>&1
+
       ignore_errors: false
 
     - when: not setup_minikube
@@ -268,5 +305,12 @@
       shell: |
         cd /home/ubuntu/treasuremap && \
         sudo  ./tools/deployment/airskiff/developer/100-deploy-osh.sh >> /home/ubuntu/logs 2>&1
+      ignore_errors: yes
+      run_once: true
+
+    - name: Setup openrc
+      shell: |
+        export OS_PASSWORD=$(grep 'password' /home/ubuntu/treasuremap/site/airskiff/secrets/passphrases/osh_keystone_admin_password.yaml | grep data | awk '{print $2}')
+        bash /home/ubuntu/scripts/set-openrc.sh
       ignore_errors: yes
       run_once: true
