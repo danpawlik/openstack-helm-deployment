@@ -49,25 +49,27 @@ if echo $SUBNET_LIST | grep -iqv "public-subnet"; then
     export OSH_EXT_NET_NAME="public"
     export OSH_EXT_SUBNET_NAME="public-subnet"
     export OSH_EXT_SUBNET="172.24.4.0/24"
-    export OSH_BR_EX_ADDR="172.24.4.1/24"
-    openstack stack create --wait \
-      --parameter network_name=${OSH_EXT_NET_NAME} \
-      --parameter physical_network_name=public \
-      --parameter subnet_name=${OSH_EXT_SUBNET_NAME} \
-      --parameter subnet_cidr=${OSH_EXT_SUBNET} \
-      --parameter subnet_gateway=${OSH_BR_EX_ADDR%/*} \
-      -t /opt/openstack-helm/tools/gate/files/heat-public-net-deployment.yaml \
-      heat-public-net-deployment
+    export OSH_EXT_SUBNET_ALLOC_START="172.24.4.150"
+    export OSH_EXT_SUBNET_ALLOC_END="172.24.4.250"
+    export OSH_BR_EX_ADDR="172.24.4.1"
+    openstack network create ${OSH_EXT_NET_NAME} \
+      --external \
+      --provider-network-type flat \
+      --provider-physical-network ${OSH_EXT_NET_NAME}
+
+    openstack subnet create ${OSH_EXT_SUBNET_NAME} \
+      --subnet-range ${OSH_EXT_SUBNET} \
+      --allocation-pool start=${OSH_EXT_SUBNET_ALLOC_START},end=${OSH_EXT_SUBNET_ALLOC_END} \
+      --gateway ${OSH_BR_EX_ADDR} \
+      --no-dhcp \
+      --network ${OSH_EXT_NET_NAME}
 
     export OSH_PRIVATE_SUBNET_POOL="10.0.0.0/8"
     export OSH_PRIVATE_SUBNET_POOL_NAME="shared-default-subnetpool"
     export OSH_PRIVATE_SUBNET_POOL_DEF_PREFIX="24"
-    openstack stack create --wait \
-      --parameter subnet_pool_name=${OSH_PRIVATE_SUBNET_POOL_NAME} \
-      --parameter subnet_pool_prefixes=${OSH_PRIVATE_SUBNET_POOL} \
-      --parameter subnet_pool_default_prefix_length=${OSH_PRIVATE_SUBNET_POOL_DEF_PREFIX} \
-      -t /opt/openstack-helm/tools/gate/files/heat-subnet-pool-deployment.yaml \
-      heat-subnet-pool-deployment
+    openstack subnet pool create ${OSH_PRIVATE_SUBNET_POOL_NAME} \
+      --default-prefix-length ${OSH_PRIVATE_SUBNET_POOL_DEF_PREFIX} \
+      --pool-prefix ${OSH_PRIVATE_SUBNET_POOL}
 
     NETWORK_ID=$(openstack network show public -f value -c id)
     if grep -q "NETWORK_ID" /home/ubuntu/tempest.conf; then
