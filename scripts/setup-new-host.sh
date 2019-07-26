@@ -1,8 +1,10 @@
 #!/bin/bash
 
 set -x
+RELEASE=$(lsb_release -sc)
+INSTALL_CEPH=${INSTALL_CEPH:-'false'}
 
-if [ $(hostname --fqdn) != $(hostname) ]; then
+if [ "$(hostname --fqdn)" != "$(hostname)" ]; then
     echo "Hostname doesn't match to this one set in /etc/hosts."
     echo "Fixing..."
     HOSTNAME=$(hostname --fqdn)
@@ -44,8 +46,9 @@ sudo DEBIAN_FRONTEND=noninteractive \
 sudo DEBIAN_FRONTEND=noninteractive apt install -y python-pip python3-pip
 sudo DEBIAN_FRONTEND=noninteractive apt autoremove -y
 
-# test
-sudo DEBIAN_FRONTEND=noninteractive apt install -y ceph ceph-common nfs-common
+if [ "${INSTALL_CEPH}" = "true" ]; then
+    sudo DEBIAN_FRONTEND=noninteractive apt install -y ceph ceph-common nfs-common
+fi
 
 sudo chown -R ubuntu:ubuntu /opt/
 

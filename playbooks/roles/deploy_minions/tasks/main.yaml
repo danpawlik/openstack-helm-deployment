@@ -1,0 +1,22 @@
+---
+- name: Prepare hosts
+  hosts:
+    - k8s_minion
+  strategy: free
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+    ansible_ssh_private_key_file: "/home/ubuntu/.ssh/id_rsa_ansible"
+  tasks:
+    - name: Run scripts on k8s_minion
+      sudo: yes
+      sudo_user: ubuntu
+      shell: /bin/bash -x /home/ubuntu/scripts/setup-new-host.sh >> /home/ubuntu/logs
+      register: current_status
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_minion'] }}"
+      ignore_errors: yes
+      run_once: True

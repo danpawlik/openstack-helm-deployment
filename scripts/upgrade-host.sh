@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -x
+RELEASE=$(lsb_release -sc)
 
 # setup docker.io if bionic; they have hardcoded docker.io from xenial
 if [ "${RELEASE}" = "bionic" ]; then

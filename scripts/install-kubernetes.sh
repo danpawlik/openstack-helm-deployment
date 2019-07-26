@@ -14,9 +14,10 @@ K8S_CNI_VESRSION=${K8S_CNI_VESRSION:-"0.6.0-00"}
 INSTALL_OSH_DEPS=true
 
 sudo apt update
-sudo apt install -y curl git vim
-sudo apt-get install -y apt-transport-https ca-certificates curl \
-                        software-properties-common
+sudo DEBIAN_FRONTEND=noninteractive apt install -y curl git vim
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                                    apt-transport-https ca-certificates curl \
+                                    software-properties-common
 
 ### FROM Openstack Helm: https://github.com/openstack/openstack-helm-infra/blob/master/tools/deployment/common/005-deploy-k8s.sh
 function configure_resolvconf {
@@ -43,6 +44,9 @@ sudo sed -i '/^::1/c\::1 localhost6 localhost6.localdomain6' /etc/hosts
 
 configure_resolvconf
 
+### Add Docker’s official GPG key
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
 # FOR Openstack Helm deployment
 if [ "${INSTALL_OSH_DEPS}" = "true" ]; then
     # Install required packages for K8s on host
@@ -52,7 +56,7 @@ if [ "${INSTALL_OSH_DEPS}" = "true" ]; then
     ${RELEASE_NAME} main"
     sudo -E apt-get update
     # NOTE(srwilkers): Pin docker version to validated docker version for k8s 1.12.2
-    sudo -E apt-get install -y \
+    sudo -E DEBIAN_FRONTEND=noninteractive apt-get install -y \
         docker.io \
         socat \
         jq \
@@ -69,9 +73,6 @@ EOF
 
 fi
 
-### Add Docker’s official GPG key
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-
 if [ "$(hostname --fqdn)" != "$(hostname)" ]; then
     echo "Hostname doesn't match to this one set in /etc/hosts."
     echo "Fixing..."
@@ -87,7 +88,7 @@ LOCAL_IP=$(ip addr | awk "/inet/ && /${HOST_IFACE}/{sub(/\/.*$/,\"\",\$2); print
 echo "${LOCAL_IP} $(hostname)" | sudo tee -a /etc/hosts
 
 # Install Docker
-sudo apt-get install docker.io -y
+sudo DEBIAN_FRONTEND=noninteractive apt-get install docker.io -y
 
 # Setup daemon.
 cat << EOF | sudo tee -a /etc/docker/daemon.json
@@ -115,41 +116,8 @@ sudo apt install linux-image-extra-virtual ca-certificates curl \
                  software-properties-common -y
 
 if [ "${INSTALL_SPECIFIED_VERSION}" = "true" ]; then
-    sudo apt install -y "kubernetes-cni=${K8S_CNI_VESRSION}"
-    sudo apt install -y "kubelet=${K8S_VERSION}" "kubeadm=${K8S_VERSION}" "kubectl=${K8S_VERSION}"
+    sudo DEBIAN_FRONTEND=noninteractive apt install -y "kubernetes-cni=${K8S_CNI_VESRSION}"
+    sudo DEBIAN_FRONTEND=noninteractive apt install -y "kubelet=${K8S_VERSION}" "kubeadm=${K8S_VERSION}" "kubectl=${K8S_VERSION}"
 else
-    sudo apt install -y kubelet kubeadm kubectl
-fi
-
-
-sudo kubeadm init --pod-network-cidr 192.168.0.0/16 \
-                  --service-cidr 10.96.0.0/12 \
-                  --apiserver-advertise-address "${LOCAL_IP}"
-
-mkdir -p $HOME/.kube
-sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-sudo chown $(id -u):$(id -g) $HOME/.kube/config
-
-kubectl apply -f https://docs.projectcalico.org/v3.8/manifests/calico.yaml
-
-# allow master run pod:
-kubectl taint nodes --all node-role.kubernetes.io/master-
-
-# install helm
-curl -L https://git.io/get_helm.sh | sudo bash
-
-# create serviceaccount
-kubectl create serviceaccount --namespace kube-system tiller
-kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
-helm init --service-account tiller --upgrade
-
-if [ "${INSTALL_COMPLETION}" = "true" ]; then
-    source <(kubectl completion bash)
-    echo "source <(kubectl completion bash)" >> ~/.bashrc
-    echo "alias k=kubectl" >> ~/.bashrc
-    echo "complete -F __start_kubectl k" >> ~/.bashrc
-
-    source <(helm completion bash)
-    echo "source <(helm completion bash)" >> ~/.bashrc
+    sudo DEBIAN_FRONTEND=noninteractive apt install -y kubelet kubeadm kubectl
 fi

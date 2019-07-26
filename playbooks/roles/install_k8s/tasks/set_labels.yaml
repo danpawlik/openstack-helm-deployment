@@ -1,0 +1,32 @@
+---
+- name: Change sudoers
+  hosts:
+    - k8s_contr
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+    ansible_ssh_private_key_file: "/home/ubuntu/.ssh/id_rsa_ansible"
+    setup_minikube: "{{ true if lookup('env', 'SETUP_MINIKUBE') == 'true' else false }}"
+  tasks:
+    - when: not setup_minikube
+      name: Set node labels
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        /usr/bin/kubectl label nodes --all openstack-control-plane=enabled
+        /usr/bin/kubectl label nodes --all openstack-compute-node=enabled
+        /usr/bin/kubectl label nodes --all openvswitch=enabled
+        /usr/bin/kubectl label nodes --all linuxbridge=enabled
+        /usr/bin/kubectl label nodes --all ceph-mon=enabled
+        /usr/bin/kubectl label nodes --all ceph-osd=enabled
+        /usr/bin/kubectl label nodes --all ceph-mds=enabled
+        /usr/bin/kubectl label nodes --all ceph-rgw=enabled
+        /usr/bin/kubectl label nodes --all ceph-mgr=enabled
+        # from 010-deploy-k8s.sh
+        /usr/bin/kubectl label nodes --all --overwrite ucp-control-plane=enabled
+      ignore_errors: false
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
