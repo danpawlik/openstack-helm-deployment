@@ -122,16 +122,7 @@
     - name: check if sudoers is correct
       sudo: yes
       sudo_user: root
-      shell: /bin/grep -q 'ubuntu' /etc/sudoers
-      register: sudoers_result
-      ignore_errors: true
-
-    - when: sudoers_result.rc == 1
-      sudo: yes
-      sudo_user: root
-      shell: /home/ubuntu/scripts/change-sudoers.sh
-      register: ubuntu_sudoers
-      ignore_errors: true
+      shell: whoami
 
     - name: remove nano
       sudo: yes
