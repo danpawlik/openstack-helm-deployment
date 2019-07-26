@@ -1,0 +1,54 @@
+---
+- name: Do some additional things for treasuremap
+  hosts:
+    - k8s_contr
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+    ansible_ssh_private_key_file: "/home/ubuntu/.ssh/id_rsa_ansible"
+  tasks:
+    # FIXME
+    - name: Cherry-pick shipyard patch
+      shell: |
+        cd /home/ubuntu/treasuremap
+        git config --global user.email "you@example.com"
+        git config --global user.name "Your Name"
+        git fetch https://review.opendev.org/airship/treasuremap refs/changes/78/672478/4 && git cherry-pick FETCH_HEAD
+      ignore_errors: true
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+
+    - name: Remove docker.io name
+      shell: |
+          find /home/ubuntu -type f -exec sed -i -e 's/docker.io=18.06.1-0ubuntu1.2~16.04.1/docker.io/g' {} \;
+          find /home/ubuntu -type f -exec sed -i -e 's/docker-ce=18.06.3~ce~3-0~ubuntu/docker.io/g' {} \;
+      ignore_errors: yes
+      run_once: true
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+
+    - name: Switch repo to github
+      shell: |
+        find /home/ubuntu -type f -exec sed -i -e 's/opendev.org\/airship/github.com\/airshipit/g' {} \;
+        find /home/ubuntu -type f -exec sed -i -e 's/opendev.org\/openstack/github.com\/openstack/g' {} \;
+      ignore_errors: yes
+      run_once: true
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+
+    - name: Disable services that are not required
+      shell: |
+        sed -i '/openstack-heat/d'  /home/ubuntu/treasuremap/global/software/manifests/full-site.yaml
+        sed -i '/openstack-heat/d'  /home/ubuntu/treasuremap/site/airskiff/software/manifests/full-site.yaml
+        sed -i 's/openstack-heat: enabled/openstack-heat: disabled/g' /home/ubuntu/treasuremap/site/airskiff/profiles/host/cp_r720.yaml
+        sed -i 's/openstack-heat: enabled/openstack-heat: disabled/g' /home/ubuntu/treasuremap/global/profiles/host/cp.yaml
+      ignore_errors: true
+      run_once: true
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"

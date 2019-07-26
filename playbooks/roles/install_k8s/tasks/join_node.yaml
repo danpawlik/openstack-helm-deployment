@@ -1,0 +1,20 @@
+---
+- name: Join minions into the k8s cluster
+  hosts:
+    - k8s_contr
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+    ansible_ssh_private_key_file: "/home/ubuntu/.ssh/id_rsa_ansible"
+  tasks:
+    - name: Prepare minion host
+      shell: |
+        bash -x /home/ubuntu/scripts/install-kubernetes.sh | tee -a /home/ubuntu/logs
+      ignore_errors: false
+
+    - name: Join k8s host into the cluster
+      shell: |
+        bash -x /home/ubuntu/scripts/join-node.sh "{{ item }}" | tee -a /home/ubuntu/logs
+      with_items: "{{ groups['k8s_minion'] }}"

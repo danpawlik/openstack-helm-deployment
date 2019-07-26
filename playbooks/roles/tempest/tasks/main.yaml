@@ -1,0 +1,38 @@
+---
+- name: Prepare hosts
+  hosts:
+    - k8s_contr
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+    ansible_ssh_private_key_file: "/home/ubuntu/.ssh/id_rsa_ansible"
+  tasks:
+    - name: Check if openrc file exist
+      stat:
+        path: /home/ubuntu/openrc
+      register: openrc_file
+
+    - when: openrc_file.stat.exists == True
+      name: Copy tempest conf
+      copy:
+        src: /home/ubuntu/openstack-helm-deployment/tempest/tempest/
+        dest: /home/ubuntu/tempest/
+        mode: 0755
+        group: ubuntu
+        owner: ubuntu
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+
+    - name: Execute tempest test
+      shell: bash -x /home/ubuntu/tempest/prepare-tempest.sh
+      register: tempest_output
+
+    - name: Execute tempest test
+      shell: bash -x /home/ubuntu/tempest/run-tempest.sh
+      register: tempest_output
+      environment:
+        WHITELIST_FILE: /home/ubuntu/whitelist.list
+        BLACKLIST_FILE: /home/ubuntu/blacklist.list
