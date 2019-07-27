@@ -7,7 +7,7 @@
   become: True
   vars:
     ansible_host_key_checking: false
-    ansible_ssh_private_key_file: "/home/ubuntu/.ssh/id_rsa_ansible"
+    ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
   tasks:
     # From https://github.com/openstack/devstack/blob/master/lib/etcd3#L108
     - name: install other packages

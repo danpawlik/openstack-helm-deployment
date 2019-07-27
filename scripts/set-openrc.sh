@@ -15,6 +15,8 @@ fi
 
 # Export openrc file
 cat << EOF > "${HOME}/openrc"
+#!/bin/bash
+
 export OS_USERNAME=${OS_USERNAME}
 export OS_PASSWORD=${OS_PASSWORD}
 export OS_PROJECT_NAME=${OS_PROJECT_NAME}
@@ -22,3 +24,5 @@ export OS_PROJECT_DOMAIN_NAME=${OS_PROJECT_DOMAIN_NAME}
 export OS_USER_DOMAIN_NAME=${OS_USER_DOMAIN_NAME}
 export OS_AUTH_URL=${OS_AUTH_URL}
 EOF
+
+chmod 0744 "${HOME}/openrc"

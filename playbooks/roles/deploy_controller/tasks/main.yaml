@@ -7,12 +7,12 @@
   become: True
   vars:
     ansible_host_key_checking: false
-    ansible_ssh_private_key_file: "/home/ubuntu/.ssh/id_rsa_ansible"
+    ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
   tasks:
     - name: Clone OSH repo
       sudo: yes
       sudo_user: ubuntu
-      shell: /bin/bash -x /home/ubuntu/clone-osh-repo.sh >> /home/ubuntu/logs
+      shell: /bin/bash -x scripts/clone-osh-repo.sh | tee -a logs
       register: clone_status
       delegate_to: "{{ item }}"
       delegate_facts: True
@@ -28,13 +28,13 @@
     - name: Run scripts on k8s_contr
       become: true
       become_user: ubuntu
-      shell: /home/ubuntu/setup-controller.sh >> /home/ubuntu/logs
+      shell: scripts/setup-controller.sh | tee -a logs
       args:
         executable: /bin/bash
       environment:
-        ANSIBLE_LOG_PATH: /home/ubuntu/ansible.logs
+        ANSIBLE_LOG_PATH: ansible.logs
         NODE_TWO_IP: "{{ groups['k8s_minion'][0] }}"
-        NODE_THREE_IP: "{{ groups['k8s_minion'][1] }}"
+        #NODE_THREE_IP: "{{ groups['k8s_minion'][1] }}"
         KUBE_VERSION: "{{ lookup('env', 'KUBE_VERSION') | default('v1.13.7') }}"
       ignore_errors: yes
       delegate_to: "{{ item }}"

@@ -29,7 +29,7 @@
                   --os-domain-name "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}" \
                   --os-project-domain-name "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}" \
                   keypair create ansible_key \
-                  --public-key "/home/ubuntu/.ssh/id_rsa_ansible.pub"
+                  --public-key ".ssh/id_rsa_ansible.pub"
       when: ssh_keygen_result.changed
 
 # os_server module spawns vm and get if vm was spawned earlier, thats

@@ -8,7 +8,6 @@
       k8s_minion:
         # If you need more minion nodes, just add same entry
         - "{{ lookup('env', 'MINION_1') if lookup('env', 'MINION_1') != '' else 'k8s_minion_1'  }}"
-#        - "{{ lookup('env', 'MINION_2') if lookup('env', 'MINION_2') != '' else 'k8s_minion_2'  }}"
   tasks:
     - name: Info about defined hosts
       debug:
@@ -28,3 +27,4 @@
         ansible_ssh_keyname: "id_rsa_ansible"
         # Name of the docker registry that later ansible will pull images
         repo_name: docker.io
+        repo_dir: /home/ubuntu/openstack-helm-deployment

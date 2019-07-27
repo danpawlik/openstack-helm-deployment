@@ -7,12 +7,12 @@
   become: True
   vars:
     ansible_host_key_checking: false
-    ansible_ssh_private_key_file: "/home/ubuntu/.ssh/id_rsa_ansible"
+    ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
   tasks:
     - name: Change sudoers file
       sudo: yes
       sudo_user: ubuntu
-      shell: sudo bash /home/ubuntu/scripts/change-sudoers.sh
+      shell: sudo bash scripts/change-sudoers.sh
       ignore_errors: false
       delegate_to: "{{ item }}"
       delegate_facts: True

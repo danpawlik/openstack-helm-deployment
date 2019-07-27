@@ -7,18 +7,18 @@
   become: True
   vars:
     ansible_host_key_checking: false
-    ansible_ssh_private_key_file: "/home/ubuntu/.ssh/id_rsa_ansible"
+    ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
   tasks:
     - name: Check if openrc file exist
       stat:
-        path: /home/ubuntu/openrc
+        path: openrc
       register: openrc_file
 
     - when: openrc_file.stat.exists == True
       name: Copy tempest conf
       copy:
-        src: /home/ubuntu/openstack-helm-deployment/tempest/tempest/
-        dest: /home/ubuntu/tempest/
+        src: ../../../tempest/tempest/
+        dest: tempest/
         mode: 0755
         group: ubuntu
         owner: ubuntu
@@ -27,12 +27,12 @@
       loop: "{{ groups['k8s_contr'] }}"
 
     - name: Execute tempest test
-      shell: bash -x /home/ubuntu/tempest/prepare-tempest.sh
+      shell: bash -x tempest/prepare-tempest.sh
       register: tempest_output
 
     - name: Execute tempest test
-      shell: bash -x /home/ubuntu/tempest/run-tempest.sh
+      shell: bash -x tempest/run-tempest.sh
       register: tempest_output
       environment:
-        WHITELIST_FILE: /home/ubuntu/whitelist.list
-        BLACKLIST_FILE: /home/ubuntu/blacklist.list
+        WHITELIST_FILE: tempest/whitelist.list
+        BLACKLIST_FILE: tempest/blacklist.list

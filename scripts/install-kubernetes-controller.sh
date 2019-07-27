@@ -1,5 +1,7 @@
 #!/bin/bash
 
+INSTALL_COMPLETION=${INSTALL_COMPLETION:-'true'}
+
 sudo kubeadm init --pod-network-cidr 192.168.0.0/16 \
                   --service-cidr 10.96.0.0/12 \
                   --apiserver-advertise-address "${LOCAL_IP}"

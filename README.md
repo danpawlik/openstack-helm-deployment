@@ -1,91 +1,73 @@
-# Deploy Openstack Helm infra using scripts
+# Deploy Openstack using Openstack Helm Infra scripts
 
 Readme is under construction. I just added small into about
 how to deploy Openstack infra as multi node using ansible playbook.
 
-## How to execute Ansible playbook
-NOTE: prefered system is Ubuntu 18.04 (for contr and minions as well)
+## Before you start
 
-1. Install ansible
+Those playbooks can deploy:
+
+- Airskiff with Minikube (export MINIKUBE=true)
+- Airskiff with normall Kubernetes controller + additional node
+- Openstack Helm + additional node using Openstack Helm + Openstack Helm Infra scripts
+- Airship Armada on one host using Openstack Helm Infra script
+- Execute Openstack Tempest test on this infra
+
+
+## IMPORTANT NOTE
+
+All playbooks begin work by reading "local_inventory" playbook tasks.
+
+In this place, you can define:
+- how many controllers and nodes should be
+- what flavors should be taken
+- what images
+- etc.
+
+Please read local_inventory playbooks before you start executing the playbooks!
+
+
+## Clone and install Ansible
+NOTE: prefered system is Ubuntu 18.04.
+
 ```
 sudo apt update
 sudo apt install -y git python3-pip python3-dev
-sudo pip install ansible
+git clone https://github.com/danpawlik/openstack-helm-deployment
+sudo pip install -r requirements.txt
 ```
 
-2. Execute playbook - it will check if VM exists and if not, it will spawn
-new instances.
-NOTE: for now some values are hardcoded. In the future all will be set
-in external file.
+## Example: how to deploy Airskiff with K8S controller + one node
+
+1. Check if in local inventory, you have defined:
 
 ```
-source openrc
-git clone https://github.com/danpawlik/openstack-helm-deployment.git ~/openstack-helm-deployment
-cd ~/openstack-helm-deployment/openstack-helm-multinode
+  vars:
+    k8s_hosts:
+      k8s_contr:
+        - some_contr
+      k8s_minion:
+        - some_minion
 ```
 
-3. Execute ansible playbook
+2. You can also set more minions and contr (if you want) but 1 for each is a minimum value.
+
+To set the name, you can just export variables:
 ```
-ansible-playbook deploy-openstack-helm-multinode.yaml -vv
+export CONTR_NAME=airskiff_contr-1
+export MINION_1=airskiff-minion-1
 ```
 
-
-## How to use Ansible playbook v2
-1. Install ansible
-```
-sudo apt update
-sudo apt install -y git python3-pip python3-dev
-sudo pip install ansible
-```
-
-2. Execute playbook - it will check if VM exists and if not, it will spawn
-new instances.
-NOTE: for now some values are hardcoded. In the future all will be set
-in external file.
+3. Now you need to read openrc file, because playbooks will read credentials
+ans spawn VMs.
 
 ```
 source openrc
-git clone https://github.com/danpawlik/openstack-helm-deployment.git ~/openstack-helm-deployment
-cd ~/openstack-helm-deployment/openstack-helm-multinode
 ```
 
-3. Modify "local" inventory in:
+4. Now you just need to execute Ansible playbook:
 ```
-roles/local_inventory/tasks/main.yaml
+ansible-playbook playbooks/airskiff/deploy-all.yml -vv
 ```
-
-And put there names of your new vms and also how many controllers and
-"minions" (k8s node) hosts should be added.
-NOTE: for now it works with 1 controller and 2 minions or just 1 minion.
-
-4. Execute ansible playbook
-```
-ansible-playbook deploy-all.yml -vv
-```
-
-## To deploy vm with airskiff:
-1. Install ansible
-```
-sudo apt update
-sudo apt install -y git python3-pip python3-dev
-sudo pip install ansible
-```
-
-2. Execute playbook - it will check if VM exists and if not, it will spawn
-new instances.
-NOTE: for now some values are hardcoded. In the future all will be set
-in external file.
-
-```
-source openrc
-git clone https://github.com/danpawlik/openstack-helm-deployment.git ~/openstack-helm-deployment
-cd ~/openstack-helm-deployment/airskiff
-```
-
-3. Execute ansible playbook
-```
-ansible-playbook deploy-airskiff.yml -vv
-```
-
 
 Please note, that repo and scripts are still under construction.

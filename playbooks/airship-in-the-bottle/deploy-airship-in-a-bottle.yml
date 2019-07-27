@@ -61,7 +61,7 @@
       shell: ssh-keyscan -H "{{ item }}" >> /home/ubuntu/.ssh/known_hosts
       with_items: "{{ groups['airship_in_the_bottle'] }}"
       args:
-        executable: /bin/bash
+        executable: bash
       run_once: True
 
 
@@ -77,16 +77,16 @@
   tasks:
     - name: "Copy upgrade script"
       copy:
-        src: /home/ubuntu/openstack-helm-deployment/scripts/upgrade-host.sh
-        dest: /home/ubuntu/
+        src: ../../scripts/upgrade-host.sh
+        dest: scripts/
         mode: 0755
         group: ubuntu
         owner: ubuntu
 
     - name: "Copy airship install script"
       copy:
-        src: /home/ubuntu/openstack-helm-deployment/scripts/airship-in-a-bottle.sh
-        dest: /home/ubuntu/
+        src: ../../scripts/airship-in-a-bottle.sh
+        dest: scripts/
         mode: 0755
         group: ubuntu
         owner: ubuntu
@@ -94,13 +94,13 @@
     - name: Move script to root dir
       sudo: yes
       sudo_user: ubuntu
-      shell: /usr/bin/sudo mv /home/ubuntu/airship-install.sh /root/airship-install.sh
+      shell: sudo mv scripts/airship-install.sh /root/airship-install.sh
       ignore_errors: true
 
     - name: remove nano
       sudo: yes
       sudo_user: ubuntu
-      shell: /usr/bin/sudo /usr/bin/apt remove -y nano
+      shell: sudo apt remove -y nano
       ignore_errors: true
 
     - name: Upgrade host
@@ -114,7 +114,7 @@
     - name: Upgrade host
       sudo: yes
       sudo_user: root
-      shell: /bin/bash /root/airship-install.sh >> /home/ubuntu/logs 2>&1
+      shell: bash /root/airship-install.sh >> /home/ubuntu/logs 2>&1
       register: install_status
       ignore_errors: yes
       run_once: True

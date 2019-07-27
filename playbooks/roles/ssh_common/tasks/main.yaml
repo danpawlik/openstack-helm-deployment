@@ -5,19 +5,19 @@
   gather_facts: False
   vars:
     ansible_host_key_checking: false
-    ansible_ssh_private_key_file: /home/ubuntu/.ssh/id_rsa_ansible
+    ansible_ssh_private_key_file: .ssh/id_rsa_ansible
   tags:
     - ansible_host_ssh_known_hosts
   tasks:
     - name: Add k8s_contr host key to known_hosts
-      shell: ssh-keyscan -H "{{ item }}" >> /home/ubuntu/.ssh/known_hosts
+      shell: ssh-keyscan -H "{{ item }}" | tee -a "${HOME}/.ssh/known_hosts"
       with_items: "{{ groups['k8s_contr'] }}"
       args:
         executable: /bin/bash
       run_once: True
 
     - name: Add k8s_minion host key to known_hosts
-      shell: ssh-keyscan -H "{{ item }}" >> /home/ubuntu/.ssh/known_hosts
+      shell: ssh-keyscan -H "{{ item }}" | tee -a "${HOME}/.ssh/known_hosts"
       with_items: "{{ groups['k8s_minion'] }}"
       args:
         executable: /bin/bash
@@ -30,14 +30,14 @@
   gather_facts: False
   vars:
     ansible_host_key_checking: false
-    ansible_ssh_private_key_file: /home/ubuntu/.ssh/id_rsa_ansible
+    ansible_ssh_private_key_file: .ssh/id_rsa_ansible
   tags:
     - contr_known_hosts
   tasks:
     - name: Accept SSH key between k8s_contr and own self
       shell: |
           for ip in "{{ groups['k8s_contr'] | join(' ') }}"; do
-              ssh-keyscan -H "${ip}" >> /home/ubuntu/.ssh/known_hosts;
+              ssh-keyscan -H "${ip}" | tee -a "${HOME}/.ssh/known_hosts";
           done
       args:
         executable: /bin/bash
@@ -49,7 +49,7 @@
     - name: Accept SSH key between k8s_minion and k8s_contr
       shell: |
           for ip in "{{ groups['k8s_minion'] | join(' ') }}"; do
-            ssh-keyscan -H "${ip}" >> /home/ubuntu/.ssh/known_hosts;
+            ssh-keyscan -H "${ip}" | tee -a "${HOME}/.ssh/known_hosts";
           done
       args:
         executable: /bin/bash
@@ -67,51 +67,51 @@
   gather_facts: False
   vars:
     ansible_host_key_checking: false
-    ansible_ssh_private_key_file: /home/ubuntu/.ssh/id_rsa_ansible
+    ansible_ssh_private_key_file: .ssh/id_rsa_ansible
   tags:
     - ssh_known_hosts
   tasks:
     - name: Set permissions to .ssh dir on contr
-      shell: sudo chown -R ubuntu:ubuntu -R /home/ubuntu/.ssh
+      shell: sudo chown -R ubuntu:ubuntu -R .ssh
       delegate_to: "{{ item }}"
       delegate_facts: True
       loop: "{{ groups['k8s_contr'] }}"
 
-    - name: "Install private key on k8s_contr"
+    - name: Install private key on k8s_contr
       copy:
-        src: /home/ubuntu/.ssh/id_rsa_ansible
-        dest: /home/ubuntu/.ssh/id_rsa
+        src: "{{ ansible_env.HOME }}/.ssh/id_rsa_ansible"
+        dest: .ssh/id_rsa
         mode: 0600
         group: ubuntu
         owner: ubuntu
-      delegate_to: "{{item}}"
+      delegate_to: "{{ item }}"
       delegate_facts: True
       loop: "{{ groups['k8s_contr'] }}"
 
-    - name: "Install public key on all hosts"
+    - name: Install public key on all hosts
       copy:
-        src: /home/ubuntu/.ssh/id_rsa_ansible.pub
-        dest: /home/ubuntu/.ssh/id_rsa.pub
+        src: "{{ ansible_env.HOME }}/.ssh/id_rsa_ansible.pub"
+        dest: .ssh/id_rsa.pub
         mode: 0600
         group: ubuntu
         owner: ubuntu
       run_once: True
 
-    - name: "Install public key on k8s_minion"
+    - name: Install public key on k8s_minion
       authorized_key:
         user: ubuntu
         state: present
-        key: "{{ lookup('file', '/home/ubuntu/.ssh/id_rsa_ansible.pub') }}"
+        key: "{{ lookup('file', ansible_env.HOME + '/.ssh/id_rsa_ansible.pub') }}"
       run_once: True
       delegate_to: "{{item}}"
       delegate_facts: True
       loop: "{{groups['k8s_minion']}}"
 
-    - name: "Install public key on k8s_contr"
+    - name: Install public key on k8s_contr
       authorized_key:
         user: ubuntu
         state: present
-        key: "{{ lookup('file', '/home/ubuntu/.ssh/id_rsa_ansible.pub') }}"
+        key: "{{ lookup('file', ansible_env.HOME + '/.ssh/id_rsa_ansible.pub') }}"
       run_once: True
       delegate_to: "{{ item }}"
       delegate_facts: True
@@ -119,23 +119,23 @@
 
 
     - name: Set permissions to .ssh dir on minions
-      shell: chown -R ubuntu:ubuntu -R /home/ubuntu/.ssh
+      shell: chown -R ubuntu:ubuntu -R .ssh
       delegate_to: "{{ item }}"
       delegate_facts: True
       loop: "{{ groups['k8s_minion'] }}"
       run_once: True
 
     - name: Accept SSH key self k8s_contr
-      shell: cat /home/ubuntu/.ssh/id_rsa.pub >> /home/ubuntu/.ssh/authorized_keys
+      shell: cat .ssh/id_rsa.pub | tee -a .ssh/authorized_keys
       delegate_to: "{{ item }}"
       delegate_facts: True
       loop: "{{ groups['k8s_contr'] }}"
       run_once: True
 
-    - name: "Ensure SSH connectivity between k8s_contr and k8s_minion"
+    - name: Ensure SSH connectivity between k8s_contr and k8s_minion
       shell: |
           for ip in "{{groups['k8s_minion'] | join(' ') }}"; do
-            ssh -oBatchMode=yes -i /home/ubuntu/.ssh/id_rsa -oStrictHostKeyChecking=no "ubuntu@${ip}" uptime;
+            ssh -oBatchMode=yes -i .ssh/id_rsa -oStrictHostKeyChecking=no "ubuntu@${ip}" uptime;
           done
       retries: 5
       delay: 10
