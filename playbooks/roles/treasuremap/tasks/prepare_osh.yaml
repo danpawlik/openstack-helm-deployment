@@ -10,6 +10,8 @@
     ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
   tasks:
     - name: 100-deploy-osh.sh
+      sudo: yes
+      sudo_user: ubuntu
       shell: |
         cd treasuremap && \
         sudo  ./tools/deployment/airskiff/developer/100-deploy-osh.sh >> /home/ubuntu/logs 2>&1
@@ -17,4 +19,4 @@
       run_once: true
       delegate_to: "{{ item }}"
       delegate_facts: True
-      loop: "{{ groups['k8s_contr'][0] }}"
+      loop: "{{ groups['k8s_contr'] }}"

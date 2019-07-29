@@ -9,11 +9,6 @@
     ansible_host_key_checking: false
     ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
   tasks:
-    - name: Prepare minion host
-      shell: |
-        bash -x scripts/install-kubernetes.sh | tee -a logs
-      ignore_errors: false
-
     - name: Join k8s host into the cluster
       shell: |
         bash -x scripts/join-node.sh "{{ item }}" | tee -a logs

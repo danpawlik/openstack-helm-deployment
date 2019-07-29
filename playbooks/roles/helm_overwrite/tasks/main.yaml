@@ -15,7 +15,7 @@
     # images on all hosts
     - name: "Copy helm charts overwrite yamls"
       copy:
-        src: "{{ ansible_env.OLDPWD }}/helm/"
+        src: "{{ ansible_env.HOME }}/openstack-helm-deployment/helm/"
         dest: helm/
         mode: 0644
         group: ubuntu

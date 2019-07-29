@@ -17,7 +17,7 @@
     - when: openrc_file.stat.exists == True
       name: Copy tempest conf
       copy:
-        src: "{{ ansible_env.OLDPWD }}/tempest/tempest/"
+        src: "{{ ansible_env.HOME }}/openstack-helm-deployment/tempest/tempest/"
         dest: tempest/
         mode: 0755
         group: ubuntu

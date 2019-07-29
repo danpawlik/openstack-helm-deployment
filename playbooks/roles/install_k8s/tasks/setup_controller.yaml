@@ -23,7 +23,7 @@
       with_items:
         - 6443
 
-    - when: not setup_minikube and not k8s_contr_status
+    - when: not setup_minikube and k8s_contr_status
       name: Deploy k8s
       sudo: yes
       sudo_user: ubuntu

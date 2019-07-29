@@ -18,8 +18,22 @@
       run_once: True
       register: ssh_keygen_result
 
+    - name: Check if keypair exists
+      shell: |
+        openstack --os-region-name "{{ lookup('env', 'OS_REGION_NAME') }}" \
+                  --os-auth-url  "{{ lookup('env', 'OS_AUTH_URL') }}" \
+                  --os-username "{{ lookup('env', 'OS_USERNAME') }}" \
+                  --os-password "{{ lookup('env', 'OS_PASSWORD') }}" \
+                  --os-project-name "{{ lookup('env', 'OS_TENANT_NAME') }}" \
+                  --os-domain-name "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}" \
+                  --os-project-domain-name "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}" \
+                  keypair show ansible_key > /dev/null
+      register: keypair_result
+      ignore_errors: true
+
     # NOTE: I use shell because os_keypair raise error when auth is provided
-    - name: Add keypair
+    - when: keypair_result.rc == 1
+      name: Add keypair
       command: |
         openstack --os-region-name "{{ lookup('env', 'OS_REGION_NAME') }}" \
                   --os-auth-url  "{{ lookup('env', 'OS_AUTH_URL') }}" \
@@ -30,7 +44,6 @@
                   --os-project-domain-name "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}" \
                   keypair create ansible_key \
                   --public-key ".ssh/id_rsa_ansible.pub"
-      when: ssh_keygen_result.changed
 
 # os_server module spawns vm and get if vm was spawned earlier, thats
 # why os_server_facts module is not required to use.

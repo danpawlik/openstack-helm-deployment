@@ -73,7 +73,7 @@
   tasks:
     - name: "Copy upgrade script"
       copy:
-        src: "{{ ansible_env.OLDPWD }}/scripts/upgrade-host.sh"
+        src: "{{ ansible_env.HOME }}/openstack-helm-deployment/scripts/upgrade-host.sh"
         dest: scripts/
         mode: 0755
         group: ubuntu
@@ -81,7 +81,7 @@
 
     - name: "Copy airship install script"
       copy:
-        src: "{{ ansible_env.OLDPWD }}/scripts/airship-in-a-bottle.sh"
+        src: "{{ ansible_env.HOME }}/openstack-helm-deployment/scripts/airship-in-a-bottle.sh"
         dest: scripts/
         mode: 0755
         group: ubuntu

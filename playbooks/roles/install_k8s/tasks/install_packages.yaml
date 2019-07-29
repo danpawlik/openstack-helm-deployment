@@ -14,7 +14,7 @@
       sudo: yes
       sudo_user: ubuntu
       copy:
-        src: "{{ ansible_env.OLDPWD }}/scripts/install-kubernetes.sh"
+        src: "{{ ansible_env.HOME }}/openstack-helm-deployment/scripts/install-kubernetes.sh"
         dest: scripts/
         mode: 0755
         group: ubuntu
@@ -50,11 +50,13 @@
       loop: "{{ groups['k8s_contr'] }}"
 
     - when: not setup_minikube
+      name: Check if kubeadm is not installed
       shell: |
-        dpkg -l | grep -q kubeadm
+        dpkg -l | grep -qv kubeadm
       register: kubeadm_status
+      ignore_errors: true
 
-    - when: not setup_minikube and kubeadm_status.rc == 1
+    - when: not setup_minikube and kubeadm_status.rc == 0
       name: Install kubernetes packages
       sudo: yes
       sudo_user: ubuntu

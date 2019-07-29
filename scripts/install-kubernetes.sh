@@ -3,7 +3,6 @@
 export DEBCONF_NONINTERACTIVE_SEEN=true
 export DEBIAN_FRONTEND=noninteractive
 
-INSTALL_COMPLETION=true
 INSTALL_SPECIFIED_VERSION=true
 
 # NOTE: CNI version if is installed in wrong version,
@@ -118,6 +117,7 @@ sudo apt install linux-image-extra-virtual ca-certificates curl \
 if [ "${INSTALL_SPECIFIED_VERSION}" = "true" ]; then
     sudo DEBIAN_FRONTEND=noninteractive apt install -y "kubernetes-cni=${K8S_CNI_VESRSION}"
     sudo DEBIAN_FRONTEND=noninteractive apt install -y "kubelet=${K8S_VERSION}" "kubeadm=${K8S_VERSION}" "kubectl=${K8S_VERSION}"
+    sudo apt-mark hold kubeadm kubelet kubectl
 else
     sudo DEBIAN_FRONTEND=noninteractive apt install -y kubelet kubeadm kubectl
 fi
