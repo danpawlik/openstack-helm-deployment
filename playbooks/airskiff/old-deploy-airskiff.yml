@@ -38,10 +38,6 @@
       with_items:
         - "airskiff-contr"
 
-    - name: test
-      debug:
-        var: airskiff_result
-
     - name: Add airskiff into local inventory
       add_host:
         name: "{{ airskiff_result.results[0].openstack.public_v4  }}"
@@ -78,7 +74,7 @@
   tasks:
     - name: "Copy upgrade script"
       copy:
-        src: ../../scripts/upgrade-host.sh
+        src: "{{ ansible_env.OLDPWD }}/scripts/upgrade-host.sh"
         dest: scripts/
         mode: 0755
         group: ubuntu
@@ -86,7 +82,7 @@
 
     - name: "Change sudoers"
       copy:
-        src: ../../scripts/change-sudoers.sh
+        src: "{{ ansible_env.OLDPWD }}/scripts/change-sudoers.sh"
         dest: scripts/
         mode: 0755
         group: ubuntu
@@ -94,7 +90,7 @@
 
     - name: "Copy helm serve script - for debuging"
       copy:
-        src: ../../scripts/helm-serve.sh
+        src: "{{ ansible_env.OLDPWD }}/scripts/helm-serve.sh"
         dest: scripts/
         mode: 0755
         group: ubuntu
@@ -102,7 +98,7 @@
 
     - name: "Copy get pods script"
       copy:
-        src: ../../scripts/get-pods.sh
+        src: "{{ ansible_env.OLDPWD }}/scripts/get-pods.sh"
         dest: scripts/
         mode: 0755
         group: ubuntu
@@ -110,7 +106,7 @@
 
     - name: Copy openrc generator
       copy:
-        src: ../../scripts/set-openrc.sh
+        src: "{{ ansible_env.OLDPWD }}/scripts/set-openrc.sh"
         dest: scripts/
         mode: 0755
         group: ubuntu
@@ -226,7 +222,7 @@
     - when: not setup_minikube
       name: "Copy install-kubernetes script"
       copy:
-        src: ../../scripts/install-kubernetes.sh
+        src: "{{ ansible_env.OLDPWD }}/scripts/install-kubernetes.sh"
         dest: scripts/
         mode: 0755
         group: ubuntu

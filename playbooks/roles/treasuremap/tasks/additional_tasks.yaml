@@ -10,16 +10,16 @@
     ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
   tasks:
     # FIXME
-    - name: Cherry-pick shipyard patch
-      shell: |
-        cd treasuremap
-        git config --global user.email "you@example.com"
-        git config --global user.name "Your Name"
-        git fetch https://review.opendev.org/airship/treasuremap refs/changes/78/672478/4 && git cherry-pick FETCH_HEAD
-      ignore_errors: true
-      delegate_to: "{{ item }}"
-      delegate_facts: True
-      loop: "{{ groups['k8s_contr'] }}"
+    #    - name: Cherry-pick shipyard patch
+    #      shell: |
+    #        cd treasuremap
+    #        git config --global user.email "you@example.com"
+    #        git config --global user.name "Your Name"
+    #        git fetch https://review.opendev.org/airship/treasuremap refs/changes/78/672478/4 && git cherry-pick FETCH_HEAD
+    #      ignore_errors: true
+    #      delegate_to: "{{ item }}"
+    #      delegate_facts: True
+    #      loop: "{{ groups['k8s_contr'] }}"
 
     - name: Remove docker.io name
       shell: |

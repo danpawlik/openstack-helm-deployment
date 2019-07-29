@@ -1,5 +1,5 @@
 ---
-- name: Install required services
+- name: Install required services for OSH
   hosts:
     - k8s_contr
   gather_facts: False

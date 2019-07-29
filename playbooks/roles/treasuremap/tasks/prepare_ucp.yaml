@@ -14,7 +14,7 @@
       sudo_user: ubuntu
       shell: |
         cd treasuremap && \
-        ./tools/deployment/airskiff/developer/000-install-packages.sh | tee -a logs
+        ./tools/deployment/airskiff/developer/000-install-packages.sh >> /home/ubuntu/logs 2>&1
       ignore_errors: true
       run_once: True
 
@@ -23,7 +23,7 @@
       sudo_user: ubuntu
       shell: |
         cd treasuremap && \
-         ./tools/deployment/airskiff/developer/005-clone-dependencies.sh | tee -a logs
+         ./tools/deployment/airskiff/developer/005-clone-dependencies.sh >> /home/ubuntu/logs 2>&1
       ignore_errors: true
       run_once: true
 
@@ -32,7 +32,7 @@
       sudo_user: ubuntu
       shell: |
         cd treasuremap && \
-        sudo  ./tools/deployment/airskiff/developer/020-setup-client.sh | tee -a logs
+        sudo  ./tools/deployment/airskiff/developer/020-setup-client.sh >> /home/ubuntu/logs 2>&1
       ignore_errors: yes
       run_once: true
       delegate_to: "{{ item }}"
@@ -43,10 +43,10 @@
       sudo: yes
       sudo_user: ubuntu
       shell: |
-        if [ ! -f treasuremap/airskiff.yaml ]; then
-          touch treasuremap/airskiff.yaml
+        if [ ! -f "$HOME/treasuremap/airskiff.yaml" ]; then
+          touch "$HOME/treasuremap/airskiff.yaml"
         fi
-        sudo chmod 0644 treasuremap/airskiff.yaml
+        sudo chmod 0644 "$HOME/treasuremap/airskiff.yaml"
       ignore_errors: true
       delegate_to: "{{ item }}"
       delegate_facts: True
@@ -57,7 +57,7 @@
       sudo_user: ubuntu
       shell: |
         cd treasuremap && \
-        sudo ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh | tee -a logs
+        sudo ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh >> /home/ubuntu/logs 2>&1
       ignore_errors: yes
       run_once: true
       delegate_to: "{{ item }}"
@@ -66,8 +66,8 @@
 
     - name: Setup openrc
       shell: |
-        export OS_PASSWORD=$(grep 'password' treasuremap/site/airskiff/secrets/passphrases/osh_keystone_admin_password.yaml | grep data | awk '{print $2}')
-        bash scripts/set-openrc.sh
+        export OS_PASSWORD=$(grep 'password' "$HOME/treasuremap/site/airskiff/secrets/passphrases/osh_keystone_admin_password.yaml" | grep data | awk '{print $2}')
+        bash "$HOME/scripts/set-openrc.sh"
       ignore_errors: yes
       run_once: true
       delegate_to: "{{ item }}"

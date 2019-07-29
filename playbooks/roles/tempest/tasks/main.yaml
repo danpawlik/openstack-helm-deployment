@@ -1,5 +1,5 @@
 ---
-- name: Prepare hosts
+- name: Prepare host to use Openstack Tempest
   hosts:
     - k8s_contr
   gather_facts: False
@@ -17,7 +17,7 @@
     - when: openrc_file.stat.exists == True
       name: Copy tempest conf
       copy:
-        src: ../../../tempest/tempest/
+        src: "{{ ansible_env.OLDPWD }}/tempest/tempest/"
         dest: tempest/
         mode: 0755
         group: ubuntu
@@ -31,8 +31,16 @@
       register: tempest_output
 
     - name: Execute tempest test
-      shell: bash -x tempest/run-tempest.sh
+      shell: |
+        bash -x tempest/run-tempest.sh
       register: tempest_output
       environment:
         WHITELIST_FILE: tempest/whitelist.list
         BLACKLIST_FILE: tempest/blacklist.list
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'][0] }}"
+
+    - when: Get tempest_output var
+      debug:
+        var: tempest_output

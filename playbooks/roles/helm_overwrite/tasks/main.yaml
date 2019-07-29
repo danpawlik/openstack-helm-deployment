@@ -1,5 +1,5 @@
 ---
-- name: Prepare hosts
+- name: Overwrite Helm charts if needed
   hosts:
     - k8s_contr
     - k8s_minion
@@ -15,7 +15,7 @@
     # images on all hosts
     - name: "Copy helm charts overwrite yamls"
       copy:
-        src: ../../../../helm/
+        src: "{{ ansible_env.OLDPWD }}/helm/"
         dest: helm/
         mode: 0644
         group: ubuntu

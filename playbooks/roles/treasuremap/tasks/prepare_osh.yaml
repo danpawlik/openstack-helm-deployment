@@ -12,7 +12,7 @@
     - name: 100-deploy-osh.sh
       shell: |
         cd treasuremap && \
-        sudo  ./tools/deployment/airskiff/developer/100-deploy-osh.sh | tee -a logs
+        sudo  ./tools/deployment/airskiff/developer/100-deploy-osh.sh >> /home/ubuntu/logs 2>&1
       ignore_errors: yes
       run_once: true
       delegate_to: "{{ item }}"

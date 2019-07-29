@@ -1,5 +1,5 @@
 ---
-- name: Prepare hosts
+- name: Install required packages for k8s node
   hosts:
     - k8s_minion
   strategy: free

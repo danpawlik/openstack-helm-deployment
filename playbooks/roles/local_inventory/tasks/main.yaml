@@ -1,5 +1,5 @@
 ---
-- name: Defined servers
+- name: Defined local inventory
   hosts: localhost
   vars:
     k8s_hosts:
@@ -27,4 +27,3 @@
         ansible_ssh_keyname: "id_rsa_ansible"
         # Name of the docker registry that later ansible will pull images
         repo_name: docker.io
-        repo_dir: /home/ubuntu/openstack-helm-deployment

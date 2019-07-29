@@ -38,10 +38,6 @@
       with_items:
         - "airship-in-the-bottle"
 
-    - name: test
-      debug:
-        var: airship_in_the_bottle_result
-
     - name: Add airship_in_the_bottle into local inventory
       add_host:
         name: "{{ airship_in_the_bottle_result.results[0].openstack.public_v4  }}"
@@ -77,7 +73,7 @@
   tasks:
     - name: "Copy upgrade script"
       copy:
-        src: ../../scripts/upgrade-host.sh
+        src: "{{ ansible_env.OLDPWD }}/scripts/upgrade-host.sh"
         dest: scripts/
         mode: 0755
         group: ubuntu
@@ -85,7 +81,7 @@
 
     - name: "Copy airship install script"
       copy:
-        src: ../../scripts/airship-in-a-bottle.sh
+        src: "{{ ansible_env.OLDPWD }}/scripts/airship-in-a-bottle.sh"
         dest: scripts/
         mode: 0755
         group: ubuntu
@@ -106,7 +102,7 @@
     - name: Upgrade host
       sudo: yes
       sudo_user: ubuntu
-      shell: /home/ubuntu/upgrade-host.sh | tee -a /home/ubuntu/logs
+      shell: scripts/upgrade-host.sh | tee -a /home/ubuntu/logs
       register: upgrade_status
       ignore_errors: yes
       run_once: True

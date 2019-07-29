@@ -1,5 +1,5 @@
 ---
-- name: Prepare hosts
+- name: Post actions for k8s
   hosts:
     - k8s_contr
   gather_facts: False
@@ -9,7 +9,7 @@
     ansible_host_key_checking: false
     ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
   tasks:
-    - name: add bash completion
+    - name: Add bash completion
       shell: |
         echo "source <(kubectl completion bash)" | tee -a .bashrc
         echo "alias k=kubectl" | tee -a .bashrc

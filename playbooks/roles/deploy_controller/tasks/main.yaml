@@ -1,5 +1,5 @@
 ---
-- name: Prepare hosts
+- name: Clone OSH repo and setup k8s controller using OSH script
   hosts:
     - k8s_contr
   gather_facts: False

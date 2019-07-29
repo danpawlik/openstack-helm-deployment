@@ -1,5 +1,5 @@
 ---
-- name: Add ssh key
+- name: Add ssh key if not present
   hosts: localhost
   serial:
     - "100%"
@@ -104,11 +104,7 @@
       loop_control:
         loop_var: server_info
 
-    - name: Show current groups
-      debug:
-        var: groups
-
-    - when: new_k8s_contr_result.results[0] != {}
+    - when: new_k8s_contr_result.changed
       name: wait for instances k8s_contr to be ready
       wait_for:
         port: 22
@@ -118,7 +114,7 @@
       with_items: "{{ groups['k8s_contr'] }}"
       run_once: true
 
-    - when: new_k8s_minion_result.results[0] != {}
+    - when: new_k8s_minion_result.changed
       name: wait for instances k8s_minion to be ready
       wait_for:
         port: 22

@@ -1,5 +1,5 @@
 ---
-- name: Change sudoers
+- name: Treasuremap preparation
   hosts:
     - k8s_contr
   gather_facts: False
@@ -10,6 +10,8 @@
     ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
   tasks:
     - name: Clone treasuremap repo
+      sudo: yes
+      sudo_user: ubuntu
       shell: |
         git clone https://opendev.org/airship/treasuremap.git treasuremap | tee -a logs
       ignore_errors: true

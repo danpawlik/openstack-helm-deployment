@@ -1,5 +1,5 @@
 ---
-- name: Add VMs to known hosts
+- name: Add VMs to known hosts and install keys on the hosts
   hosts: localhost
   remote_user: ubuntu
   gather_facts: False
@@ -8,6 +8,7 @@
     ansible_ssh_private_key_file: .ssh/id_rsa_ansible
   tags:
     - ansible_host_ssh_known_hosts
+    - copy_ssh_keys
   tasks:
     - name: Add k8s_contr host key to known_hosts
       shell: ssh-keyscan -H "{{ item }}" | tee -a "${HOME}/.ssh/known_hosts"
@@ -23,6 +24,30 @@
         executable: /bin/bash
       run_once: True
 
+    - name: Install private key on k8s_contr
+      copy:
+        src: "{{ ansible_env.HOME}}/.ssh/id_rsa_ansible"
+        dest: .ssh/id_rsa
+        mode: 0600
+        group: ubuntu
+        owner: ubuntu
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
+
+    - name: Install public key on all hosts
+      copy:
+        src: "{{ ansible_env.HOME}}/.ssh/id_rsa_ansible.pub"
+        dest: .ssh/id_rsa.pub
+        mode: 0600
+        group: ubuntu
+        owner: ubuntu
+      run_once: True
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['all'] }}"
+
+
 - name: Configure known_hosts on contr
   hosts:
     - k8s_contr
@@ -33,6 +58,7 @@
     ansible_ssh_private_key_file: .ssh/id_rsa_ansible
   tags:
     - contr_known_hosts
+    - minion_known_hosts
   tasks:
     - name: Accept SSH key between k8s_contr and own self
       shell: |
@@ -76,47 +102,6 @@
       delegate_to: "{{ item }}"
       delegate_facts: True
       loop: "{{ groups['k8s_contr'] }}"
-
-    - name: Install private key on k8s_contr
-      copy:
-        src: "{{ ansible_env.HOME }}/.ssh/id_rsa_ansible"
-        dest: .ssh/id_rsa
-        mode: 0600
-        group: ubuntu
-        owner: ubuntu
-      delegate_to: "{{ item }}"
-      delegate_facts: True
-      loop: "{{ groups['k8s_contr'] }}"
-
-    - name: Install public key on all hosts
-      copy:
-        src: "{{ ansible_env.HOME }}/.ssh/id_rsa_ansible.pub"
-        dest: .ssh/id_rsa.pub
-        mode: 0600
-        group: ubuntu
-        owner: ubuntu
-      run_once: True
-
-    - name: Install public key on k8s_minion
-      authorized_key:
-        user: ubuntu
-        state: present
-        key: "{{ lookup('file', ansible_env.HOME + '/.ssh/id_rsa_ansible.pub') }}"
-      run_once: True
-      delegate_to: "{{item}}"
-      delegate_facts: True
-      loop: "{{groups['k8s_minion']}}"
-
-    - name: Install public key on k8s_contr
-      authorized_key:
-        user: ubuntu
-        state: present
-        key: "{{ lookup('file', ansible_env.HOME + '/.ssh/id_rsa_ansible.pub') }}"
-      run_once: True
-      delegate_to: "{{ item }}"
-      delegate_facts: True
-      loop: "{{ groups['k8s_contr'] }}"
-
 
     - name: Set permissions to .ssh dir on minions
       shell: chown -R ubuntu:ubuntu -R .ssh

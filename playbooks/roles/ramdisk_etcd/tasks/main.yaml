@@ -1,5 +1,5 @@
 ---
-- name: Change sudoers
+- name: Mount etcd dir as RAMDISK
   hosts:
     - k8s_contr
   gather_facts: False
@@ -10,7 +10,7 @@
     ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
   tasks:
     # From https://github.com/openstack/devstack/blob/master/lib/etcd3#L108
-    - name: install other packages
+    - name: Mount data dir as ramdisk
       sudo: yes
       sudo_user: ubuntu
       shell: |

@@ -1,5 +1,5 @@
 ---
-- name: Change sudoers
+- name: Set k8s node labels
   hosts:
     - k8s_contr
   gather_facts: False
@@ -15,17 +15,17 @@
       sudo: yes
       sudo_user: ubuntu
       shell: |
-        /usr/bin/kubectl label nodes --all openstack-control-plane=enabled
-        /usr/bin/kubectl label nodes --all openstack-compute-node=enabled
-        /usr/bin/kubectl label nodes --all openvswitch=enabled
-        /usr/bin/kubectl label nodes --all linuxbridge=enabled
-        /usr/bin/kubectl label nodes --all ceph-mon=enabled
-        /usr/bin/kubectl label nodes --all ceph-osd=enabled
-        /usr/bin/kubectl label nodes --all ceph-mds=enabled
-        /usr/bin/kubectl label nodes --all ceph-rgw=enabled
-        /usr/bin/kubectl label nodes --all ceph-mgr=enabled
+        kubectl label nodes --all openstack-control-plane=enabled
+        kubectl label nodes --all openstack-compute-node=enabled
+        kubectl label nodes --all openvswitch=enabled
+        kubectl label nodes --all linuxbridge=enabled
+        kubectl label nodes --all ceph-mon=enabled
+        kubectl label nodes --all ceph-osd=enabled
+        kubectl label nodes --all ceph-mds=enabled
+        kubectl label nodes --all ceph-rgw=enabled
+        kubectl label nodes --all ceph-mgr=enabled
         # from 010-deploy-k8s.sh
-        /usr/bin/kubectl label nodes --all --overwrite ucp-control-plane=enabled
+        kubectl label nodes --all --overwrite ucp-control-plane=enabled
       ignore_errors: false
       delegate_to: "{{ item }}"
       delegate_facts: True

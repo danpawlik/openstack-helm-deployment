@@ -1,5 +1,5 @@
 ---
-- name: Prepare hosts
+- name: Deploy Armada using OSH infra scripts
   hosts:
     - airship_contr
   gather_facts: False

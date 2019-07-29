@@ -1,5 +1,5 @@
 ---
-- name: Change sudoers
+- name: Change sudoers file
   hosts:
     - k8s_contr
   gather_facts: False
