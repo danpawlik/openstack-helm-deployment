@@ -12,11 +12,11 @@
     ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
   tasks:
     - name: Check if docker is installed
-      shell: dpkg -l | grep -q 'docker-ce'
+      shell: dpkg -l | grep -qv 'docker-ce'
       register: docker_check
       ignore_errors: true
 
-    - when: docker_check.rc == 1
+    - when: docker_check.rc == 0
       name: Get docker
       shell: curl -sSL https://get.docker.com/ | sh
 

@@ -44,6 +44,11 @@ if echo $FLAVOR_LIST | grep -iqv "tempest2"; then
         --public
 fi
 
+OPENSTACK_ADMIN_PASSWORD=$(grep OS_PASSWORD /home/ubuntu/openrc  | cut -f2 -d'=')
+if grep -q "OPENSTACK_ADMIN_PASSWORD" /home/ubuntu/tempest/tempest.conf; then
+    sed -i "s/OPENSTACK_ADMIN_PASSWORD/$OPENSTACK_ADMIN_PASSWORD/g" /home/ubuntu/tempest/tempest.conf
+fi
+
 SUBNET_LIST=$(openstack subnet list -c Name -f value)
 if echo $SUBNET_LIST | grep -iqv "public-subnet"; then
     export OSH_EXT_NET_NAME="public"
@@ -52,6 +57,7 @@ if echo $SUBNET_LIST | grep -iqv "public-subnet"; then
     export OSH_EXT_SUBNET_ALLOC_START="172.24.4.150"
     export OSH_EXT_SUBNET_ALLOC_END="172.24.4.250"
     export OSH_BR_EX_ADDR="172.24.4.1"
+    export OSH_DNS_ADDRESS="10.96.0.10"
     openstack network create ${OSH_EXT_NET_NAME} \
       --external \
       --provider-network-type flat \
@@ -62,8 +68,16 @@ if echo $SUBNET_LIST | grep -iqv "public-subnet"; then
       --allocation-pool start=${OSH_EXT_SUBNET_ALLOC_START},end=${OSH_EXT_SUBNET_ALLOC_END} \
       --gateway ${OSH_BR_EX_ADDR} \
       --no-dhcp \
+      --dns-nameserver ${OSH_DNS_ADDRESS} \
       --network ${OSH_EXT_NET_NAME}
 
+    NETWORK_ID=$(openstack network show public -f value -c id)
+    if grep -q "NETWORK_ID" /home/ubuntu/tempest/tempest.conf; then
+        sed -i "s/NETWORK_ID/$NETWORK_ID/g" /home/ubuntu/tempest/tempest.conf
+    fi
+fi
+
+if echo $SUBNET_LIST | grep -iqv "shared-default-subnetpool"; then
     export OSH_PRIVATE_SUBNET_POOL="10.0.0.0/8"
     export OSH_PRIVATE_SUBNET_POOL_NAME="shared-default-subnetpool"
     export OSH_PRIVATE_SUBNET_POOL_DEF_PREFIX="24"
@@ -71,12 +85,10 @@ if echo $SUBNET_LIST | grep -iqv "public-subnet"; then
       --default-prefix-length ${OSH_PRIVATE_SUBNET_POOL_DEF_PREFIX} \
       --pool-prefix ${OSH_PRIVATE_SUBNET_POOL}
 
-    NETWORK_ID=$(openstack network show public -f value -c id)
-    if grep -q "NETWORK_ID" /home/ubuntu/tempest.conf; then
-        sed -i "s/NETWORK_ID/$NETWORK_ID/g" /home/ubuntu/tempest.conf
-    fi
+    openstack network create ${OSH_PRIVATE_SUBNET_POOL_NAME} \
+        --share --default --prefix ${OSH_PRIVATE_SUBNET_POOL_DEF_PREFIX}
 
-    if grep -q "FLOATING_IP_RANGE" /home/ubuntu/tempest.conf; then
-        sed -i "s/FLOATING_IP_RANGE/$FLOATING_IP_RANGE/g" /home/ubuntu/tempest.conf
+    if grep -q "OSH_PRIVATE_SUBNET_POOL" /home/ubuntu/tempest/tempest.conf; then
+        sed -i 's|OSH_PRIVATE_SUBNET_POOL|'$OSH_PRIVATE_SUBNET_POOL'|g' /home/ubuntu/tempest/tempest.conf
     fi
 fi
