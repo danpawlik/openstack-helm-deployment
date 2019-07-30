@@ -1,5 +1,25 @@
 ---
-- name: Overwrite Helm charts if needed
+- name: Copy helm charts
+  hosts: localhost
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+    ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
+  tasks:
+    - name: "Copy helm charts overwrite yamls"
+      copy:
+        src: "{{ ansible_env.HOME }}/openstack-helm-deployment/helm/"
+        dest: helm/
+        mode: 0644
+        group: ubuntu
+        owner: ubuntu
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['all'] }}"
+
+- name: Pull images defined in helm charts
   hosts:
     - k8s_contr
     - k8s_minion
@@ -11,21 +31,13 @@
     ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
     repo_name: docker.io
   tasks:
-    # If you overwrite yaml files and there are images, you need to pull
-    # images on all hosts
-    - name: "Copy helm charts overwrite yamls"
-      copy:
-        src: "{{ ansible_env.HOME }}/openstack-helm-deployment/helm/"
-        dest: helm/
-        mode: 0644
-        group: ubuntu
-        owner: ubuntu
-
-    # Someone can have private images
     - name: Pull images from repository
+      sudo: yes
+      sudo_user: ubuntu
       shell: |
-        IMAGES=$(grep "{{ repo_name }}" -r helm/  | awk '{print $2}' | sort | uniq)
+        IMAGES=$(grep "{{ repo_name }}" -r "$HOME/helm/"  | awk '{print $2}' | sed 's/://g' | sort | uniq)
+        IMAGE_TAG="master"
         for image in $IMAGES; do
-          docker pull $image;
+          docker pull "$image:$IMAGE_TAG";
         done
       ignore_errors: true
