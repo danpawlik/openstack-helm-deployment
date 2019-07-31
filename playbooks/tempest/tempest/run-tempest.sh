@@ -2,19 +2,17 @@
 
 set -x
 
-PATH=$PATH:/home/ubuntu/.local/bin/
-
 DEBUG=${DEBUG:-"false"}
 INSTALL_TEMPEST=${INSTALL_TEMPEST:-"true"}
 TEMPEST_CONF=${TEMPEST_CONF:-"/home/ubuntu/tempest/tempest.conf"}
 WHITELIST_FILE=${WHITELIST_FILE:-''}
 BLACKLIST_FILE=${BLACKLIST_FILE:-''}
+TEMPEST_PARAMS=${TEMPEST_PARAMS:-''}
 
 COMMAND=""
 
 if [ ! "$(which tempest)" ] && [ "${INSTALL_TEMPEST}" = "true" ]; then
-    git clone https://github.com/openstack/tempest -b master
-    pip install -q tempest/
+    sudo pip install -q git+https://github.com/openstack/tempest@master
 fi
 
 if [ "${DEBUG}" = "true" ]; then
@@ -31,6 +29,10 @@ fi
 
 if [ -n "${BLACKLIST_FILE}" ]; then
     COMMAND+="--blacklist-file ${BLACKLIST_FILE} "
+fi
+
+if [ -n "${TEMPEST_PARAMS}" ]; then
+    COMMAND+=" ${TEMPEST_PARAMS} "
 fi
 
 tempest run $COMMAND

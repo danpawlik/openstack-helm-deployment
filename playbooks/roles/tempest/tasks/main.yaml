@@ -35,28 +35,39 @@
         path: openrc
       register: openrc_file
 
-#    - name: Get home dir
-#      vars:
+    - name: Check if Airship Shipyard has finished its work
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        bash -x "{{ home_dir }}/tempest/check-shipyard-actions.sh" >> "{{ home_dir }}/tempest/tempest-logs" 2>&1
+      ignore_errors: false
+      environment:
+        ACTION_NAME: ''
+
+    - name: Wait for services to be deployed
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        bash -x "{{ home_dir }}/openstack-helm-infra/tools/deployment/common/wait-for-pods.sh" >> "{{ home_dir }}/tempest/tempest-logs" 2>&1
+      ignore_errors: false
 
     - name: Prepare tempest test
       sudo: yes
       sudo_user: ubuntu
       shell: |
-        bash -x "{{ home_dir }}/tempest/prepare-tempest.sh" >> "{{ home_dir }}/tempest-logs" 2>&1
+        bash -x "{{ home_dir }}/tempest/prepare-tempest.sh" >> "{{ home_dir }}/tempest/tempest-logs" 2>&1
       register: tempest_output
 
     - name: Execute tempest test
       sudo: yes
       sudo_user: ubuntu
       shell: |
-        bash -x "{{ home_dir }}/tempest/run-tempest.sh" >> "{{ home_dir }}/tempest-logs" 2>&1
+        bash -x "{{ home_dir }}/tempest/run-tempest.sh" >> "{{ home_dir }}/tempest/tempest-test-output" 2>&1
       register: tempest_output
       environment:
         WHITELIST_FILE: "{{ home_dir }}/tempest/whitelist.list"
         BLACKLIST_FILE: "{{ home_dir }}/tempest/blacklist.list"
-      delegate_to: "{{ item }}"
-      delegate_facts: True
-      loop: "{{ groups['k8s_contr'] }}"
+        TEMPEST_PARAMS: "--concurrency 2"
 
     - when: Get tempest_output var
       debug:
