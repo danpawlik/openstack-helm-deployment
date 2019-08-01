@@ -60,6 +60,7 @@ if echo $SUBNET_LIST | grep -iqv "public-subnet"; then
     export OSH_DNS_ADDRESS="10.96.0.10"
     openstack network create ${OSH_EXT_NET_NAME} \
       --external \
+      --share \
       --provider-network-type flat \
       --provider-physical-network ${OSH_EXT_NET_NAME}
 

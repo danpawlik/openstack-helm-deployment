@@ -52,3 +52,12 @@
       delegate_to: "{{ item }}"
       delegate_facts: True
       loop: "{{ groups['k8s_contr'] }}"
+
+    - name: Change virt_type to kvm
+      shell: |
+        sed -i 's/virt_type: qemu/virt_type: kvm/g' treasuremap/site/airskiff/software/charts/osh/openstack-compute-kit/nova.yaml
+      ignore_errors: true
+      run_once: true
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['k8s_contr'] }}"
