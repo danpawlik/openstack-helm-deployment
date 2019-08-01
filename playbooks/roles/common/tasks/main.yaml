@@ -42,6 +42,7 @@
       sudo: yes
       sudo_user: ubuntu
       shell: |
+        sudo apt update | tee -a logs
         sudo apt install -y vim htop ccze | tee -a logs
       ignore_errors: true
 

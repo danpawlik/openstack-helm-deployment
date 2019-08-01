@@ -39,6 +39,17 @@ sudo pip install -r requirements.txt
 
 ## Example: how to deploy Airskiff with K8S controller + one node
 
+0. Create ssh id_rsa_ansible key in $HOME/.ssh/id_rsa_ansible location.
+This key will be used by Ansible to add that key into Openstack VMs.
+
+NOTE:
+Please add also this key into authorized_keys on the Ansible server.
+
+Example:
+```
+ssh-keygen -trsa 2048 $HOME/.ssh/id_rsa_ansible
+```
+
 1. Check if in local inventory, you have defined:
 
 ```
@@ -48,6 +59,7 @@ sudo pip install -r requirements.txt
         - some_contr
       k8s_minion:
         - some_minion
+        - some_minion
 ```
 
 2. You can also set more minions and contr (if you want) but 1 for each is a minimum value.
@@ -55,7 +67,8 @@ sudo pip install -r requirements.txt
 To set the name, you can just export variables:
 ```
 export CONTR_NAME=airskiff_contr-1
-export MINION_1=airskiff-minion-1
+export MINION_1_NAME=airskiff-minion-1
+export MINION_2_NAME=airskiff-minion-2
 ```
 
 3. Now you need to read openrc file, because playbooks will read credentials

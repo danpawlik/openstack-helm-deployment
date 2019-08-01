@@ -1,5 +1,6 @@
 ---
 - import_playbook: roles/local_inventory/tasks/main.yaml
+- import_playbook: roles/ssh_keys/tasks/main.yaml
 - import_playbook: roles/create_servers/tasks/main.yaml
 - import_playbook: roles/ssh_common/tasks/main.yaml
 - import_playbook: roles/copy_scripts/tasks/main.yaml
