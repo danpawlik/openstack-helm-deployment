@@ -8,11 +8,12 @@ TEMPEST_CONF=${TEMPEST_CONF:-"/home/ubuntu/tempest/tempest.conf"}
 WHITELIST_FILE=${WHITELIST_FILE:-''}
 BLACKLIST_FILE=${BLACKLIST_FILE:-''}
 TEMPEST_PARAMS=${TEMPEST_PARAMS:-''}
+TEMPEST_BRANCH=${TEMPEST_BRANCH:-'master'}
 
 COMMAND=""
 
 if [ ! "$(which tempest)" ] && [ "${INSTALL_TEMPEST}" = "true" ]; then
-    sudo pip install -q git+https://github.com/openstack/tempest@master
+    sudo pip install -q "git+https://github.com/openstack/tempest@${TEMPEST_BRANCH}"
 fi
 
 if [ "${DEBUG}" = "true" ]; then

@@ -23,8 +23,8 @@
         contr_net_name: Ext-Net
         minion_flavor: b2-60
         minion_image: "Ubuntu 16.04"
-        minion_key_name: ansible_key
         minion_net_name: Ext-Net
-        ansible_ssh_keyname: "id_rsa_ansible"
         # Name of the docker registry that later ansible will pull images
         repo_name: docker.io
+        openstack_keypair_name: "{{ lookup('env', 'OPENSTACK_KEYPAIR_NAME') if lookup('env', 'OPENSTACK_KEYPAIR_NAME') != '' else 'ansible_key'  }}"
+        ansible_ssh_keyname: "{{ lookup('env', 'ANSIBLE_SSH_KEYNAME') if lookup('env', 'ANSIBLE_SSH_KEYNAME') != '' else 'id_rsa_ansible'  }}"

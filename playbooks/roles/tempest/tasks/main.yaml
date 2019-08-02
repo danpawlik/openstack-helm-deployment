@@ -6,7 +6,6 @@
   become: True
   vars:
     ansible_host_key_checking: false
-    ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
   tasks:
     - name: Copy tempest conf
       copy:
@@ -27,7 +26,6 @@
   become: True
   vars:
     ansible_host_key_checking: false
-    ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
     home_dir: "{{ lookup('env','HOME') }}"
   tasks:
     - name: Check if openrc file exist
@@ -70,7 +68,8 @@
       environment:
         WHITELIST_FILE: "{{ home_dir }}/tempest/whitelist.list"
         BLACKLIST_FILE: "{{ home_dir }}/tempest/blacklist.list"
-        TEMPEST_PARAMS: "--concurrency 2"
+        TEMPEST_PARAMS: "--concurrency 8"
+        TEMPEST_BRANCH: "master"
 
     - when: Get tempest_output var
       debug:

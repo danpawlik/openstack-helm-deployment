@@ -5,19 +5,19 @@
   gather_facts: False
   vars:
     ansible_host_key_checking: false
-    ansible_ssh_private_key_file: .ssh/id_rsa_ansible
   tags:
-    - ansible_host_ssh_known_hosts
     - copy_ssh_keys
   tasks:
-    - name: Add k8s_contr host key to known_hosts
+    - when: "{{ lookup('env', 'ANSIBLE_HOST_KEY_CHECKING') }}"
+      name: Add k8s_contr host key to known_hosts
       shell: ssh-keyscan -H "{{ item }}" | tee -a "${HOME}/.ssh/known_hosts"
       with_items: "{{ groups['k8s_contr'] }}"
       args:
         executable: /bin/bash
       run_once: True
 
-    - name: Add k8s_minion host key to known_hosts
+    - when: "{{ lookup('env', 'ANSIBLE_HOST_KEY_CHECKING') }}"
+      name: Add k8s_minion host key to known_hosts
       shell: ssh-keyscan -H "{{ item }}" | tee -a "${HOME}/.ssh/known_hosts"
       with_items: "{{ groups['k8s_minion'] }}"
       args:
@@ -26,7 +26,7 @@
 
     - name: Install private key on k8s_contr
       copy:
-        src: "{{ ansible_env.HOME}}/.ssh/id_rsa_ansible"
+        src: "{{ ansible_env.HOME}}/.ssh/{{ ansible_ssh_keyname }}"
         dest: .ssh/id_rsa
         mode: 0600
         group: ubuntu
@@ -37,7 +37,7 @@
 
     - name: Install public key on all hosts
       copy:
-        src: "{{ ansible_env.HOME}}/.ssh/id_rsa_ansible.pub"
+        src: "{{ ansible_env.HOME}}/.ssh/{{ ansible_ssh_keyname }}.pub"
         dest: .ssh/id_rsa.pub
         mode: 0600
         group: ubuntu
@@ -55,7 +55,6 @@
   gather_facts: False
   vars:
     ansible_host_key_checking: false
-    ansible_ssh_private_key_file: .ssh/id_rsa_ansible
   tags:
     - contr_known_hosts
     - minion_known_hosts
@@ -93,7 +92,6 @@
   gather_facts: False
   vars:
     ansible_host_key_checking: false
-    ansible_ssh_private_key_file: .ssh/id_rsa_ansible
   tags:
     - ssh_known_hosts
   tasks:

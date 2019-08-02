@@ -19,7 +19,7 @@
           project_domain_name: "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}"
         region_name: "{{ lookup('env', 'OS_REGION_NAME') }}"
         image: "{{ contr_image }}"
-        key_name: "{{ contr_key_name }}"
+        key_name: "{{ openstack_keypair_name }}"
         timeout: 200
         flavor: "{{ contr_flavor }}"
         nics:
@@ -51,7 +51,7 @@
           project_domain_name: "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}"
         region_name: "{{ lookup('env', 'OS_REGION_NAME') }}"
         image: "{{ minion_image }}"
-        key_name: "{{ minion_key_name }}"
+        key_name: "{{ openstack_keypair_name }}"
         timeout: 200
         flavor: "{{ minion_flavor }}"
         nics:

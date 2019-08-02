@@ -36,7 +36,7 @@
         name: "{{ item }}"
       register: airskiff_result
       with_items:
-        - "airskiff-contr"
+        - "airskiff-contr-all"
 
     - name: Add airskiff into local inventory
       add_host:
@@ -54,7 +54,7 @@
       run_once: true
 
     - name: Add airskiff host key to known_hosts
-      shell: ssh-keyscan -H "{{ item }}" >> .ssh/known_hosts
+      shell: ssh-keyscan -H "{{ item }}" >> /home/ubuntu/.ssh/known_hosts
       with_items: "{{ groups['airskiff'] }}"
       args:
         executable: /bin/bash
@@ -62,59 +62,82 @@
 
 
 - name: Deploy
-  hosts:
-    - airskiff
+  hosts: localhost
   gather_facts: False
   vars:
     ansible_host_key_checking: false
-    ansible_ssh_private_key_file: .ssh/id_rsa_ansible
-    setup_minikube: false
+    ansible_ssh_private_key_file: /home/ubuntu/.ssh/id_rsa_ansible
+    setup_minikube: true
   tags:
     - deploy
   tasks:
     - name: "Copy upgrade script"
       copy:
-        src: "{{ ansible_env.HOME }}/openstack-helm-deployment/scripts/upgrade-host.sh"
+        src: /home/ubuntu/openstack-helm-deployment/scripts/upgrade-host.sh
         dest: scripts/
         mode: 0755
         group: ubuntu
         owner: ubuntu
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['airskiff'] }}"
 
     - name: "Change sudoers"
       copy:
-        src: "{{ ansible_env.HOME }}/openstack-helm-deployment/scripts/change-sudoers.sh"
+        src: /home/ubuntu/openstack-helm-deployment/scripts/change-sudoers.sh
         dest: scripts/
         mode: 0755
         group: ubuntu
         owner: ubuntu
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['airskiff'] }}"
 
     - name: "Copy helm serve script - for debuging"
       copy:
-        src: "{{ ansible_env.HOME }}/openstack-helm-deployment/scripts/helm-serve.sh"
+        src: /home/ubuntu/openstack-helm-deployment/scripts/helm-serve.sh
         dest: scripts/
         mode: 0755
         group: ubuntu
         owner: ubuntu
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['airskiff'] }}"
 
     - name: "Copy get pods script"
       copy:
-        src: "{{ ansible_env.HOME }}/openstack-helm-deployment/scripts/get-pods.sh"
+        src: /home/ubuntu/openstack-helm-deployment/scripts/get-pods.sh
         dest: scripts/
         mode: 0755
         group: ubuntu
         owner: ubuntu
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['airskiff'] }}"
 
     - name: Copy openrc generator
       copy:
-        src: "{{ ansible_env.HOME }}/openstack-helm-deployment/scripts/set-openrc.sh"
+        src: /home/ubuntu/openstack-helm-deployment/scripts/set-openrc.sh
         dest: scripts/
         mode: 0755
         group: ubuntu
         owner: ubuntu
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['airskiff'] }}"
 
     ###############################################################
 
+- name: Deploy
+  hosts:
+    - airskiff
+  gather_facts: False
+  vars:
+    ansible_host_key_checking: false
+    ansible_ssh_private_key_file: /home/ubuntu/.ssh/id_rsa_ansible
+    setup_minikube: true
 
+  tasks:
     - name: check if sudoers is correct
       sudo: yes
       sudo_user: root
@@ -159,7 +182,7 @@
 
     - name: Clone repo
       shell: |
-        git clone https://opendev.org/airship/treasuremap.git treasuremap | tee -a logs
+        git clone https://github.com/airshipit/treasuremap.git treasuremap | tee -a logs
       ignore_errors: yes
       run_once: True
 
@@ -184,12 +207,12 @@
         cd shipyard
         git config --global user.email "you@example.com"
         git config --global user.name "Your Name"
-        git fetch https://review.opendev.org/airship/shipyard refs/changes/56/672656/1 && git cherry-pick FETCH_HEAD
+        git fetch https://review.github.com/airshipit/shipyard refs/changes/56/672656/1 && git cherry-pick FETCH_HEAD
       ignore_errors: true
 
     - name: Remove docker.io name
       shell: |
-          find . -type f -exec sed -i -e 's/docker.io=18.06.1-0ubuntu1.2~16.04.1/docker.io/g' {} \;
+          find . -type f -exec sed -i -e 's/docker.io/docker.io/g' {} \;
       ignore_errors: yes
       run_once: true
 

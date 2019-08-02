@@ -37,9 +37,9 @@ git clone https://github.com/danpawlik/openstack-helm-deployment
 sudo pip install -r requirements.txt
 ```
 
-## Example: how to deploy Airskiff with K8S controller + one node
+## Preparation
 
-0. Create ssh id_rsa_ansible key in $HOME/.ssh/id_rsa_ansible location.
+1. Create ssh id_rsa_ansible key in $HOME/.ssh/id_rsa_ansible location.
 This key will be used by Ansible to add that key into Openstack VMs.
 
 NOTE:
@@ -49,6 +49,17 @@ Example:
 ```
 ssh-keygen -trsa 2048 $HOME/.ssh/id_rsa_ansible
 ```
+
+2. Add into .ssh/config information, that Ansible can use the
+id_rsa_ansible key, e.g.:
+```
+Host *
+    User ubuntu
+    IdentityFile ~/.ssh/id_rsa_ansible
+```
+
+## Example: how to deploy Airskiff with K8S controller + one node
+
 
 1. Check if in local inventory, you have defined:
 
@@ -80,7 +91,45 @@ source openrc
 
 4. Now you just need to execute Ansible playbook:
 ```
+export ANSIBLE_HOST_KEY_CHECKING=False
 ansible-playbook playbooks/airskiff/deploy-all.yml -vv
+```
+
+NOTE:
+Available export variables:
+```
+export ANSIBLE_SSH_KEYNAME=id_rsa_ansible
+export OPENSTACK_KEYPAIR_NAME=ansible_key
+
+export CONTR_NAME=bob_contr
+export MINION_1_NAME=stevard_minion_1
+export MINION_2_NAME=kevin_minion
+
+export KUBE_VERSION=1.13.4 # it doesn't work when SETUP_MINIKUBE is true
+export SETUP_MINIKUBE=false
+
+export DOCKER_REPO_NAME=
+export DOCKER_REPO_LOGIN=
+export DOCKER_REPO_PASSWORD=
+```
+
+Just for Openstack Helm multinode playbook:
+```
+OSH_EXTRA_HELM_ARGS
+OSH_EXTRA_HELM_ARGS_BARBICAN
+OSH_EXTRA_HELM_ARGS_CEPH_DEPLOY
+OSH_EXTRA_HELM_ARGS_CEPH_NS_ACTIVATE
+OSH_EXTRA_HELM_ARGS_CINDER
+OSH_EXTRA_HELM_ARGS_GLANCE
+OSH_EXTRA_HELM_ARGS_HEAT
+OSH_EXTRA_HELM_ARGS_INGRESS_KUBE_SYSTEM
+OSH_EXTRA_HELM_ARGS_KEYSTONE
+OSH_EXTRA_HELM_ARGS_LIBVIRT
+OSH_EXTRA_HELM_ARGS_MARIADB
+OSH_EXTRA_HELM_ARGS_MEMCACHED
+OSH_EXTRA_HELM_ARGS_NEUTRON
+OSH_EXTRA_HELM_ARGS_NOVA
+OSH_EXTRA_HELM_ARGS_RABBITMQ
 ```
 
 Please note, that repo and scripts are still under construction.

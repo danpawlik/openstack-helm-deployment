@@ -6,7 +6,6 @@
   become: True
   vars:
     ansible_host_key_checking: false
-    ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
   tasks:
     - name: "Copy helm charts overwrite yamls"
       copy:
@@ -28,7 +27,6 @@
   become: True
   vars:
     ansible_host_key_checking: false
-    ansible_ssh_private_key_file: ".ssh/id_rsa_ansible"
     repo_name: docker.io
   tasks:
     - name: Pull images from repository

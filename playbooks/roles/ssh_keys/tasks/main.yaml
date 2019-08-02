@@ -8,8 +8,9 @@
   tasks:
     - name: check if id_rsa_ansible is available on host
       stat:
-        path: .ssh/id_rsa_ansible
+        path: "{{ ansible_env.HOME }}/.ssh/id_rsa_ansible"
       register: ssh_key_status
+      ignore_errors: true
 
     - when: ssh_key_status.stat.exists == False
       fail:
@@ -24,9 +25,9 @@
                   --os-project-name "{{ lookup('env', 'OS_TENANT_NAME') }}" \
                   --os-domain-name "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}" \
                   --os-project-domain-name "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}" \
-                  keypair show ansible_key > /dev/null
+                  keypair show "{{ openstack_keypair_name }}" > /dev/null
       register: keypair_result
-      ignore_errors: true
+      ignore_errors: false
 
     # NOTE: I use shell because os_keypair raise error when auth is provided
     - when: keypair_result.rc == 1
@@ -39,5 +40,5 @@
                   --os-project-name "{{ lookup('env', 'OS_TENANT_NAME') }}" \
                   --os-domain-name "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}" \
                   --os-project-domain-name "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}" \
-                  keypair create ansible_key \
-                  --public-key ".ssh/id_rsa_ansible.pub"
+                  keypair create "{{ openstack_keypair_name }}" \
+                  --public-key ".ssh/{{ ansible_ssh_keyname }}.pub"
