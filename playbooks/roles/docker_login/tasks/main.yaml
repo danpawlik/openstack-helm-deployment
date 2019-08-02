@@ -37,11 +37,12 @@
       sudo: yes
       sudo_user: ubuntu
       copy:
-        src: "{{ ansible_env.HOME }}/openstack-helm-deployment/docker/"
+        src: "{{ playbook_dir }}/../files/docker/"
         dest: .docker/
         mode: 0644
         group: ubuntu
         owner: ubuntu
+        follow: true
       delegate_to: "{{ item }}"
       delegate_facts: True
       loop: "{{ groups['all'] }}"

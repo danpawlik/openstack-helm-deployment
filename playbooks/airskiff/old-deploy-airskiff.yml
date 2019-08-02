@@ -4,7 +4,7 @@
   gather_facts: False
   vars:
     flavor: b2-30
-    image: "Ubuntu 16.04"
+    image: "Ubuntu 18.04"
     key_name: ansible_key
     net_name: Ext-Net
   tags:

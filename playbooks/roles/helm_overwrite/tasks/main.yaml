@@ -9,11 +9,12 @@
   tasks:
     - name: "Copy helm charts overwrite yamls"
       copy:
-        src: "{{ ansible_env.HOME }}/openstack-helm-deployment/helm/"
+        src: "{{ playbook_dir }}/../files/helm/"
         dest: helm/
         mode: 0644
         group: ubuntu
         owner: ubuntu
+        follow: true
       delegate_to: "{{ item }}"
       delegate_facts: True
       loop: "{{ groups['all'] }}"

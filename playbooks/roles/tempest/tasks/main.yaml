@@ -9,11 +9,12 @@
   tasks:
     - name: Copy tempest conf
       copy:
-        src: "{{ ansible_env.HOME }}/openstack-helm-deployment/playbooks/tempest/tempest/"
+        src: "{{ playbook_dir }}/../files/tempest/"
         dest: tempest/
         mode: 0755
         group: ubuntu
         owner: ubuntu
+        follow: true
       delegate_to: "{{ item }}"
       delegate_facts: True
       loop: "{{ groups['k8s_contr'] }}"
@@ -37,8 +38,10 @@
       sudo: yes
       sudo_user: ubuntu
       shell: |
-        if [ -d "{{ home_dir }}/treasuremap" ]; then
-          bash -x "{{ home_dir }}/tempest/check-shipyard-actions.sh" >> "{{ home_dir }}/tempest/tempest-logs" 2>&1
+        if [ -d "treasuremap" ] && [ -d "tempest" ]; then
+          bash -x tempest/check-shipyard-actions.sh >> tempest/tempest-logs 2>&1
+        else
+          exit 1
         fi
       ignore_errors: false
       environment:
@@ -49,25 +52,25 @@
       sudo: yes
       sudo_user: ubuntu
       shell: |
-        bash -x "{{ home_dir }}/openstack-helm-infra/tools/deployment/common/wait-for-pods.sh" >> "{{ home_dir }}/tempest/tempest-logs" 2>&1
+        bash -x openstack-helm-infra/tools/deployment/common/wait-for-pods.sh openstack >> tempest/tempest-logs 2>&1
       ignore_errors: false
 
     - name: Prepare tempest test
       sudo: yes
       sudo_user: ubuntu
       shell: |
-        bash -x "{{ home_dir }}/tempest/prepare-tempest.sh" >> "{{ home_dir }}/tempest/tempest-logs" 2>&1
+        bash -x tempest/prepare-tempest.sh >> tempest/tempest-logs 2>&1
       register: tempest_output
 
     - name: Execute tempest test
       sudo: yes
       sudo_user: ubuntu
       shell: |
-        bash -x "{{ home_dir }}/tempest/run-tempest.sh" >> "{{ home_dir }}/tempest/tempest-test-output" 2>&1
+        bash -x tempest/run-tempest.sh >> tempest/tempest-test-output 2>&1
       register: tempest_output
       environment:
-        WHITELIST_FILE: "{{ home_dir }}/tempest/whitelist.list"
-        BLACKLIST_FILE: "{{ home_dir }}/tempest/blacklist.list"
+        WHITELIST_FILE: tempest/whitelist.list
+        BLACKLIST_FILE: tempest/blacklist.list
         TEMPEST_PARAMS: "--concurrency 8"
         TEMPEST_BRANCH: "master"
 
