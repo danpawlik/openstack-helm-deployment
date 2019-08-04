@@ -1,0 +1,5 @@
+---
+- name: Join k8s host into the cluster
+  shell: |
+    bash -x scripts/join-node.sh "{{ item }}" | tee -a logs
+  with_items: "{{ groups['k8s_minion'] }}"

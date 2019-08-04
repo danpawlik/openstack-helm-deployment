@@ -1,0 +1,40 @@
+---
+- block:
+  - when: "{{ lookup('env', 'ANSIBLE_HOST_KEY_CHECKING') }}"
+    name: Add k8s_contr host key to known_hosts
+    shell: ssh-keyscan -H "{{ item }}" | tee -a "${HOME}/.ssh/known_hosts"
+    with_items: "{{ groups['k8s_contr'] }}"
+    args:
+      executable: /bin/bash
+    run_once: True
+
+  - when: "{{ lookup('env', 'ANSIBLE_HOST_KEY_CHECKING') }}"
+    name: Add k8s_minion host key to known_hosts
+    shell: ssh-keyscan -H "{{ item }}" | tee -a "${HOME}/.ssh/known_hosts"
+    with_items: "{{ groups['k8s_minion'] }}"
+    args:
+      executable: /bin/bash
+    run_once: True
+
+  - name: Install private key on k8s_contr
+    copy:
+      src: "{{ ansible_env.HOME}}/.ssh/{{ ansible_ssh_keyname }}"
+      dest: .ssh/id_rsa
+      mode: 0600
+      group: ubuntu
+      owner: ubuntu
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    loop: "{{ groups['k8s_contr'] }}"
+
+  - name: Install public key on all hosts
+    copy:
+      src: "{{ ansible_env.HOME}}/.ssh/{{ ansible_ssh_keyname }}.pub"
+      dest: .ssh/id_rsa.pub
+      mode: 0600
+      group: ubuntu
+      owner: ubuntu
+    run_once: True
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    loop: "{{ groups['all'] }}"

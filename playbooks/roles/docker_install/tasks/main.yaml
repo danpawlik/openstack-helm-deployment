@@ -1,24 +1,14 @@
 ---
-- name: Install newest Docker-ce
-  hosts:
-    - k8s_contr
-    - k8s_minion
-  strategy: free
-  gather_facts: False
-  remote_user: ubuntu
-  become: True
-  vars:
-    ansible_host_key_checking: false
-  tasks:
-    - name: Check if docker is installed
-      shell: dpkg -l | grep -qv 'docker-ce'
-      register: docker_check
-      ignore_errors: true
+- when: install_docker_ce
+  name: Check if docker is installed
+  shell: dpkg -l | grep -qv 'docker-ce'
+  register: docker_check
+  ignore_errors: true
 
-    - when: docker_check.rc == 0
-      name: Get docker
-      shell: curl -sSL https://get.docker.com/ | sh
+- when: docker_check.rc == 0 and install_docker_ce
+  name: Get docker
+  shell: curl -sSL https://get.docker.com/ | sh
 
-    - name: Get docker
-      shell: sudo usermod -aG docker ubuntu
-      ignore_errors: true
+- name: Get docker
+  shell: sudo usermod -aG docker ubuntu
+  ignore_errors: true

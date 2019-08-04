@@ -1,0 +1,25 @@
+---
+- block:
+  - name: Accept SSH key between k8s_contr and own self
+    shell: |
+        for ip in "{{ groups['k8s_contr'] | join(' ') }}"; do
+            ssh-keyscan -H "${ip}" | tee -a "${HOME}/.ssh/known_hosts";
+        done
+    args:
+      executable: /bin/bash
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    loop: "{{ groups['k8s_contr'] }}"
+    run_once: True
+
+  - name: Accept SSH key between k8s_minion and k8s_contr
+    shell: |
+        for ip in "{{ groups['k8s_minion'] | join(' ') }}"; do
+          ssh-keyscan -H "${ip}" | tee -a "${HOME}/.ssh/known_hosts";
+        done
+    args:
+      executable: /bin/bash
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    loop: "{{ groups['k8s_contr'] }}"
+    run_once: True

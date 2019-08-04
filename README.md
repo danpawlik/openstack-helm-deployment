@@ -61,7 +61,7 @@ Host *
 ## Example: how to deploy Airskiff with K8S controller + one node
 
 
-1. Check if in local inventory, you have defined:
+1. Check "local inventory" in the playbook, how it is defined, e.g.:
 
 ```
   vars:
@@ -92,7 +92,7 @@ source openrc
 4. Now you just need to execute Ansible playbook:
 ```
 export ANSIBLE_HOST_KEY_CHECKING=False
-ansible-playbook playbooks/airskiff/deploy-all.yml -vv
+ansible-playbook playbooks/airskiff-deploy-all.yaml -vv
 ```
 
 NOTE:

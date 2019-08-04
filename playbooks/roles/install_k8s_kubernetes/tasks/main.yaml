@@ -1,0 +1,23 @@
+---
+- when: not setup_minikube
+  name: "Copy install-kubernetes script"
+  sudo: yes
+  sudo_user: ubuntu
+  synchronize:
+    src: scripts/install-kubernetes.sh
+    dest: scripts/
+
+- when: not setup_minikube
+  name: Check if kubeadm is not installed
+  shell: |
+    dpkg -l | grep -qv kubeadm
+  register: kubeadm_status
+  ignore_errors: true
+
+- when: not setup_minikube and kubeadm_status.rc == 0
+  name: Install kubernetes packages
+  sudo: yes
+  sudo_user: ubuntu
+  shell: |
+    bash -x scripts/install-kubernetes.sh >> /home/ubuntu/logs 2>&1
+  ignore_errors: false

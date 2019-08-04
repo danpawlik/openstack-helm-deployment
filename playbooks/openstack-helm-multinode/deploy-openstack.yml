@@ -1,5 +1,0 @@
----
-- import_playbook: roles/local_inventory/tasks/main.yaml
-- import_playbook: roles/create_servers/tasks/main.yaml
-- import_playbook: roles/helm_overwrite/tasks/main.yaml
-- import_playbook: roles/deploy_os_osh_services/tasks/main.yaml

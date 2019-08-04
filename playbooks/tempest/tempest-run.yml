@@ -1,4 +1,0 @@
----
-- import_playbook: roles/local_inventory/tasks/main.yaml
-- import_playbook: roles/create_servers/tasks/main.yaml
-- import_playbook: roles/tempest/tasks/main.yaml

@@ -1,8 +1,0 @@
----
-- import_playbook: roles/local_inventory/tasks/main.yaml
-- import_playbook: roles/create_servers/tasks/main.yaml
-  #- import_playbook: roles/copy_scripts/tasks/main.yaml
-  #- import_playbook: roles/install_k8s/tasks/join_node.yaml
-  #- import_playbook: roles/install_k8s/tasks/set_labels.yaml
-- import_playbook: roles/treasuremap/tasks/prepare_ucp.yaml
-- import_playbook: roles/treasuremap/tasks/prepare_osh.yaml

@@ -1,18 +1,10 @@
 ---
-- name: Mount etcd dir as RAMDISK
-  hosts:
-    - k8s_contr
-  gather_facts: False
-  remote_user: ubuntu
-  become: True
-  vars:
-    ansible_host_key_checking: false
-  tasks:
-    # From https://github.com/openstack/devstack/blob/master/lib/etcd3#L108
-    - name: Mount data dir as ramdisk
-      sudo: yes
-      sudo_user: ubuntu
-      shell: |
-        sudo mkdir -p /data
-        sudo mount -t tmpfs -o nodev,nosuid,size=512M tmpfs /data
-      ignore_errors: true
+# From https://github.com/openstack/devstack/blob/master/lib/etcd3#L108
+- when: etcd_on_ramdisk
+  name: Mount data dir as ramdisk
+  sudo: yes
+  sudo_user: ubuntu
+  shell: |
+    sudo mkdir -p /data
+    sudo mount -t tmpfs -o nodev,nosuid,size=512M tmpfs /data
+  ignore_errors: true

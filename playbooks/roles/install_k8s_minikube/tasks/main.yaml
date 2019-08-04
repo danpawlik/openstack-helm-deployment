@@ -1,0 +1,13 @@
+---
+- when: setup_minikube
+  name: 010-deploy-k8s.sh
+  sudo: yes
+  sudo_user: ubuntu
+  shell: |
+    cd treasuremap && \
+    ./tools/deployment/airskiff/developer/010-deploy-k8s.sh >> /home/ubuntu/logs 2>&1
+  ignore_errors: true
+  run_once: true
+  delegate_to: "{{ item }}"
+  delegate_facts: True
+  loop: "{{ groups['k8s_contr'] }}"

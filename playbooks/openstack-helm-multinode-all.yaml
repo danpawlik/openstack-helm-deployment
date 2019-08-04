@@ -1,0 +1,187 @@
+---
+- name:
+  hosts: localhost
+  tasks:
+    - name: Set k8s_hosts as fact
+      set_fact:
+        k8s_hosts:
+          k8s_contr:
+            - "{{ lookup('env', 'CONTR_NAME') if lookup('env', 'CONTR_NAME') != '' else 'bob_contr' }}"
+          k8s_minion:
+            # If you need more minion nodes, just add same entry
+            - "{{ lookup('env', 'MINION_1_NAME') if lookup('env', 'MINION_1_NAME') != '' else 'stevard_minion'  }}"
+            - "{{ lookup('env', 'MINION_2_NAME') if lookup('env', 'MINION_2_NAME') != '' else 'kevin_minion'  }}"
+        contr_flavor: b2-60
+        contr_image: "Ubuntu 16.04"
+        contr_key_name: ansible_key
+        contr_net_name: Ext-Net
+        minion_flavor: b2-60
+        minion_image: "Ubuntu 16.04"
+        minion_net_name: Ext-Net
+        # Name of the docker registry that later ansible will pull images
+        repo_name: docker.io
+        openstack_keypair_name: "{{ lookup('env', 'OPENSTACK_KEYPAIR_NAME') if lookup('env', 'OPENSTACK_KEYPAIR_NAME') != '' else 'ansible_key' }}"
+        ansible_ssh_keyname: "{{ lookup('env', 'ANSIBLE_SSH_KEYNAME') if lookup('env', 'ANSIBLE_SSH_KEYNAME') != '' else 'id_rsa_ansible'  }}"
+  tags:
+    - local_inventory
+
+- name: Add ssh key if not present
+  hosts: localhost
+  remote_user: ubuntu
+  gather_facts: False
+  roles:
+    - ssh_keys
+  tags:
+    - keypair_add
+
+- name: Create servers
+  hosts: localhost
+  gather_facts: False
+  roles:
+    - create_servers
+  tags:
+    - create_servers
+
+- name: Add VMs to known hosts and install keys on the hosts
+  hosts: localhost
+  remote_user: ubuntu
+  gather_facts: False
+  vars:
+    ansible_host_key_checking: false
+  tags:
+    - copy_ssh_keys
+  roles:
+    - ssh_known_hosts
+
+- name: Configure known_hosts on contr
+  hosts:
+    - k8s_contr
+  remote_user: ubuntu
+  gather_facts: False
+  vars:
+    ansible_host_key_checking: false
+  roles:
+    - ssh_common_contr
+  tags:
+    - contr_known_hosts
+    - minion_known_hosts
+
+- name: Generate ansible ssh key and add known_hosts
+  hosts:
+    - k8s_contr
+    - k8s_minion
+  remote_user: ubuntu
+  gather_facts: False
+  vars:
+    ansible_host_key_checking: false
+  tags:
+    - ssh_known_hosts
+  roles:
+    - ssh_common
+
+# Copy
+- name: Copy required scripts
+  hosts:
+    - k8s_contr
+    - k8s_minion
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+  roles:
+    - copy_scripts
+
+
+# firewall, upgrade packages
+- name: Remove, upgrade packages and set iptables
+  hosts:
+    - k8s_contr
+    - k8s_minion
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+    setup_minikube: "{{ true if lookup('env', 'SETUP_MINIKUBE') == 'true' else false }}"
+  roles:
+    - common
+
+
+
+- name: Install Docker-CE
+  hosts:
+    - k8s_contr
+    - k8s_minion
+  strategy: free
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+    install_docker_ce: true
+  roles:
+    - docker_install
+
+- name: Signin to docker repo using file
+  hosts:
+    - k8s_contr
+    - k8s_minion
+  strategy: free
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+    repo_name: "{{ lookup('env', 'DOCKER_REPO_NAME') }}"
+    repo_login: "{{ lookup('env', 'DOCKER_REPO_LOGIN') }}"
+    repo_password: "{{ lookup('env', 'DOCKER_REPO_PASSWORD') }}"
+  roles:
+    - docker_login
+
+
+- name: Clone OSH repo and setup k8s controller using OSH script
+  hosts:
+    - k8s_contr
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+  roles:
+    - deploy_osh_controller
+
+- name: Install required services for OSH
+  hosts:
+    - k8s_contr
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+  roles:
+    - deploy_osh_basic_services
+
+- name: Pull images defined in helm charts
+  hosts:
+    - k8s_contr
+    - k8s_minion
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+    repo_name: docker.io
+  roles:
+    - helm_overwrite
+
+- name: Install Openstack services
+  hosts:
+    - k8s_contr
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+  roles:
+    - deploy_os_osh_services

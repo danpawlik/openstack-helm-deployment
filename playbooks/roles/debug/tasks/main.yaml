@@ -1,27 +1,20 @@
-- name: Debug info
-  hosts: localhost
-  gather_facts: False
-  remote_user: ubuntu
-  become: True
-  vars:
-    ansible_host_key_checking: false
-  tasks:
-    - name: Get vars
-      debug:
-        var: vars
+---
+- name: Get vars
+  debug:
+    var: vars
 
-    - name: Get environment
-      debug:
-        var: environment
+- name: Get environment
+  debug:
+    var: environment
 
-    - name: Get group_names
-      debug:
-        var: group_names
+- name: Get group_names
+  debug:
+    var: group_names
 
-    - name: Get groups
-      debug:
-        var: groups
+- name: Get groups
+  debug:
+    var: groups
 
-    - name: Get hostvars
-      debug:
-        var: hostvars
+- name: Get hostvars
+  debug:
+    var: hostvars

@@ -1,0 +1,32 @@
+---
+- when: not setup_minikube
+  name: Check if k8s controller has not been deployed earlier
+  wait_for:
+    host: "{{ groups['k8s_contr'][0] }}"
+    port: "{{ item }}"
+    state: started
+    delay: 3
+    timeout: 5
+  ignore_errors: yes
+  register: k8s_contr_status
+  with_items:
+    - 6443
+
+- when: not setup_minikube and k8s_contr_status
+  name: Deploy k8s
+  sudo: yes
+  sudo_user: ubuntu
+  shell: |
+    bash -x scripts/install-kubernetes-controller.sh | tee -a logs
+  ignore_errors: false
+
+- name: wait kubernetes to be ready
+  wait_for:
+    host: "{{ groups['k8s_contr'][0] }}"
+    port: "{{ item }}"
+    state: started
+    delay: 30
+    timeout: 301
+  ignore_errors: yes
+  with_items:
+    - 6443

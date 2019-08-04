@@ -1,42 +1,16 @@
 ---
-- name: Copy helm charts
-  hosts: localhost
-  gather_facts: False
-  remote_user: ubuntu
-  become: True
-  vars:
-    ansible_host_key_checking: false
-  tasks:
-    - name: "Copy helm charts overwrite yamls"
-      copy:
-        src: "{{ playbook_dir }}/../files/helm/"
-        dest: helm/
-        mode: 0644
-        group: ubuntu
-        owner: ubuntu
-        follow: true
-      delegate_to: "{{ item }}"
-      delegate_facts: True
-      loop: "{{ groups['all'] }}"
+- name: "Copy helm charts overwrite yamls"
+  synchronize:
+    src: helm/
+    dest: helm/
 
-- name: Pull images defined in helm charts
-  hosts:
-    - k8s_contr
-    - k8s_minion
-  gather_facts: False
-  remote_user: ubuntu
-  become: True
-  vars:
-    ansible_host_key_checking: false
-    repo_name: docker.io
-  tasks:
-    - name: Pull images from repository
-      sudo: yes
-      sudo_user: ubuntu
-      shell: |
-        IMAGES=$(grep "{{ repo_name }}" -r "$HOME/helm/"  | awk '{print $2}' | sed 's/://g' | sort | uniq)
-        IMAGE_TAG="master"
-        for image in $IMAGES; do
-          docker pull "$image:$IMAGE_TAG";
-        done
-      ignore_errors: true
+- name: Pull images from repository
+  sudo: yes
+  sudo_user: ubuntu
+  shell: |
+    IMAGES=$(grep "{{ repo_name }}" -r "$HOME/helm/"  | awk '{print $2}' | sed 's/://g' | sort | uniq)
+    IMAGE_TAG="master"
+    for image in $IMAGES; do
+      docker pull "$image:$IMAGE_TAG";
+    done
+  ignore_errors: true

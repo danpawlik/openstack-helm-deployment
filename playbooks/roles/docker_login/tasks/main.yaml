@@ -1,53 +1,19 @@
 ---
-- name: Signin to docker repo
-  hosts:
-    - k8s_contr
-    - k8s_minion
-  strategy: free
-  gather_facts: False
-  remote_user: ubuntu
-  become: True
-  vars:
-    ansible_host_key_checking: false
-    repo_name: "{{ lookup('env', 'DOCKER_REPO_NAME') }}"
-    repo_login: "{{ lookup('env', 'DOCKER_REPO_LOGIN') }}"
-    repo_password: "{{ lookup('env', 'DOCKER_REPO_PASSWORD') }}"
-  tasks:
-    - when: repo_name and repo_login and repo_password
-      sudo: yes
-      sudo_user: ubuntu
-      shell: |
-        docker login "{{ repo_name }}" -u "{{ repo_login }}" -p"{{ repo_password }}"
-      ignore_errors: false
+- when: repo_name and repo_login and repo_password
+  sudo: yes
+  sudo_user: ubuntu
+  shell: |
+    docker login "{{ repo_name }}" -u "{{ repo_login }}" -p"{{ repo_password }}"
+  ignore_errors: false
 
+- when: not repo_name and not repo_login and not repo_password
+  sudo: yes
+  sudo_user: ubuntu
+  synchronize:
+    src: docker/
+    dest: .docker/
 
-- name: Signin to docker repo using file
-  hosts: localhost
-  strategy: free
-  gather_facts: False
-  remote_user: ubuntu
-  become: True
-  vars:
-    ansible_host_key_checking: false
-    repo_name: "{{ lookup('env', 'DOCKER_REPO_NAME') }}"
-    repo_login: "{{ lookup('env', 'DOCKER_REPO_LOGIN') }}"
-    repo_password: "{{ lookup('env', 'DOCKER_REPO_PASSWORD') }}"
-  tasks:
-    - when: not repo_name and not repo_login and not repo_password
-      sudo: yes
-      sudo_user: ubuntu
-      copy:
-        src: "{{ playbook_dir }}/../files/docker/"
-        dest: .docker/
-        mode: 0644
-        group: ubuntu
-        owner: ubuntu
-        follow: true
-      delegate_to: "{{ item }}"
-      delegate_facts: True
-      loop: "{{ groups['all'] }}"
-
-    - name: Restart docker service
-      service:
-        name: docker
-        state: restarted
+- name: Restart docker service
+  service:
+    name: docker
+    state: restarted
