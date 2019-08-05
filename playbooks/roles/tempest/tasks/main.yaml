@@ -4,7 +4,7 @@
     path: openrc
   register: openrc_file
 
-- when:  openrc_file.rc == 0
+- when:  openrc_file.stat.exists == False
   fail:
     msg: "Could not find openrc file. Can't continue"
 
@@ -25,7 +25,7 @@
   ignore_errors: false
   environment:
     ACTION_NAME: ''
-    TIMEOUT: 1500
+    TIMEOUT: 2000
 
 - name: Wait for services to be deployed
   sudo: yes
@@ -33,6 +33,16 @@
   shell: |
     bash -x openstack-helm-infra/tools/deployment/common/wait-for-pods.sh openstack >> tempest/tempest-logs 2>&1
   ignore_errors: false
+
+- name: Check services replication
+  sudo: yes
+  sudo_user: ubuntu
+  shell: |
+    bash -x check-service-replication.sh >> tempest/tempest-logs 2>&1
+  environment:
+    NAMESPACE: openstack
+    SCALE_SERVICES: true
+    OS_SERVICES: "glance-api keystone-api neutron-server nova-api-metadata nova-api-osapi"
 
 - name: Prepare tempest test
   sudo: yes
