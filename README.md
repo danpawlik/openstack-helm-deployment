@@ -92,6 +92,7 @@ source openrc
 4. Now you just need to execute Ansible playbook:
 ```
 export ANSIBLE_HOST_KEY_CHECKING=False
+export TREASUREMAP_OVERWRITE=true
 ansible-playbook playbooks/airskiff-deploy-all.yaml -vv
 ```
 
@@ -111,6 +112,8 @@ export SETUP_MINIKUBE=false
 export DOCKER_REPO_NAME=
 export DOCKER_REPO_LOGIN=
 export DOCKER_REPO_PASSWORD=
+
+TREASUREMAP_OVERWRITE=true # overwrite airskiff site manifests
 ```
 
 Just for Openstack Helm multinode playbook:

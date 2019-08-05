@@ -1,0 +1,37 @@
+---
+schema: armada/Chart/v1
+metadata:
+  schema: metadata/Document/v1
+  name: keystone-airskiff
+  layeringDefinition:
+    abstract: false
+    layer: site
+    parentSelector:
+      name: keystone-global
+      component: keystone
+    actions:
+      - method: merge
+        path: .
+  storagePolicy: cleartext
+data:
+  values:
+    pod:
+      replicas:
+        api: 1
+  chart_name: keystone
+  release: mynewnamespace-keystone
+  namespace: mynewnamespace
+  wait:
+    timeout: 600
+    labels:
+      release_group: airship-mynewnamespace-keystone
+  install:
+    no_hooks: false
+  upgrade:
+    no_hooks: false
+    pre:
+      delete:
+        - type: job
+          labels:
+            release_group: airship-mynewnamespace-keystone
+...

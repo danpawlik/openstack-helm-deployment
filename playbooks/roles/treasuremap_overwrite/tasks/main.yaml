@@ -1,0 +1,12 @@
+---
+- when: treasuremap_overwrite
+  name: Check if trasuremap exists
+  stat:
+    path: treasuremap
+  register: treasuremap_dir
+
+- when: treasuremap_dir.stat.exists and treasuremap_overwrite
+  name: Copy trasuremap overwrite files
+  synchronize:
+    src: airship-overwrite/
+    dest: treasuremap/

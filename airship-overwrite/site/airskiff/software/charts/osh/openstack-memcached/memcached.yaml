@@ -1,0 +1,31 @@
+---
+schema: armada/Chart/v1
+metadata:
+  schema: metadata/Document/v1
+  name: openstack-memcached-airskiff
+  layeringDefinition:
+    abstract: false
+    layer: site
+    parentSelector:
+      name: openstack-memcached-global
+    actions:
+      - method: merge
+        path: .
+  storagePolicy: cleartext
+data:
+  release: mynewnamespace-memcached
+  namespace: mynewnamespace
+  wait:
+    timeout: 900
+    labels:
+      release_group: airship-mynewnamespace-memcached
+  install:
+    no_hooks: false
+  upgrade:
+    no_hooks: false
+    pre:
+      delete:
+        - type: job
+          labels:
+            release_group: airship-mynewnamespace-memcached
+...
