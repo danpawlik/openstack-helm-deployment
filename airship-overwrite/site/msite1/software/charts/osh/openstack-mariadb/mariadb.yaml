@@ -22,7 +22,7 @@ data:
   release: msite1-mariadb
   namespace: msite1
   wait:
-    timeout: 900
+    timeout: 300
     labels:
       release_group: airship-msite1-mariadb
   upgrade:

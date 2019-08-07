@@ -8,15 +8,17 @@ metadata:
     layer: site
     parentSelector:
       name: openstack-memcached-global
+      component: memcached
     actions:
       - method: merge
         path: .
   storagePolicy: cleartext
 data:
-  release: msite1-memcached
   namespace: msite1
+  release: msite1-memcached
+  chart_name: msite1-memcached
   wait:
-    timeout: 9000
+    timeout: 300
     labels:
       release_group: airship-msite1-memcached
   install:

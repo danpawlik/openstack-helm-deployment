@@ -20,6 +20,8 @@ metadata:
         path: .values.conf.neutron
       - method: replace
         path: .values.conf.plugins
+      - method: replace
+        path: .values.conf.auto_bridge_add.br-ex
   storagePolicy: cleartext
 data:
   chart_name: msite1-neutron
@@ -67,4 +69,6 @@ data:
         linuxbridge_agent:
           linux_bridge:
             bridge_mappings: public:br-ex
+      auto_bridge_add:
+        br-ex: docker0
 ...

@@ -5,16 +5,30 @@
     path: treasuremap
   register: treasuremap_dir
 
-- when: treasuremap_dir.stat.exists and treasuremap_overwrite
+- when: treasuremap_dir.stat.exists and treasuremap_dir.stat.isdir and treasuremap_overwrite
+  name: Copy airskiff site to other namespace eg msite1
+  shell: |
+    cp -av treasuremap/site/airskiff "treasuremap/site/{{ namespace }}"
+#    mkdir -p treasuremap/site/msite1/software/
+#    cp -av treasuremap/site/airskiff/software/charts/kubernetes "treasuremap/site/{{ namespace }}/software/charts/kubernetes"
+#    cp -av treasuremap/site/airskiff/software/charts/osh-infra "treasuremap/site/{{ namespace}} /software/charts/osh-infra"
+#    cp -av treasuremap/site/airskiff/software/charts/ucp "treasuremap/site/{{ namespace }}/software/charts/ucp"
+  ignore_errors: true
+
+- when: treasuremap_dir.stat.exists and treasuremap_dir.stat.isdir and treasuremap_overwrite
   name: Copy trasuremap overwrite files
   synchronize:
     src: airship-overwrite/
     dest: treasuremap/
 
-- when: treasuremap_dir.stat.exists and treasuremap_overwrite
-  name: Copy required files to site dir because symlinks are not supported
+- when: treasuremap_overwrite
+  name: Change br-ex to docker0
   shell: |
-    cp -av treasuremap/site/airskiff/software/charts/kubernetes treasuremap/site/msite1/software/charts/kubernetes
-    cp -av treasuremap/site/airskiff/software/charts/osh-infra treasuremap/site/msite1/software/charts/osh-infra
-    cp -av treasuremap/site/airskiff/software/charts/ucp treasuremap/site/msite1/software/charts/ucp
+    sed 's/\'EXTERNAL_INTERFACE\'/docker0/g' treasuremap/global/software/charts/osh/openstack-compute-kit/neutron.yaml
+  ignore_errors: true
+
+- when: treasuremap_overwrite
+  name: Change namespace to defined one
+  shell: |
+    find treasuremap -type f -exec sed -i -e "s/msite1/{{ namespace }}/g" {} \;
   ignore_errors: true

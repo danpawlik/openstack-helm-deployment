@@ -19,7 +19,7 @@ data:
   release: msite1-rabbitmq
   chart_name: msite1-rabbitmq
   wait:
-    timeout: 900
+    timeout: 300
     labels:
       release_group: airship-msite1-rabbitmq
     resources:

@@ -141,7 +141,8 @@
   become: True
   vars:
     ansible_host_key_checking: false
-    treasuremap_overwrite: "{{ false if lookup('env', 'TREASUREMAP_OVERWRITE') == 'false' else true }}"
+    treasuremap_overwrite: "{{ true if lookup('env', 'TREASUREMAP_OVERWRITE') == '' else false }}"
+    namespace: "{{ lookup('env', 'NAMESPACE') if lookup('env', 'NAMESPACE') != '' else 'test_namespace' }}"
   roles:
     - treasuremap_preparations
     - treasuremap_overwrite

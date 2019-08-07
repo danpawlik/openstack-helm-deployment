@@ -93,6 +93,7 @@ source openrc
 ```
 export ANSIBLE_HOST_KEY_CHECKING=False
 export TREASUREMAP_OVERWRITE=true
+export NAMESPACE=test_ns
 ansible-playbook playbooks/airskiff-deploy-all.yaml -vv
 ```
 

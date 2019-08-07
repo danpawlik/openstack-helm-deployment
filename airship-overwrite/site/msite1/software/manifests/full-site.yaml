@@ -24,6 +24,6 @@ data:
     - msite1-memcached-airskiff
     - msite1-keystone-airskiff
     - msite1-glance-airskiff
-    - msite1-cinder-airskiff
+      #    - msite1-cinder-airskiff
     - msite1-compute-kit-airskiff
 ...

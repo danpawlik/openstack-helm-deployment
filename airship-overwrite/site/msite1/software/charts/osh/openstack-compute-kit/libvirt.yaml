@@ -16,24 +16,6 @@ metadata:
         path: .
   storagePolicy: cleartext
 data:
-#  chart_name: msite1-libvirt
-#  release: msite1-libvirt
-#  namespace: msite1
-  chart_name: libvirt
-  release: libvirt
-  namespace: openstack
-  wait:
-    timeout: 300
-  install:
-    no_hooks: false
-  upgrade:
-    no_hooks: false
-    pre:
-      delete:
-        - type: job
-          labels:
-#            release_group: msite1-airship-libvirt
-            release_group: airship-libvirt
   values:
     labels:
       agent:
