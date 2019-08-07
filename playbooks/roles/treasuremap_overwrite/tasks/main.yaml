@@ -10,3 +10,11 @@
   synchronize:
     src: airship-overwrite/
     dest: treasuremap/
+
+- when: treasuremap_dir.stat.exists and treasuremap_overwrite
+  name: Copy required files to site dir because symlinks are not supported
+  shell: |
+    cp -av treasuremap/site/airskiff/software/charts/kubernetes treasuremap/site/msite1/software/charts/kubernetes
+    cp -av treasuremap/site/airskiff/software/charts/osh-infra treasuremap/site/msite1/software/charts/osh-infra
+    cp -av treasuremap/site/airskiff/software/charts/ucp treasuremap/site/msite1/software/charts/ucp
+  ignore_errors: true

@@ -183,6 +183,7 @@ ssh-keyscan -H "$NODE_ONE_IP" >> /home/ubuntu/.ssh/known_hosts
 
 for IP_ADDRESS in $NODE_TWO_IP $NODE_THREE_IP;
 do
+    echo "starting rsync: $IP_ADDRESS"
     ssh-keyscan -H "$IP_ADDRESS" >> /home/ubuntu/.ssh/known_hosts
     rsync  -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" -i "${SSH_KEY_PATH}" -aq /opt/ "ubuntu@${IP_ADDRESS}:/opt/"
 done
@@ -210,4 +211,11 @@ export OS_PROJECT_DOMAIN_NAME='default'
 export OS_USER_DOMAIN_NAME='default'
 export OS_AUTH_URL='http://keystone.openstack.svc.cluster.local/v3'
 EOF
-exit 0
+
+source <(kubectl completion bash)
+echo "source <(kubectl completion bash)" >> ~/.bashrc
+echo "alias k=kubectl" >> ~/.bashrc
+echo "complete -F __start_kubectl k" >> ~/.bashrc
+
+source <(helm completion bash)
+echo "source <(helm completion bash)" >> ~/.bashrc

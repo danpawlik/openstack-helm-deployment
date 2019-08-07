@@ -24,7 +24,7 @@
   environment:
     ANSIBLE_LOG_PATH: ansible.logs
     NODE_TWO_IP: "{{ groups['k8s_minion'][0] }}"
-    NODE_THREE_IP: "{{ groups['k8s_minion'][1] if (groups['k8s_minion']|length>1) }}"
+    NODE_THREE_IP: "{{ groups['k8s_minion'][1] if (groups['k8s_minion'] | length>1) }}"
     KUBE_VERSION: "{{ lookup('env', 'KUBE_VERSION') | default('v1.13.7') }}"
   ignore_errors: yes
   delegate_to: "{{ item }}"

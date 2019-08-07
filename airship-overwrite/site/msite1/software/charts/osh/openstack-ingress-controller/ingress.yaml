@@ -1,0 +1,46 @@
+---
+schema: armada/Chart/v1
+metadata:
+  schema: metadata/Document/v1
+  name: msite1-ingress-controller-airskiff
+  layeringDefinition:
+    abstract: false
+    layer: site
+    parentSelector:
+      name: openstack-ingress-controller-global
+      component: ingress
+    actions:
+      - method: replace
+        path: .namespace
+      - method: replace
+        path: .release
+      - method: replace
+        path: .chart_name
+      - method: replace
+        path: .wait
+      - method: replace
+        path: .upgrade
+      - method: replace
+        path: .values.pod
+  storagePolicy: cleartext
+data:
+  chart_name: msite1-ingress-controller
+  release: msite1-ingress-controller
+  namespace: msite1
+  wait:
+    timeout: 900
+    labels:
+      release_group: airship-msite1-ingress-controller
+  upgrade:
+    no_hooks: false
+    pre:
+      delete:
+        - type: job
+          labels:
+            release_group: airship-msite1-ingress-controller
+  values:
+    pod:
+      replicas:
+        ingress: 1
+        error_page: 1
+...

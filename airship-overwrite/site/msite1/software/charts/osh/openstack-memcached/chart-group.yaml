@@ -1,0 +1,21 @@
+---
+schema: armada/ChartGroup/v1
+metadata:
+  schema: metadata/Document/v1
+  name: msite1-memcached-airskiff
+  layeringDefinition:
+    abstract: false
+    layer: site
+    parentSelector:
+      name: openstack-memcached-chart-group-global
+      component: memcached
+    actions:
+      - method: merge
+        path: .sequenced
+      - method: replace
+        path: .chart_group
+  storagePolicy: cleartext
+data:
+  sequenced: true
+  chart_group:
+    - msite1-memcached-airskiff
