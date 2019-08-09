@@ -1,21 +1,17 @@
 ---
-- name: Disable services that are not required
-  shell: |
-    sed -i '/openstack-heat/d'  treasuremap/global/software/manifests/full-site.yaml
-    sed -i '/openstack-heat/d'  treasuremap/site/airskiff/software/manifests/full-site.yaml
-    sed -i 's/openstack-heat: enabled/openstack-heat: disabled/g' treasuremap/site/airskiff/profiles/host/cp_r720.yaml
-    sed -i 's/openstack-heat: enabled/openstack-heat: disabled/g' treasuremap/global/profiles/host/cp.yaml
-  ignore_errors: true
-  run_once: true
-  delegate_to: "{{ item }}"
-  delegate_facts: True
-  loop: "{{ groups['k8s_contr'] }}"
+- when: setup_airskiff
+  block:
+  - name: Disable services that are not required
+    shell: |
+      sed -i '/openstack-heat/d'  treasuremap/global/software/manifests/full-site.yaml
+      sed -i '/openstack-heat/d'  treasuremap/site/airskiff/software/manifests/full-site.yaml
+      sed -i 's/openstack-heat: enabled/openstack-heat: disabled/g' treasuremap/site/airskiff/profiles/host/cp_r720.yaml
+      sed -i 's/openstack-heat: enabled/openstack-heat: disabled/g' treasuremap/global/profiles/host/cp.yaml
+    ignore_errors: true
+    run_once: true
 
-- name: Change virt_type to kvm
-  shell: |
-    sed -i 's/virt_type: qemu/virt_type: kvm/g' treasuremap/site/airskiff/software/charts/osh/openstack-compute-kit/nova.yaml
-  ignore_errors: true
-  run_once: true
-  delegate_to: "{{ item }}"
-  delegate_facts: True
-  loop: "{{ groups['k8s_contr'] }}"
+  - name: Change virt_type to kvm
+    shell: |
+      sed -i 's/virt_type: qemu/virt_type: kvm/g' treasuremap/site/airskiff/software/charts/osh/openstack-compute-kit/nova.yaml
+    ignore_errors: true
+    run_once: true

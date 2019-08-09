@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+set -xe
 
 NODE_ONE_IP=${NODE_ONE_IP:-""}
 NODE_TWO_IP=${NODE_TWO_IP:-$1}
@@ -202,6 +202,14 @@ if [ -d "$OSH_PATH" ] && [ -d "$OSH_INFRA_PATH" ] ; then
     set -e
 fi
 
+source <(kubectl completion bash)
+echo "source <(kubectl completion bash)" >> ~/.bashrc
+echo "alias k=kubectl" >> ~/.bashrc
+echo "complete -F __start_kubectl k" >> ~/.bashrc
+
+source <(helm completion bash)
+echo "source <(helm completion bash)" >> ~/.bashrc
+
 # Export openrc file
 cat << EOF > "${HOME}/openrc"
 export OS_USERNAME='admin'
@@ -211,11 +219,3 @@ export OS_PROJECT_DOMAIN_NAME='default'
 export OS_USER_DOMAIN_NAME='default'
 export OS_AUTH_URL='http://keystone.openstack.svc.cluster.local/v3'
 EOF
-
-source <(kubectl completion bash)
-echo "source <(kubectl completion bash)" >> ~/.bashrc
-echo "alias k=kubectl" >> ~/.bashrc
-echo "complete -F __start_kubectl k" >> ~/.bashrc
-
-source <(helm completion bash)
-echo "source <(helm completion bash)" >> ~/.bashrc

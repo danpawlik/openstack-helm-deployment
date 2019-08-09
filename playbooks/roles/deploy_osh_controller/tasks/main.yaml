@@ -2,11 +2,8 @@
 - name: Clone OSH repo
   sudo: yes
   sudo_user: ubuntu
-  shell: /bin/bash -x scripts/clone-osh-repo.sh | tee -a logs
+  shell: bash -x scripts/clone-osh-repo.sh | tee -a logs
   register: clone_status
-  delegate_to: "{{ item }}"
-  delegate_facts: True
-  loop: "{{ groups['k8s_contr'] }}"
   ignore_errors: yes
   run_once: True
 
@@ -26,10 +23,5 @@
     NODE_TWO_IP: "{{ groups['k8s_minion'][0] }}"
     NODE_THREE_IP: "{{ groups['k8s_minion'][1] if (groups['k8s_minion'] | length>1) }}"
     KUBE_VERSION: "{{ lookup('env', 'KUBE_VERSION') | default('v1.13.7') }}"
-  ignore_errors: yes
-  delegate_to: "{{ item }}"
-  delegate_facts: True
-  loop: "{{ groups['k8s_contr'] }}"
-  register: k8s_deploy
-  failed_when: k8s_deploy.rc == 1
   run_once: True
+  ignore_errors: True

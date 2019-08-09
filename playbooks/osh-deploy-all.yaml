@@ -1,0 +1,2 @@
+- import_playbook: osh-deploy-cluster.yaml
+- import_playbook: osh-deploy-openstack.yaml

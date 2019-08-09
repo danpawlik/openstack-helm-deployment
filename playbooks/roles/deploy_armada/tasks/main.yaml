@@ -16,9 +16,8 @@
   shell: |
     sudo -H pip3 install --ignore-installed PyYAML | tee -a logs
   ignore_errors: false
-  delegate_to: "{{ groups['airship_contr'][0] }}"
+  delegate_to: "{{ groups['airship_contr'] }}"
   run_once: True
-  #####
 
 - name: Install 015-armada-build.sh
   sudo: yes
@@ -27,7 +26,7 @@
     cd /opt/openstack-helm-infra
     bash -x ./tools/deployment/armada/015-armada-build.sh | tee -a logs
   ignore_errors: false
-  delegate_to: "{{ groups['airship_contr'][0] }}"
+  delegate_to: "{{ groups['airship_contr'] }}"
   run_once: True
 
 - name: Install 020-armada-render-manifests.sh
@@ -37,7 +36,7 @@
     cd /opt/openstack-helm-infra
     bash -x ./tools/deployment/armada/020-armada-render-manifests.sh | tee -a logs
   ignore_errors: false
-  delegate_to: "{{ groups['airship_contr'][0] }}"
+  delegate_to: "{{ groups['airship_contr'] }}"
   run_once: True
 
 - name: Install 025-armada-validate-manifests.sh
@@ -47,7 +46,7 @@
     cd /opt/openstack-helm-infra
     bash -x ./tools/deployment/armada/025-armada-validate-manifests.sh | tee -a logs
   ignore_errors: false
-  delegate_to: "{{ groups['airship_contr'][0] }}"
+  delegate_to: "{{ groups['airship_contr'] }}"
   run_once: True
 
 - name: Install 030-armada-apply-manifests.sh
@@ -57,7 +56,7 @@
     cd /opt/openstack-helm-infra
     bash -x ./tools/deployment/armada/030-armada-apply-manifests.sh | tee -a logs
   ignore_errors: false
-  delegate_to: "{{ groups['airship_contr'][0] }}"
+  delegate_to: "{{ groups['airship_contr'] }}"
   run_once: True
 
 - name: Install 035-armada-update-uuids.sh
@@ -67,7 +66,7 @@
     cd /opt/openstack-helm-infra
     bash -x ./tools/deployment/armada/035-armada-update-uuids.sh | tee -a logs
   ignore_errors: false
-  delegate_to: "{{ groups['airship_contr'][0] }}"
+  delegate_to: "{{ groups['airship_contr'] }}"
   run_once: True
 
 - name: Install 040-armada-update-passwords.sh
@@ -77,5 +76,5 @@
     cd /opt/openstack-helm-infra
     bash -x ./tools/deployment/armada/040-armada-update-passwords.sh | tee -a logs
   ignore_errors: false
-  delegate_to: "{{ groups['airship_contr'][0] }}"
+  delegate_to: "{{ groups['airship_contr'] }}"
   run_once: True

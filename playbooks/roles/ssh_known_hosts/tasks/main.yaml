@@ -6,7 +6,6 @@
     with_items: "{{ groups['k8s_contr'] }}"
     args:
       executable: /bin/bash
-    run_once: True
 
   - when: "{{ lookup('env', 'ANSIBLE_HOST_KEY_CHECKING') }}"
     name: Add k8s_minion host key to known_hosts
@@ -14,7 +13,6 @@
     with_items: "{{ groups['k8s_minion'] }}"
     args:
       executable: /bin/bash
-    run_once: True
 
   - name: Install private key on k8s_contr
     copy:
@@ -34,7 +32,6 @@
       mode: 0600
       group: ubuntu
       owner: ubuntu
-    run_once: True
     delegate_to: "{{ item }}"
     delegate_facts: True
     loop: "{{ groups['all'] }}"

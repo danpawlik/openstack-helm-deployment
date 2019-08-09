@@ -1,0 +1,14 @@
+---
+- when: install_docker_ce
+  block:
+  - name: Check if docker is installed
+    shell: dpkg -l | grep -qv 'docker-ce'
+    register: docker_check
+    ignore_errors: true
+
+  - name: Get docker
+    shell: curl -sSL https://get.docker.com/ | sh
+
+  - name: Get docker
+    shell: sudo usermod -aG docker ubuntu
+    ignore_errors: true

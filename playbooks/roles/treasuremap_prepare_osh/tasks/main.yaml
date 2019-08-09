@@ -1,12 +1,21 @@
 ---
-- name: 100-deploy-osh.sh
-  sudo: yes
-  sudo_user: ubuntu
-  shell: |
-    cd treasuremap && \
-    sudo  ./tools/deployment/airskiff/developer/100-deploy-osh.sh >> /home/ubuntu/logs 2>&1
-  ignore_errors: yes
-  run_once: true
-  delegate_to: "{{ item }}"
-  delegate_facts: True
-  loop: "{{ groups['k8s_contr'] }}"
+- when: not use_shipyard_action and setup_airskiff
+  block:
+  - name: 100-deploy-osh.sh
+    sudo: yes
+    sudo_user: ubuntu
+    shell: |
+      cd treasuremap && \
+      sudo  ./tools/deployment/airskiff/developer/100-deploy-osh.sh >> /home/ubuntu/logs 2>&1
+    ignore_errors: yes
+    run_once: true
+
+  - name: 100-deploy-osh.sh
+    sudo: yes
+    sudo_user: ubuntu
+    shell: |
+      export TARGET_MANIFEST='full-site'
+      cd treasuremap && \
+      sudo  ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh >> /home/ubuntu/logs 2>&1
+    ignore_errors: yes
+    run_once: true

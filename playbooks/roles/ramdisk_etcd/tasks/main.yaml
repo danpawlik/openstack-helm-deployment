@@ -1,6 +1,7 @@
 ---
 # From https://github.com/openstack/devstack/blob/master/lib/etcd3#L108
-- when: etcd_on_ramdisk
+# ramdisk_etcd
+- when: etcd_on_ramdisk and setup_airskiff
   name: Mount data dir as ramdisk
   sudo: yes
   sudo_user: ubuntu

@@ -11,14 +11,12 @@
     delegate_to: "{{ item }}"
     delegate_facts: True
     loop: "{{ groups['k8s_minion'] }}"
-    run_once: True
 
   - name: Accept SSH key self k8s_contr
     shell: cat .ssh/id_rsa.pub | tee -a .ssh/authorized_keys
     delegate_to: "{{ item }}"
     delegate_facts: True
     loop: "{{ groups['k8s_contr'] }}"
-    run_once: True
 
   - name: Ensure SSH connectivity between k8s_contr and k8s_minion
     shell: |
@@ -32,4 +30,3 @@
     loop: "{{ groups['k8s_contr'] }}"
     register: command_result
     failed_when: "command_result.rc == 1"
-    run_once: True

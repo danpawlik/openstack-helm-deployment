@@ -90,11 +90,24 @@ source openrc
 ```
 
 4. Now you just need to execute Ansible playbook:
+- for Airskiff:
 ```
 export ANSIBLE_HOST_KEY_CHECKING=False
 export TREASUREMAP_OVERWRITE=true
-export NAMESPACE=test_ns
-ansible-playbook playbooks/airskiff-deploy-all.yaml -vv
+export NAMESPACE=testns
+export USE_SHIPYARD_ACTION=false
+export SETUP_AIRSKIFF=true
+```
+- for Openstack Helm:
+```
+export ANSIBLE_HOST_KEY_CHECKING=False
+export SETUP_OSH=true
+```
+
+Then execute ansible playbooks:
+```
+ansible-playbook playbooks/osh-deploy-cluster.yaml-vv
+ansible-playbook playbooks/osh-deploy-openstack.yaml -vv
 ```
 
 NOTE:

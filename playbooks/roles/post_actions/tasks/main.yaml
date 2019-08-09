@@ -13,8 +13,4 @@
         echo "source <(kubectl completion bash)" | tee -a .bashrc
         echo "alias k=kubectl" | tee -a .bashrc
         echo "complete -F __start_kubectl k" | tee -a .bashrc
-      delegate_to: "{{ item }}"
-      delegate_facts: True
-      loop: "{{ groups['k8s_contr'] }}"
-      ignore_errors: yes
       run_once: True

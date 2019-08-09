@@ -72,7 +72,6 @@
       timeout: 150
       host: "{{ item }}"
     with_items: "{{ groups['k8s_contr'] }}"
-    run_once: true
 
   - when: new_k8s_minion_result.changed
     name: wait for instances k8s_minion to be ready
@@ -82,4 +81,3 @@
       timeout: 150
       host: "{{ item }}"
     with_items: "{{ groups['k8s_minion'] }}"
-    run_once: true

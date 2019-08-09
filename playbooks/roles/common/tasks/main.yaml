@@ -9,7 +9,6 @@
       destination_port: '22'
       jump: ACCEPT
       action: insert
-    run_once: True
 
   - name: Upgrade hosts
     sudo: yes
@@ -17,25 +16,27 @@
     shell: |
       bash -x scripts/upgrade-host.sh | tee -a logs
     ignore_errors: yes
-    run_once: True
 
   - name: remove nano
-    sudo: yes
-    sudo_user: ubuntu
-    shell: |
-      sudo apt remove -y nano | tee -a logs
-    ignore_errors: true
+    apt:
+      name: nano
+      state: absent
 
   - name: install other packages
-    sudo: yes
-    sudo_user: ubuntu
-    shell: |
-      sudo apt update | tee -a logs
-      sudo apt install -y vim htop ccze | tee -a logs
-    ignore_errors: true
+    apt:
+      name: "{{ packages }}"
+      update_cache: yes
+    vars:
+      packages:
+      - vim
+      - htop
+      - ccze
 
   - when: not setup_minikube
     name: Install NFS common package
-    shell: |
-      sudo DEBIAN_FRONTEND=noninteractive apt install -y nfs-common python-wheel | tee -a logs
-    ignore_errors: false
+    apt:
+      name: "{{ packages }}"
+    vars:
+      packages:
+      - nfs-common
+      - python-wheel

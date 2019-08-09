@@ -50,5 +50,9 @@
   become: True
   vars:
     ansible_host_key_checking: false
+    whitelist_file: tempest/whitelist.list
+    blacklist_file: tempest/blacklist.list
+    tempest_params: "--concurrency 4"
+    tempest_branch: "master"
   roles:
     - tempest

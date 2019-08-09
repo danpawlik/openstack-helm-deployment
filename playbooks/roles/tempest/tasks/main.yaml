@@ -18,7 +18,7 @@
     path: treasuremap
   register: treasuremap_dir
 
-- when: treasuremap_dir.stat.exists and treasuremap_dir.stat.isdir and treasuremap_overwrite
+- when: treasuremap_dir.stat.exists and treasuremap_dir.stat.isdir
   name: Check if Airship Shipyard has finished its work
   sudo: yes
   sudo_user: ubuntu
@@ -71,10 +71,10 @@
     bash -x tempest/run-tempest.sh >> tempest/tempest-test-output 2>&1
   register: tempest_output
   environment:
-    WHITELIST_FILE: tempest/whitelist.list
-    BLACKLIST_FILE: tempest/blacklist.list
-    TEMPEST_PARAMS: "--concurrency 8"
-    TEMPEST_BRANCH: "master"
+    WHITELIST_FILE: "{{ whitelist_file }}"
+    BLACKLIST_FILE: "{{ blacklist_file }}"
+    TEMPEST_PARAMS: "{{ tempest_params }}"
+    TEMPEST_BRANCH: "{{ tempest_branch }}"
 
 - when: Get tempest_output var
   debug:

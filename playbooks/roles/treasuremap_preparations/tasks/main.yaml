@@ -1,10 +1,10 @@
 ---
-- name: Clone treasuremap repo
+- when: setup_airskiff
+  name: Clone treasuremap repo
   sudo: yes
   sudo_user: ubuntu
   shell: |
     git clone https://opendev.org/airship/treasuremap.git treasuremap | tee -a logs
   ignore_errors: true
-  delegate_to: "{{ item }}"
-  delegate_facts: True
   loop: "{{ groups['k8s_contr'] }}"
+  run_once: true

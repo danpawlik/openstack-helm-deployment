@@ -1,0 +1,95 @@
+---
+- name:
+  hosts: localhost
+  tasks:
+    - name: Set k8s_hosts as fact
+      set_fact:
+        k8s_hosts:
+          k8s_contr:
+            - "{{ lookup('env', 'CONTR_NAME') if lookup('env', 'CONTR_NAME') != '' else 'osh_bob_contr' }}"
+          k8s_minion:
+            # If you need more minion nodes, just add same entry
+            - "{{ lookup('env', 'MINION_1_NAME') if lookup('env', 'MINION_1_NAME') != '' else 'osh_stevard_minion'  }}"
+            - "{{ lookup('env', 'MINION_2_NAME') if lookup('env', 'MINION_2_NAME') != '' else 'osh_kevin_minion'  }}"
+        contr_flavor: b2-60
+        contr_image: "Ubuntu 18.04"
+        contr_key_name: ansible_key
+        contr_net_name: Ext-Net
+        minion_flavor: b2-30
+        minion_image: "Ubuntu 18.04"
+        minion_net_name: Ext-Net
+        # Name of the docker registry that later ansible will pull images
+        repo_name: docker.io
+        openstack_keypair_name: "{{ lookup('env', 'OPENSTACK_KEYPAIR_NAME') if lookup('env', 'OPENSTACK_KEYPAIR_NAME') != '' else 'ansible_key' }}"
+        ansible_ssh_keyname: "{{ lookup('env', 'ANSIBLE_SSH_KEYNAME') if lookup('env', 'ANSIBLE_SSH_KEYNAME') != '' else 'id_rsa_ansible'  }}"
+  tags:
+    - local_inventory
+
+- name: Add ssh key if not present
+  hosts: localhost
+  remote_user: ubuntu
+  gather_facts: False
+  roles:
+    - ssh_keys
+
+- name: Create servers
+  hosts: localhost
+  gather_facts: False
+  roles:
+    - create_servers
+
+- name:
+  gather_facts: False
+  hosts:
+    - localhost
+    - k8s_contr
+    - k8s_minion
+  tasks:
+    - name: Set k8s_hosts as fact
+      set_fact:
+        openstack_keypair_name: "{{ lookup('env', 'OPENSTACK_KEYPAIR_NAME') if lookup('env', 'OPENSTACK_KEYPAIR_NAME') != '' else 'ansible_key' }}"
+        ansible_ssh_keyname: "{{ lookup('env', 'ANSIBLE_SSH_KEYNAME') if lookup('env', 'ANSIBLE_SSH_KEYNAME') != '' else 'id_rsa_ansible'  }}"
+        install_docker_ce: "{{ true if lookup('env', 'INSTALL_DOCKER_CE') == 'true' else false }}"
+        repo_name: "{{ lookup('env', 'DOCKER_REPO_NAME') }}"
+        repo_login: "{{ lookup('env', 'DOCKER_REPO_LOGIN') }}"
+        repo_password: "{{ lookup('env', 'DOCKER_REPO_PASSWORD') }}"
+        etcd_on_ramdisk: "{{ true if lookup('env', 'ETC_ON_RAMDISK') == 'true' else false }}"
+        setup_minikube: "{{ true if lookup('env', 'SETUP_MINIKUBE') == 'true' else false }}"
+        treasuremap_overwrite: "{{ true if lookup('env', 'TREASUREMAP_OVERWRITE') == '' else false }}"
+        namespace: "{{ lookup('env', 'NAMESPACE') if lookup('env', 'NAMESPACE') != '' else 'testnamespace' }}"
+        use_shipyard_action: "{{ true if lookup('env', 'USE_SHIPYARD_ACTION') == 'true' else false }}"
+        setup_airskiff: "{{ true if lookup('env', 'SETUP_AIRSKIFF') == 'true' else false }}"
+        setup_osh: "{{ true if lookup('env', 'SETUP_OSH') == 'true' else false }}"
+
+# For OSH
+- name: Pull images defined in helm charts
+  hosts:
+    - k8s_contr
+    - k8s_minion
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  roles:
+    - helm_overwrite
+
+- name: Install Openstack services if OSH
+  hosts:
+    - k8s_contr
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  vars:
+    ansible_host_key_checking: false
+  roles:
+    - deploy_os_osh_services
+
+# For airskiff
+
+- name: Do post treasuremap things if Airskiff
+  hosts:
+    - k8s_contr
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  roles:
+    - treasuremap_prepare_osh
