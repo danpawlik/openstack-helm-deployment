@@ -1,0 +1,75 @@
+---
+schema: armada/Chart/v1
+metadata:
+  schema: metadata/Document/v1
+  name: mynamespace-nova
+  layeringDefinition:
+    abstract: false
+    layer: site
+    parentSelector:
+      name: nova-global
+      component: nova
+    actions:
+      - method: merge
+        path: .
+      - method: replace
+        path: .values.labels.agent
+      - method: delete
+        path: .values.ceph_client
+      - method: replace
+        path: .values.pod
+      - method: replace
+        path: .values.dependencies.static
+  storagePolicy: cleartext
+data:
+  chart_name: mynamespace-nova
+  release: mynamespace-nova
+  namespace: mynamespace
+  upgrade:
+    no_hooks: false
+    pre:
+      delete:
+        - type: job
+          labels:
+            release_group: airship-mynamespace-nova
+    post:
+      create: []
+  wait:
+    timeout: 900
+    labels:
+      release_group: airship-mynamespace-nova
+  values:
+    labels:
+      agent:
+        compute:
+          node_selector_key: openstack-compute-node
+          node_selector_value: enabled
+        compute_ironic:
+          node_selector_key: openstack-compute-node
+          node_selector_value: enabled
+    conf:
+      ceph:
+        enabled: false
+      nova:
+        libvirt:
+          virt_type: qemu
+    pod:
+      replicas:
+        api_metadata: 1
+        placement: 1
+        osapi: 1
+        conductor: 1
+        consoleauth: 1
+        scheduler: 1
+        novncproxy: 1
+
+    dependencies:
+      static:
+        compute:
+          pod:
+            - requireSameNode: true
+#              labels:
+#                application: libvirt
+#                component: libvirt
+#
+...

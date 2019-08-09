@@ -18,17 +18,15 @@
 - when: treasuremap_dir.stat.exists and treasuremap_dir.stat.isdir and treasuremap_overwrite
   name: Copy trasuremap overwrite files
   synchronize:
-    src: airship-overwrite/
-    dest: treasuremap/
-
-- when: treasuremap_overwrite
-  name: Change br-ex to docker0
-  shell: |
-    sed 's/\'EXTERNAL_INTERFACE\'/docker0/g' treasuremap/global/software/charts/osh/openstack-compute-kit/neutron.yaml
-  ignore_errors: true
+    src: airship-overwrite/mynamespace/
+    dest: "treasuremap/site/{{ namespace }}"
 
 - when: treasuremap_overwrite
   name: Change namespace to defined one
   shell: |
-    find treasuremap -type f -exec sed -i -e "s/msite1/{{ namespace }}/g" {} \;
+    find treasuremap -type f -exec sed -i -e "s/mynamespace/{{ namespace }}/g" {} \;
   ignore_errors: true
+
+# FIXME: install openvswitch not in the container, but on the host.
+# It is not posssible to run openvswitch in multiple namespaces (without
+# a lot of changes)

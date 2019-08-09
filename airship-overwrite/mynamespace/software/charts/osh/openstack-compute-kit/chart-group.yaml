@@ -1,0 +1,23 @@
+---
+schema: armada/ChartGroup/v1
+metadata:
+  schema: metadata/Document/v1
+  name: mynamespace-compute-kit-airskiff
+  layeringDefinition:
+    abstract: false
+    layer: site
+    parentSelector:
+      name: openstack-compute-kit-chart-group-global
+    actions:
+      - method: merge
+        path: .sequenced
+      - method: replace
+        path: .chart_group
+  storagePolicy: cleartext
+data:
+  sequenced: false
+  chart_group:
+      # If livcirt has not been created in openstack namespace, uncomment this one
+      #    - mynamespace-libvirt-airskiff
+    - mynamespace-neutron-airskiff
+    - mynamespace-nova

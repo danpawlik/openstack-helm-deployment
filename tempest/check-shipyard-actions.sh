@@ -3,11 +3,11 @@
 TIMEOUT=${TIMEOUT:-600}
 ACTION_NAME=${ACTION_NAME:-''}
 TREASUREMAP_DIR=${TREASUREMAP_DIR:-'/home/ubuntu/treasuremap'}
-ACTION_STATUS=$(bash "${TREASUREMAP_DIR}/tools/airship" shipyard get actions | grep -i "${ACTION_NAME}" | awk '{if(NR==2) print $3}')
 
 END=$(date -d "+${TIMEOUT}seconds" +%s)
 
 while true; do
+    ACTION_STATUS=$(bash "${TREASUREMAP_DIR}/tools/airship" shipyard get actions | grep -i "${ACTION_NAME}" | awk '{if(NR==2) print $3}')
 
     if [ "${ACTION_STATUS,,}" = "complete" ]; then
         break

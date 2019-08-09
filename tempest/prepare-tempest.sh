@@ -54,7 +54,7 @@ if echo $SUBNET_LIST | grep -iqv "public-subnet"; then
     export OSH_EXT_NET_NAME="public"
     export OSH_EXT_SUBNET_NAME="public-subnet"
     export OSH_EXT_SUBNET="172.24.4.0/24"
-    export OSH_EXT_SUBNET_ALLOC_START="172.24.4.150"
+    export OSH_EXT_SUBNET_ALLOC_START="172.24.4.100"
     export OSH_EXT_SUBNET_ALLOC_END="172.24.4.250"
     export OSH_BR_EX_ADDR="172.24.4.1"
     export OSH_DNS_ADDRESS="10.96.0.10"
@@ -68,7 +68,7 @@ if echo $SUBNET_LIST | grep -iqv "public-subnet"; then
       --subnet-range ${OSH_EXT_SUBNET} \
       --allocation-pool start=${OSH_EXT_SUBNET_ALLOC_START},end=${OSH_EXT_SUBNET_ALLOC_END} \
       --gateway ${OSH_BR_EX_ADDR} \
-      --no-dhcp \
+      --dhcp \
       --dns-nameserver ${OSH_DNS_ADDRESS} \
       --network ${OSH_EXT_NET_NAME}
 fi
@@ -89,4 +89,14 @@ if echo $SUBNET_LIST | grep -iqv "shared-default-subnetpool"; then
     if grep -q "OSH_PRIVATE_SUBNET_POOL" /home/ubuntu/tempest/tempest.conf; then
         sed -i 's|OSH_PRIVATE_SUBNET_POOL|'$OSH_PRIVATE_SUBNET_POOL'|g' /home/ubuntu/tempest/tempest.conf
     fi
+fi
+
+# set routing between flat network and host
+if sudo ip route | grep -q br-ex; then
+    echo "Show route on the br-ex interface"
+    sudo ip a list dev br-ex
+else
+    sudo ip a a 172.24.4.10/24 dev br-ex
+    sudo ip link set up dev br-ex
+    echo "Added route to br-ex!"
 fi

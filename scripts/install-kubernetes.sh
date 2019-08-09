@@ -64,7 +64,7 @@ if [ "${INSTALL_OSH_DEPS}" = "true" ]; then
         rbd-nbd \
         nfs-common \
         bridge-utils \
-        libxtables11
+        libxtables12
 
     sudo -E tee /etc/modprobe.d/rbd.conf << EOF
  install rbd /bin/true
@@ -111,8 +111,9 @@ echo "deb http://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/a
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
 
 sudo apt update
-sudo apt install linux-image-extra-virtual ca-certificates curl \
-                 software-properties-common -y
+sudo DEBIAN_FRONTEND=noninteractive apt install linux-image-extra-virtual \
+                                                ca-certificates curl \
+                                                software-properties-common -y
 
 if [ "${INSTALL_SPECIFIED_VERSION}" = "true" ]; then
     sudo DEBIAN_FRONTEND=noninteractive apt install -y "kubernetes-cni=${K8S_CNI_VESRSION}"

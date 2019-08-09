@@ -1,0 +1,22 @@
+---
+schema: armada/ChartGroup/v1
+metadata:
+  schema: metadata/Document/v1
+  name: mynamespace-ingress-controller-airskiff
+  layeringDefinition:
+    abstract: false
+    layer: site
+    parentSelector:
+      name: openstack-ingress-controller-chart-group-global
+      component: ingress
+    actions:
+      - method: replace
+        path: .chart_group
+      - method: replace
+        path: .description
+  storagePolicy: cleartext
+data:
+  description: mynamespace Namespace Ingress
+  chart_group:
+    - mynamespace-ingress-controller-airskiff
+...

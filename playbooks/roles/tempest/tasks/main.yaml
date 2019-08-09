@@ -13,32 +13,45 @@
     src: tempest/
     dest: tempest/
 
-- name: Check if Airship Shipyard has finished its work
+- name: Check if trasuremap exists
+  stat:
+    path: treasuremap
+  register: treasuremap_dir
+
+- when: treasuremap_dir.stat.exists and treasuremap_dir.stat.isdir and treasuremap_overwrite
+  name: Check if Airship Shipyard has finished its work
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    if [ -d "treasuremap" ] && [ -d "tempest" ]; then
+    if [ -d 'treasuremap' ] && [ -d 'tempest' ]; then
       bash -x tempest/check-shipyard-actions.sh >> tempest/tempest-logs 2>&1
-    else
-      exit 1
     fi
   ignore_errors: false
   environment:
     ACTION_NAME: ''
     TIMEOUT: 2000
 
-- name: Wait for services to be deployed
+- when: treasuremap_dir.stat.exists
+  name: Wait for services to be deployed on airskiff host
   sudo: yes
   sudo_user: ubuntu
   shell: |
     bash -x openstack-helm-infra/tools/deployment/common/wait-for-pods.sh openstack >> tempest/tempest-logs 2>&1
   ignore_errors: false
 
+- when: not treasuremap_dir.stat.exists
+  name: Wait for services to be deployed on openstack host
+  sudo: yes
+  sudo_user: ubuntu
+  shell: |
+    bash -x /opt/openstack-helm-infra/tools/deployment/common/wait-for-pods.sh openstack >> tempest/tempest-logs 2>&1
+  ignore_errors: false
+
 - name: Check services replication
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x check-service-replication.sh >> tempest/tempest-logs 2>&1
+    bash -x scripts/check-service-replication.sh >> tempest/tempest-logs 2>&1
   environment:
     NAMESPACE: openstack
     SCALE_SERVICES: true

@@ -37,5 +37,5 @@
   - when: not setup_minikube
     name: Install NFS common package
     shell: |
-      sudo apt install -y nfs-common python-wheel | tee -a logs
+      sudo DEBIAN_FRONTEND=noninteractive apt install -y nfs-common python-wheel | tee -a logs
     ignore_errors: false

@@ -6,17 +6,17 @@
       set_fact:
         k8s_hosts:
           k8s_contr:
-            - "{{ lookup('env', 'CONTR_NAME') if lookup('env', 'CONTR_NAME') != '' else 'bob_contr' }}"
+            - "{{ lookup('env', 'CONTR_NAME') if lookup('env', 'CONTR_NAME') != '' else 'armada_bob_contr' }}"
           k8s_minion:
             # If you need more minion nodes, just add same entry
-            - "{{ lookup('env', 'MINION_1_NAME') if lookup('env', 'MINION_1_NAME') != '' else 'stevard_minion'  }}"
-            - "{{ lookup('env', 'MINION_2_NAME') if lookup('env', 'MINION_2_NAME') != '' else 'kevin_minion'  }}"
+            - "{{ lookup('env', 'MINION_1_NAME') if lookup('env', 'MINION_1_NAME') != '' else 'armada_stevard_minion'  }}"
+            - "{{ lookup('env', 'MINION_2_NAME') if lookup('env', 'MINION_2_NAME') != '' else 'armada_kevin_minion'  }}"
         contr_flavor: b2-60
-        contr_image: "Ubuntu 16.04"
+        contr_image: "Ubuntu 18.04"
         contr_key_name: ansible_key
         contr_net_name: Ext-Net
-        minion_flavor: b2-60
-        minion_image: "Ubuntu 16.04"
+        minion_flavor: b2-30
+        minion_image: "Ubuntu 18.04"
         minion_net_name: Ext-Net
         # Name of the docker registry that later ansible will pull images
         repo_name: docker.io
