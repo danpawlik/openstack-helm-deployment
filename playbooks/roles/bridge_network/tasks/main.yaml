@@ -1,0 +1,26 @@
+---
+- name: Remind about FLAT network addressation
+  debug:
+    msg: "If you use FLAT network, set proper BRIDGE_ADDRESS in bridge_network role!"
+
+# NOTE: BRIDGE_ADDRESS should be the same as FLAT network
+# set in prepare-tempest.sh
+- name: Set ip address on minion_1
+  become: true
+  become_user: ubuntu
+  shell: |
+    echo "Setting ip address {{ item}} for $(hostname)" | tee -a tempest-preparation-logs
+    export BRIDGE_ADDRESS="{{ item }}"
+    bash -x scripts/bridge_network.sh | tee -a tempest-preparation-logs
+  ignore_errors: True
+  with_random_choice:
+    - "172.24.4.10"
+    - "172.24.4.11"
+    - "172.24.4.12"
+    - "172.24.4.13"
+    - "172.24.4.14"
+    - "172.24.4.15"
+    - "172.24.4.17"
+    - "172.24.4.18"
+    - "172.24.4.19"
+    - "172.24.4.20"

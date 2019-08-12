@@ -23,8 +23,8 @@
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    if [ -d 'treasuremap' ] && [ -d 'tempest' ]; then
-      bash -x tempest/check-shipyard-actions.sh >> tempest/tempest-logs 2>&1
+    if [ -d 'treasuremap' ]; then
+      bash -x scripts/check-shipyard-actions.sh > tempest-preparation-logs 2>&1
     fi
   ignore_errors: false
   environment:
@@ -36,7 +36,7 @@
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x openstack-helm-infra/tools/deployment/common/wait-for-pods.sh openstack >> tempest/tempest-logs 2>&1
+    bash -x openstack-helm-infra/tools/deployment/common/wait-for-pods.sh openstack >> tempest-preparation-logs 2>&1
   ignore_errors: false
 
 - when: not treasuremap_dir.stat.exists
@@ -44,14 +44,14 @@
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x /opt/openstack-helm-infra/tools/deployment/common/wait-for-pods.sh openstack >> tempest/tempest-logs 2>&1
+    bash -x /opt/openstack-helm-infra/tools/deployment/common/wait-for-pods.sh openstack >> tempest-preparation-logs 2>&1
   ignore_errors: false
 
 - name: Check services replication
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x scripts/check-service-replication.sh >> tempest/tempest-logs 2>&1
+    bash -x scripts/check-service-replication.sh >> tempest-preparation-logs 2>&1
   environment:
     NAMESPACE: openstack
     SCALE_SERVICES: true
@@ -61,14 +61,14 @@
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x tempest/prepare-tempest.sh >> tempest/tempest-logs 2>&1
+    bash -x scripts/prepare-tempest.sh >> tempest-preparation-logs 2>&1
   register: tempest_output
 
 - name: Execute tempest test
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x tempest/run-tempest.sh >> tempest/tempest-test-output 2>&1
+    bash -x scripts/run-tempest.sh > tempest-test-output 2>&1
   register: tempest_output
   environment:
     WHITELIST_FILE: "{{ whitelist_file }}"

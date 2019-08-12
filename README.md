@@ -15,16 +15,9 @@ Those playbooks can deploy:
 
 
 ## IMPORTANT NOTE
-
-All playbooks begin work by reading "local_inventory" playbook tasks.
-
-In this place, you can define:
-- how many controllers and nodes should be
-- what flavors should be taken
-- what images
-- etc.
-
-Please read local_inventory playbooks before you start executing the playbooks!
+Currently tempest tests uses FLAT network type. Please make sure,
+that network addressation in bridge_network role is same as
+prepare_tempest.sh script has.
 
 
 ## Clone and install Ansible

@@ -42,6 +42,25 @@
   tags:
     - create_servers
 
+# Copy
+- name: Copy required scripts
+  hosts:
+    - k8s_contr
+    - k8s_minion
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  roles:
+    - copy_scripts
+
+- name: Bridge network traffic between hosts because we use FLAT network for tempest
+  hosts:
+    - k8s_contr
+    - k8s_minion
+  gather_facts: False
+  roles:
+    - bridge_network
+
 - name: Prepare host to use Openstack Tempest
   hosts:
     - k8s_contr

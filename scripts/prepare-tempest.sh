@@ -2,7 +2,20 @@
 
 set -x
 
-source /home/ubuntu/openrc
+OPENRC_PATH=${OPENRC_PATH:-'/home/ubuntu/openrc'}
+TEMPEST_CONF_PATH=${TEMPEST_CONF_PATH:-'"/home/ubuntu/tempest/tempest.conf'}
+
+if [ ! -f "${OPENRC_PATH}" ]; then
+    echo "Could not find openrc file. Exit"
+    exit 1
+fi
+
+if [ ! -d "tempest" ]; then
+    echo "Could not find tempest dir. Exit"
+    exit 1
+fi
+
+source $OPENRC_PATH
 
 IMAGES=$(openstack image list -c Name -f value)
 if echo $IMAGES | grep -iqv 'Ubuntu'; then
@@ -45,8 +58,8 @@ if echo $FLAVOR_LIST | grep -iqv "tempest2"; then
 fi
 
 OPENSTACK_ADMIN_PASSWORD=$(grep OS_PASSWORD /home/ubuntu/openrc  | cut -f2 -d'=')
-if grep -q "OPENSTACK_ADMIN_PASSWORD" /home/ubuntu/tempest/tempest.conf; then
-    sed -i "s/OPENSTACK_ADMIN_PASSWORD/$OPENSTACK_ADMIN_PASSWORD/g" /home/ubuntu/tempest/tempest.conf
+if grep -q "OPENSTACK_ADMIN_PASSWORD" "${TEMPEST_CONF_PATH}"; then
+    sed -i "s/OPENSTACK_ADMIN_PASSWORD/$OPENSTACK_ADMIN_PASSWORD/g" "${TEMPEST_CONF_PATH}"
 fi
 
 SUBNET_LIST=$(openstack subnet list -c Name -f value)
@@ -74,8 +87,8 @@ if echo $SUBNET_LIST | grep -iqv "public-subnet"; then
 fi
 
 NETWORK_ID=$(openstack network show public -f value -c id)
-if grep -q "NETWORK_ID" /home/ubuntu/tempest/tempest.conf; then
-    sed -i "s/NETWORK_ID/$NETWORK_ID/g" /home/ubuntu/tempest/tempest.conf
+if grep -q "NETWORK_ID" "${TEMPEST_CONF_PATH}"; then
+    sed -i "s/NETWORK_ID/$NETWORK_ID/g" "${TEMPEST_CONF_PATH}"
 fi
 
 if echo $SUBNET_LIST | grep -iqv "shared-default-subnetpool"; then
@@ -86,17 +99,7 @@ if echo $SUBNET_LIST | grep -iqv "shared-default-subnetpool"; then
       --default-prefix-length ${OSH_PRIVATE_SUBNET_POOL_DEF_PREFIX} \
       --pool-prefix ${OSH_PRIVATE_SUBNET_POOL}
 
-    if grep -q "OSH_PRIVATE_SUBNET_POOL" /home/ubuntu/tempest/tempest.conf; then
-        sed -i 's|OSH_PRIVATE_SUBNET_POOL|'$OSH_PRIVATE_SUBNET_POOL'|g' /home/ubuntu/tempest/tempest.conf
+    if grep -q "OSH_PRIVATE_SUBNET_POOL" "${TEMPEST_CONF_PATH}"; then
+        sed -i 's|OSH_PRIVATE_SUBNET_POOL|'$OSH_PRIVATE_SUBNET_POOL'|g' "${TEMPEST_CONF_PATH}"
     fi
-fi
-
-# set routing between flat network and host
-if sudo ip route | grep -q br-ex; then
-    echo "Show route on the br-ex interface"
-    sudo ip a list dev br-ex
-else
-    sudo ip a a 172.24.4.10/24 dev br-ex
-    sudo ip link set up dev br-ex
-    echo "Added route to br-ex!"
 fi
