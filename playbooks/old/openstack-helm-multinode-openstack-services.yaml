@@ -42,19 +42,6 @@
   tags:
     - create_servers
 
-- name: Pull images defined in helm charts
-  hosts:
-    - k8s_contr
-    - k8s_minion
-  gather_facts: False
-  remote_user: ubuntu
-  become: True
-  vars:
-    ansible_host_key_checking: false
-    repo_name: docker.io
-  roles:
-    - helm_overwrite
-
 - name: Install Openstack services
   hosts:
     - k8s_contr

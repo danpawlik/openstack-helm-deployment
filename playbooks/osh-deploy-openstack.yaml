@@ -61,8 +61,7 @@
         setup_airskiff: "{{ true if lookup('env', 'SETUP_AIRSKIFF') == 'true' else false }}"
         setup_osh: "{{ true if lookup('env', 'SETUP_OSH') == 'true' else false }}"
 
-# For OSH
-- name: Pull images defined in helm charts
+- name: Add private docker registry for k8s
   hosts:
     - k8s_contr
     - k8s_minion
@@ -70,7 +69,7 @@
   remote_user: ubuntu
   become: True
   roles:
-    - helm_overwrite
+    - k8s_docker_repo
 
 - name: Install Openstack services if OSH
   hosts:
@@ -84,7 +83,6 @@
     - deploy_os_osh_services
 
 # For airskiff
-
 - name: Do post treasuremap things if Airskiff
   hosts:
     - k8s_contr
