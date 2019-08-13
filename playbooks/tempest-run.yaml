@@ -12,27 +12,16 @@
             - "{{ lookup('env', 'MINION_1_NAME') if lookup('env', 'MINION_1_NAME') != '' else 'stevard_minion'  }}"
             - "{{ lookup('env', 'MINION_2_NAME') if lookup('env', 'MINION_2_NAME') != '' else 'kevin_minion'  }}"
         contr_flavor: b2-60
-        contr_image: "Ubuntu 16.04"
+        contr_image: "Ubuntu 18.04"
         contr_key_name: ansible_key
         contr_net_name: Ext-Net
-        minion_flavor: b2-60
-        minion_image: "Ubuntu 16.04"
+        minion_flavor: b2-30
+        minion_image: "Ubuntu 18.04"
         minion_net_name: Ext-Net
         # Name of the docker registry that later ansible will pull images
         repo_name: docker.io
         openstack_keypair_name: "{{ lookup('env', 'OPENSTACK_KEYPAIR_NAME') if lookup('env', 'OPENSTACK_KEYPAIR_NAME') != '' else 'ansible_key' }}"
         ansible_ssh_keyname: "{{ lookup('env', 'ANSIBLE_SSH_KEYNAME') if lookup('env', 'ANSIBLE_SSH_KEYNAME') != '' else 'id_rsa_ansible'  }}"
-  tags:
-    - local_inventory
-
-- name: Add ssh key if not present
-  hosts: localhost
-  remote_user: ubuntu
-  gather_facts: False
-  roles:
-    - ssh_keys
-  tags:
-    - keypair_add
 
 - name: Create servers
   hosts: localhost
@@ -41,6 +30,16 @@
     - create_servers
   tags:
     - create_servers
+
+- name:
+  hosts:
+    - localhost
+    - k8s_contr
+    - k8s_minion
+  tasks:
+    - name: Set k8s_hosts as fact
+      set_fact:
+        vrack_interface: "{{ lookup('env', 'VRACK_INTERFACE') if lookup('env', 'VRACK_INTERFACE') != '' else 'ens4'  }}"
 
 # Copy
 - name: Copy required scripts

@@ -54,8 +54,6 @@
     bash -x scripts/check-service-replication.sh >> tempest-preparation-logs 2>&1
   environment:
     NAMESPACE: openstack
-    SCALE_SERVICES: true
-    OS_SERVICES: "glance-api keystone-api neutron-server nova-api-metadata nova-api-osapi"
 
 - name: Prepare tempest test
   sudo: yes

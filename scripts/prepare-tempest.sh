@@ -3,15 +3,15 @@
 set -x
 
 OPENRC_PATH=${OPENRC_PATH:-'/home/ubuntu/openrc'}
-TEMPEST_CONF_PATH=${TEMPEST_CONF_PATH:-'"/home/ubuntu/tempest/tempest.conf'}
+TEMPEST_CONF_PATH=${TEMPEST_CONF_PATH:-'/home/ubuntu/tempest/tempest.conf'}
 
 if [ ! -f "${OPENRC_PATH}" ]; then
     echo "Could not find openrc file. Exit"
     exit 1
 fi
 
-if [ ! -d "tempest" ]; then
-    echo "Could not find tempest dir. Exit"
+if [ ! -f "${TEMPEST_CONF_PATH}" ]; then
+    echo "Could not find tempest file. Exit"
     exit 1
 fi
 

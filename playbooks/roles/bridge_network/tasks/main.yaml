@@ -24,3 +24,5 @@
     - "172.24.4.18"
     - "172.24.4.19"
     - "172.24.4.20"
+  environment:
+    VRACK_INTERFACE: "{{ vrack_interface }}"
