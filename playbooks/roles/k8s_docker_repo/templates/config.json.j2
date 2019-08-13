@@ -1,0 +1,11 @@
+{% if repo_name and repo_login and repo_password %}
+{
+	"auths": {
+		"{{ repo_name }}": {
+			"auth": "{{ [repo_login, repo_password] | join(':') | b64encode }}"
+		}
+	}
+}
+{% else %}
+{}
+{% endif %}

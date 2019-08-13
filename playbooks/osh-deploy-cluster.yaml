@@ -177,8 +177,7 @@
   roles:
     - docker_login
 
-# For OSH
-- name: Pull images defined in helm charts
+- name: Add private docker registry for k8s
   hosts:
     - k8s_contr
     - k8s_minion
@@ -186,7 +185,7 @@
   remote_user: ubuntu
   become: True
   roles:
-    - helm_overwrite
+    - k8s_docker_repo
 
 - name: Install required services if OSH
   hosts:
