@@ -57,6 +57,12 @@ if echo $FLAVOR_LIST | grep -iqv "tempest2"; then
         --public
 fi
 
+for sec_group in $(openstack security group list -f value -c ID);
+do
+    openstack security group rule create --protocol icmp "${sec_group}"
+    openstack security group rule create "${sec_group}"  --protocol tcp --dst-port 22:22 --remote-ip 0.0.0.0/0
+done
+
 OPENSTACK_ADMIN_PASSWORD=$(grep OS_PASSWORD /home/ubuntu/openrc  | cut -f2 -d'=')
 if grep -q "OPENSTACK_ADMIN_PASSWORD" "${TEMPEST_CONF_PATH}"; then
     sed -i "s/OPENSTACK_ADMIN_PASSWORD/$OPENSTACK_ADMIN_PASSWORD/g" "${TEMPEST_CONF_PATH}"

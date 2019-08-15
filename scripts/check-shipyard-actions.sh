@@ -9,6 +9,11 @@ END=$(date -d "+${TIMEOUT}seconds" +%s)
 while true; do
     ACTION_STATUS=$(bash "${TREASUREMAP_DIR}/tools/airship" shipyard get actions | grep -i "${ACTION_NAME}" | awk '{if(NR==2) print $3}')
 
+    if [ -z "${ACTION_STATUS}" ]; then
+        echo "No action detected. Let's continue"
+        break
+    fi
+
     if [ "${ACTION_STATUS,,}" = "complete" ]; then
         break
     fi

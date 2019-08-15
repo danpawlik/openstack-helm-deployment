@@ -90,11 +90,15 @@ export TREASUREMAP_OVERWRITE=true
 export NAMESPACE=testns
 export USE_SHIPYARD_ACTION=false
 export SETUP_AIRSKIFF=true
+# If you use OVH public cloud, create vrack (optional - tempest can communicate with VMs)
+VRACK_NET_NAME=vrack
 ```
 - for Openstack Helm:
 ```
 export ANSIBLE_HOST_KEY_CHECKING=False
 export SETUP_OSH=true
+# If you use OVH public cloud, create vrack (optional - tempest can communicate with VMs)
+VRACK_NET_NAME=vrack
 ```
 
 Then execute ansible playbooks:
