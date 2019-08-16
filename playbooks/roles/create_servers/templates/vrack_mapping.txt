@@ -1,0 +1,3 @@
+{% for item in vrack_mapping %}
+{{ item }}
+{% endfor %}

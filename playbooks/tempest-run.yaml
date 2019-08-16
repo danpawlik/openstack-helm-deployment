@@ -25,7 +25,8 @@
         ansible_ssh_keyname: "{{ lookup('env', 'ANSIBLE_SSH_KEYNAME') if lookup('env', 'ANSIBLE_SSH_KEYNAME') != '' else 'id_rsa_ansible'  }}"
 
 - name: Create servers
-  hosts: localhost
+  hosts:
+    - localhost
   gather_facts: False
   roles:
     - create_servers

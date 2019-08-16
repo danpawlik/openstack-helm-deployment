@@ -6,6 +6,7 @@
       nics:
         - net-name: "{{ contr_net_name }}"
         - net-name: "{{ vrack_net_name }}"
+      vrack_mapping: []
 
   - when: vrack_net_name is not defined
     name: vrack network is not defined
@@ -35,55 +36,6 @@
       loop_var: server_name
     register: new_k8s_contr_result
 
-#  - os_server_facts:
-#      auth:
-#        auth_url: "{{ lookup('env', 'OS_AUTH_URL') }}"
-#        username: "{{ lookup('env', 'OS_USERNAME') }}"
-#        password: "{{ lookup('env', 'OS_PASSWORD') }}"
-#        project_name: "{{ lookup('env', 'OS_TENANT_NAME') }}"
-#        user_domain_name: "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}"
-#        project_domain_name: "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}"
-#      server: 'airskiff-contr-1'
-#
-#  - fail:
-#      msg: "{{ openstack_servers[0] | json_query(vrack_addr) }}"
-#    vars:
-#      vrack_addr: 'addresses.vrack[0].addr'
-
-  - os_server_facts:
-      auth:
-        auth_url: "{{ lookup('env', 'OS_AUTH_URL') }}"
-        username: "{{ lookup('env', 'OS_USERNAME') }}"
-        password: "{{ lookup('env', 'OS_PASSWORD') }}"
-        project_name: "{{ lookup('env', 'OS_TENANT_NAME') }}"
-        user_domain_name: "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}"
-        project_domain_name: "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}"
-      server: "{{ server_name }}"
-    with_items: "{{ k8s_hosts['k8s_contr'] }}"
-    loop_control:
-      loop_var: server_name
-
-  - set_fact:
-      "{{ contr.name }}": "{{ contr | json_query(vrack_addr) }}"
-      test: "{{ contr | json_query(vrack_addr) }}"
-      test2: "{{ contr.name }}"
-    vars:
-      vrack_addr: 'addresses.vrack[0].addr'
-      name: 'name'
-    with_items: "{{ openstack_servers }}"
-    loop_control:
-      loop_var: contr
-
-  - name: Get vars
-    debug:
-      var: vars
-
-  - fail:
-      msg: aa
-
-
-
-
   - name: Add contr into local inventory
     add_host:
       name: "{{ server_info.openstack.public_v4 }}"
@@ -93,14 +45,17 @@
     loop_control:
       loop_var: server_info
 
-
-#  - when: vrack_net_name is defined
-#    name: Add contr vrack network as fact
-#    set_fact:
-#      "{{ server_info.openstack.name }}": "{{ server_info.openstack.addresses[vrack_net_name] }}[0]['addr']"
-#    with_items: "{{ new_k8s_contr_result.results | flatten(1) }}"
-#    loop_control:
-#      loop_var: server_info
+  - when: vrack_net_name is defined
+    name: Add vrack network as fact - contr nodes
+    set_fact:
+      vrack_mapping: "{{ vrack_mapping + [name + '=' + addr] }}"
+    with_items: "{{ new_k8s_contr_result.results | flatten(1) }}"
+    loop_control:
+      loop_var: server_info
+    vars:
+      vrack_addr: 'addresses.vrack[0].addr'
+      name: "{{ server_info.openstack.name }}"
+      addr: "{{ server_info.openstack | json_query(vrack_addr) }}"
 
   - name: "Spawning k8s_minion node"
     os_server:
@@ -133,6 +88,18 @@
     loop_control:
       loop_var: server_info
 
+  - when: vrack_net_name is defined
+    name: Add vrack network as fact - minion nodes
+    set_fact:
+      vrack_mapping: "{{ vrack_mapping + [name + '=' + addr] }}"
+    with_items: "{{ new_k8s_minion_result.results | flatten(1) }}"
+    loop_control:
+      loop_var: server_info
+    vars:
+      vrack_addr: 'addresses.vrack[0].addr'
+      name: "{{ server_info.openstack.name }}"
+      addr: "{{ server_info.openstack | json_query(vrack_addr) }}"
+
   - when: new_k8s_contr_result.changed
     name: wait for instances k8s_contr to be ready
     wait_for:
@@ -150,3 +117,15 @@
       timeout: 150
       host: "{{ item }}"
     with_items: "{{ groups['k8s_minion'] }}"
+
+  - when: vrack_net_name is defined
+    name: Create vrack mapping file
+    template:
+      src: vrack_mapping.txt
+      dest: vrack_mapping.txt
+      owner: ubuntu
+      group: ubuntu
+      mode: '0644'
+    delegate_to: "{{ item }}"
+    delegate_facts: True
+    loop: "{{ groups['all'] }}"

@@ -3,12 +3,21 @@
 BRIDGE_NAME=${BRIDGE_NAME:-'br-ex'}
 BRIDGE_ADDRESS=${BRIDGE_ADDRESS:-''}
 VRACK_INTERFACE=${VRACK_INTERFACE:-'ens4'}
-VRACK_ADDRESS=${VRACK_ADDRESS:-''}
+VRACK_ADDRESS=${VRACK_ADDRESS:-""}
 NETWORK_CLASS="172.24.4.0/24"
+MAPPING_FILE_PATH=${MAPPING_FILE_PATH:-"$HOME/vrack_mapping.txt"}
 
 if [ -z "${BRIDGE_ADDRESS}" ]; then
     echo "You need to provide br-ex network address"
     exit 1
+fi
+
+if [ -z "${VRACK_ADDRESS}" ] && [ -f "${MAPPING_FILE_PATH}" ]; then
+    # Take value from vrack mapping file. If
+    # hostname have chars ':' it will be replaced by
+    # '_".
+    hostname=$(sed 's/-/_/g' $HOSTNAME)
+    VRACK_ADDRESS=$(grep "${hostname}" "${HOME}/vrack_mapping.txt" | cut -f2 -d'=')
 fi
 
 if [ -z "${VRACK_ADDRESS}" ]; then
