@@ -154,7 +154,6 @@
   become: True
   roles:
     - treasuremap_preparations
-    - treasuremap_overwrite
     - treasuremap_additional_tasks
 
 - name: Clone OSH repo and setup k8s controller using OSH script

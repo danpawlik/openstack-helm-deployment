@@ -1,0 +1,31 @@
+---
+schema: pegleg/SoftwareVersions/v1
+metadata:
+  schema: metadata/Document/v1
+  name: software-versions-neutron
+  layeringDefinition:
+    abstract: false
+    layer: site
+    parentSelector:
+      name: software-versions-global
+    actions:
+      - method: merge
+        path: .images.osh.neutron
+  storagePolicy: cleartext
+data:
+  images:
+    osh:
+     neutron:
+       neutron_db_sync: {{ repo_name }}/ubuntu-source-neutron-base:bionic-master
+       neutron_server: {{ repo_name }}/ubuntu-source-neutron-base:bionic-master
+       neutron_dhcp: {{ repo_name }}/ubuntu-source-neutron-base:bionic-master
+       neutron_metadata: {{ repo_name }}/ubuntu-source-neutron-base:bionic-master
+       neutron_l3: {{ repo_name }}/ubuntu-source-neutron-base:bionic-master
+       neutron_l2gw: {{ repo_name }}/ubuntu-source-neutron-base:bionic-master
+       neutron_openvswitch_agent: {{ repo_name }}/ubuntu-source-neutron-base:bionic-master
+       neutron_linuxbridge_agent: {{ repo_name }}/ubuntu-source-neutron-base:bionic-master
+       neutron_sriov_agent: docker.io/openstackhelm/neutron:ocata-18.04-sriov
+       neutron_sriov_agent_init: docker.io/openstackhelm/neutron:ocata-18.04-sriov
+       neutron_bagpipe_bgp: {{ repo_name }}/ubuntu-source-neutron-base:bionic-master
+...
+

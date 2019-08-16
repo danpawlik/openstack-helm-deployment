@@ -72,6 +72,25 @@
   roles:
     - k8s_docker_repo
 
+- name: Treasuremap preparation
+  hosts:
+    - k8s_contr
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  roles:
+    - treasuremap_overwrite
+    - treasuremap_additional_tasks
+
+- name: Inject custom docker images
+  hosts:
+    - k8s_contr
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  roles:
+    - k8s_custom_images
+
 - name: Install Openstack services if OSH
   hosts:
     - k8s_contr
