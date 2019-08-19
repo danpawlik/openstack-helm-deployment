@@ -45,18 +45,6 @@
     loop_control:
       loop_var: server_info
 
-  - when: vrack_net_name is defined
-    name: Add vrack network as fact - contr nodes
-    set_fact:
-      vrack_mapping: "{{ vrack_mapping + [name + '=' + addr] }}"
-    with_items: "{{ new_k8s_contr_result.results | flatten(1) }}"
-    loop_control:
-      loop_var: server_info
-    vars:
-      vrack_addr: 'addresses.vrack[0].addr'
-      name: "{{ server_info.openstack.name }}"
-      addr: "{{ server_info.openstack | json_query(vrack_addr) }}"
-
   - name: "Spawning k8s_minion node"
     os_server:
       state: present
@@ -88,18 +76,6 @@
     loop_control:
       loop_var: server_info
 
-  - when: vrack_net_name is defined
-    name: Add vrack network as fact - minion nodes
-    set_fact:
-      vrack_mapping: "{{ vrack_mapping + [name + '=' + addr] }}"
-    with_items: "{{ new_k8s_minion_result.results | flatten(1) }}"
-    loop_control:
-      loop_var: server_info
-    vars:
-      vrack_addr: 'addresses.vrack[0].addr'
-      name: "{{ server_info.openstack.name }}"
-      addr: "{{ server_info.openstack | json_query(vrack_addr) }}"
-
   - when: new_k8s_contr_result.changed
     name: wait for instances k8s_contr to be ready
     wait_for:
@@ -119,13 +95,43 @@
     with_items: "{{ groups['k8s_minion'] }}"
 
   - when: vrack_net_name is defined
-    name: Create vrack mapping file
-    template:
-      src: vrack_mapping.txt
-      dest: vrack_mapping.txt
-      owner: ubuntu
-      group: ubuntu
-      mode: '0644'
-    delegate_to: "{{ item }}"
-    delegate_facts: True
-    loop: "{{ groups['all'] }}"
+    block:
+    - name: Add vrack network as fact - contr nodes
+      set_fact:
+        vrack_mapping: "{{ vrack_mapping + [name + '=' + addr] }}"
+      with_items: "{{ new_k8s_contr_result.results | flatten(1) }}"
+      loop_control:
+        loop_var: server_info
+      vars:
+        vrack_addr: 'addresses.vrack[0].addr'
+        name: "{{ server_info.openstack.name }}"
+        addr: "{{ server_info.openstack | json_query(vrack_addr) }}"
+
+    - name: Add vrack network as fact - minion nodes
+      set_fact:
+        vrack_mapping: "{{ vrack_mapping + [name + '=' + addr] }}"
+      with_items: "{{ new_k8s_minion_result.results | flatten(1) }}"
+      loop_control:
+        loop_var: server_info
+      vars:
+        vrack_addr: 'addresses.vrack[0].addr'
+        name: "{{ server_info.openstack.name }}"
+        addr: "{{ server_info.openstack | json_query(vrack_addr) }}"
+
+
+    - name: Check if vrack_mapping.txt file exists
+      stat:
+        path: vrack_mapping.txt
+      register: vrack_file
+
+    - when: not vrack_file.stat.exists
+      name: Create vrack mapping file
+      template:
+        src: vrack_mapping.txt
+        dest: vrack_mapping.txt
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['all'] }}"

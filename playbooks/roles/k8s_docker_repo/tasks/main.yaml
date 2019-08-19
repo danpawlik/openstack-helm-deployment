@@ -1,4 +1,5 @@
-- name: /var/lib/kubelet/config.json
+---
+- name: Create kubelet repo credential file
   template:
     src: config.json.j2
     dest: /var/lib/kubelet/config.json

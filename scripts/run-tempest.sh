@@ -9,6 +9,7 @@ WHITELIST_FILE=${WHITELIST_FILE:-''}
 BLACKLIST_FILE=${BLACKLIST_FILE:-''}
 TEMPEST_PARAMS=${TEMPEST_PARAMS:-''}
 TEMPEST_BRANCH=${TEMPEST_BRANCH:-'master'}
+SAVE_STATE=${SAVE_STATE:-'true'}
 
 COMMAND=""
 
@@ -30,6 +31,10 @@ fi
 
 if [ -n "${BLACKLIST_FILE}" ]; then
     COMMAND+="--blacklist-file ${BLACKLIST_FILE} "
+fi
+
+if [ "${SAVE_STATE}" = 'true' ]; then
+    COMMAND+="  --save-state "
 fi
 
 if [ -n "${TEMPEST_PARAMS}" ]; then

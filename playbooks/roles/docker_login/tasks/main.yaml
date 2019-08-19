@@ -1,19 +1,37 @@
 ---
 - when: repo_name and repo_login and repo_password
-  sudo: yes
-  sudo_user: ubuntu
-  shell: |
-    docker login "{{ repo_name }}" -u "{{ repo_login }}" -p"{{ repo_password }}"
-  ignore_errors: false
+  block:
+  - name: Login into docker repository
+    sudo: yes
+    sudo_user: ubuntu
+    shell: |
+      sudo docker login "{{ repo_name }}" -u "{{ repo_login }}" -p"{{ repo_password }}"
+    ignore_errors: false
+    register: docker_login
 
-- when: not repo_name and not repo_login and not repo_password
-  sudo: yes
-  sudo_user: ubuntu
-  synchronize:
-    src: docker/
-    dest: .docker/
+  - when: docker_login.stdout_lines == ["Login Succeeded"]
+    name: Restart docker service
+    service:
+      name: docker
+      state: restarted
 
-- name: Restart docker service
-  service:
-    name: docker
-    state: restarted
+- when: repo_name and repo_login and repo_password
+  block:
+  - name: When docker config.json file exists
+    stat:
+      path: .docker/config.json
+    register: file_result
+
+  - when: file_result.stat.exists == False
+    sudo: yes
+    sudo_user: ubuntu
+    synchronize:
+      src: docker/
+      dest: .docker/
+    register: docker_login
+
+  - when: docker_login.changed
+    name: Restart docker service
+    service:
+      name: docker
+      state: restarted
