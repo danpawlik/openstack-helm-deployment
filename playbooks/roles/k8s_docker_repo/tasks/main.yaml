@@ -1,4 +1,3 @@
----
 - name: Create kubelet repo credential file
   template:
     src: config.json.j2
