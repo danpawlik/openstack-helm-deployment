@@ -18,6 +18,8 @@ data:
   sequenced: false
   chart_group:
       # If livcirt has not been created in openstack namespace, uncomment this one
-      #    - mynamespace-libvirt-airskiff
-    - mynamespace-neutron-airskiff
+    - mynamespace-libvirt
+    # NOTE: if whole namespace is cleaned, add openvswitch
+    - mynamespace-openvswitch
+    - mynamespace-neutron
     - mynamespace-nova

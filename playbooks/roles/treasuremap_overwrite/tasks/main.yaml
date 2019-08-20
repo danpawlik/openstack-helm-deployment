@@ -1,8 +1,7 @@
 ---
 - when: setup_airskiff and treasuremap_overwrite
   block:
-  - when: treasuremap_overwrite
-    name: Check if trasuremap exists
+  - name: Check if trasuremap exists
     stat:
       path: treasuremap
     register: treasuremap_dir
@@ -19,8 +18,12 @@
       src: airship-overwrite/mynamespace/
       dest: "treasuremap/site/{{ namespace }}"
 
-  - when: treasuremap_dir.stat.exists
-    name: Change namespace to defined one
+  - name: Copy trasuremap overwrite files
+    synchronize:
+      src: airship-overwrite/tools/
+      dest: treasuremap/tools/
+
+  - name: Change namespace to defined one
     shell: |
       find treasuremap -type f -exec sed -i -e "s/mynamespace/{{ namespace }}/g" {} \;
     ignore_errors: true

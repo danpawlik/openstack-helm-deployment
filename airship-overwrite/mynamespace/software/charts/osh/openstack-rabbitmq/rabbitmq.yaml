@@ -38,7 +38,7 @@ data:
   values:
     pod:
       replicas:
-        server: 1
+        server: 3
     monitoring:
       prometheus:
         enabled: false

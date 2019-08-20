@@ -2,7 +2,7 @@
 schema: armada/Chart/v1
 metadata:
   schema: metadata/Document/v1
-  name: mynamespace-libvirt-airskiff
+  name: mynamespace-libvirt
   layeringDefinition:
     abstract: false
     layer: site
@@ -16,6 +16,18 @@ metadata:
         path: .
   storagePolicy: cleartext
 data:
+  chart_name: mynamespace-libvirt
+  release: mynamespace-libvirt
+  namespace: mynamespace
+  install:
+    no_hooks: false
+  upgrade:
+    no_hooks: false
+    pre:
+      delete:
+        - type: job
+          labels:
+            release_group: airship-mynamespace-libvirt
   values:
     labels:
       agent:

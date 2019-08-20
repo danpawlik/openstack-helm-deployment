@@ -56,7 +56,7 @@
         repo_password: "{{ lookup('env', 'DOCKER_REPO_PASSWORD') }}"
         etcd_on_ramdisk: "{{ true if lookup('env', 'ETC_ON_RAMDISK') == 'true' else false }}"
         setup_minikube: "{{ true if lookup('env', 'SETUP_MINIKUBE') == 'true' else false }}"
-        treasuremap_overwrite: "{{ true if lookup('env', 'TREASUREMAP_OVERWRITE') == '' else false }}"
+        treasuremap_overwrite: "{{ true if lookup('env', 'TREASUREMAP_OVERWRITE') == 'true' else false }}"
         namespace: "{{ lookup('env', 'NAMESPACE') if lookup('env', 'NAMESPACE') != '' else 'testnamespace' }}"
         use_shipyard_action: "{{ true if lookup('env', 'USE_SHIPYARD_ACTION') == 'true' else false }}"
         setup_airskiff: "{{ true if lookup('env', 'SETUP_AIRSKIFF') == 'true' else false }}"
@@ -72,6 +72,16 @@
   roles:
     - k8s_docker_repo
 
+# Inject custom images before helm charts will be overwritten
+- name: Inject custom docker images
+  hosts:
+    - k8s_contr
+  gather_facts: False
+  remote_user: ubuntu
+  become: True
+  roles:
+    - treasuremap_custom_images
+
 - name: Treasuremap preparation
   hosts:
     - k8s_contr
@@ -81,15 +91,6 @@
   roles:
     - treasuremap_overwrite
     - treasuremap_additional_tasks
-
-- name: Inject custom docker images
-  hosts:
-    - k8s_contr
-  gather_facts: False
-  remote_user: ubuntu
-  become: True
-  roles:
-    - k8s_custom_images
 
 - name: Install Openstack services if OSH
   hosts:

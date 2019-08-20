@@ -4,7 +4,7 @@
     path: treasuremap/site/airskiff/software/config
     owner: ubuntu
     group: ubuntu
-    mode: 0644
+    mode: 0755
     state: directory
 
 - name: Upload custom docker image list
@@ -14,4 +14,4 @@
     owner: ubuntu
     group: ubuntu
   with_fileglob:
-    - '*.yaml.j2'
+    - templates/*.yaml

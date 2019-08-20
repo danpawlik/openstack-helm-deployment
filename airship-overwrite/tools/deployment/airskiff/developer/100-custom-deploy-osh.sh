@@ -22,6 +22,12 @@ set -xe
 : "${PL_SITE:="mynamespace"}"
 : "${TARGET_MANIFEST:="full-site"}"
 
+AIRSKIFF_PERMISSIONS=$(stat --format '%a' airskiff.yaml)
+KUBE_CONFIG_PERMISSIONS=$(stat --format '%a' ~/.kube/config)
+
+sudo chmod 0664 airskiff.yaml
+sudo chmod 0644 ~/.kube/config
+
 # Render documents
 ${PEGLEG} site -r . render "${PL_SITE}" -o airskiff.yaml
 
@@ -32,3 +38,7 @@ docker run --rm --net host -p 8000:8000 --name armada \
     -v "${INSTALL_PATH}":/airship-components \
     quay.io/airshipit/armada:latest \
     apply /airskiff.yaml --target-manifest $TARGET_MANIFEST
+
+# Set back permissions of the files
+sudo chmod "${AIRSKIFF_PERMISSIONS}" airskiff.yaml
+sudo chmod "${KUBE_CONFIG_PERMISSIONS}" ~/.kube/config

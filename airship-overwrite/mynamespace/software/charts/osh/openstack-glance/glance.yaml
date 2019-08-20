@@ -41,7 +41,7 @@ data:
       enabled: false
     pod:
       replicas:
-        api: 1
-        registry: 1
+        api: 3
+        registry: 3
     storage: pvc
 ...

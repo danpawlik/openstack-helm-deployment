@@ -1,6 +1,16 @@
 ---
 - when: not use_shipyard_action and setup_airskiff
   block:
+  - name: 030-armada-bootstrap.sh
+    sudo: yes
+    sudo_user: ubuntu
+    shell: |
+      export TARGET_MANIFEST='full-site'
+      cd treasuremap && \
+      sudo  ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh >> /home/ubuntu/logs 2>&1
+    ignore_errors: yes
+    run_once: true
+
   - name: 100-deploy-osh.sh
     sudo: yes
     sudo_user: ubuntu
@@ -10,12 +20,22 @@
     ignore_errors: yes
     run_once: true
 
-  - name: 100-deploy-osh.sh
-    sudo: yes
-    sudo_user: ubuntu
-    shell: |
-      export TARGET_MANIFEST='full-site'
-      cd treasuremap && \
-      sudo  ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh >> /home/ubuntu/logs 2>&1
-    ignore_errors: yes
-    run_once: true
+- when: use_shipyard_action and setup_airskiff
+  name: Use custom 100-deploy-osh.sh script
+  sudo: yes
+  sudo_user: ubuntu
+  shell: |
+    cd treasuremap && \
+    sudo TARGET_MANIFEST='full-site' PL_SITE="{{ namespace }}" ./tools/deployment/airskiff/developer/100-custom-deploy-osh.sh >> /home/ubuntu/logs 2>&1
+  ignore_errors: yes
+  run_once: true
+
+- name: Setup openrc for new namespace
+  sudo: yes
+  sudo_user: ubuntu
+  shell: |
+    export OS_PASSWORD=$(grep 'password' "$HOME/treasuremap/site/{{ namespace }}/secrets/passphrases/osh_keystone_admin_password.yaml" | grep data | awk '{print $2}')
+    export NAMESPACE="{{ namespace }}"
+    bash "$HOME/scripts/set-openrc.sh"
+  ignore_errors: yes
+  run_once: true

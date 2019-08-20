@@ -8,13 +8,15 @@ OS_USER_DOMAIN_NAME=${OS_USER_DOMAIN_NAME:-'default'}
 
 NAMESPACE=${NAMESPACE:-'openstack'}
 OS_AUTH_URL=${OS_AUTH_URL:-''}
+OPENRC_FILE=${OPENRC_FILE:-"openrc"}
+
 
 if [ -z "${OS_AUTH_URL}" ]; then
     OS_AUTH_URL="http://keystone.${NAMESPACE}.svc.cluster.local/v3"
 fi
 
 # Export openrc file
-cat << EOF > "${HOME}/openrc"
+cat << EOF > "${OPENRC_FILE}"
 #!/bin/bash
 
 export OS_USERNAME=${OS_USERNAME}
@@ -24,5 +26,3 @@ export OS_PROJECT_DOMAIN_NAME=${OS_PROJECT_DOMAIN_NAME}
 export OS_USER_DOMAIN_NAME=${OS_USER_DOMAIN_NAME}
 export OS_AUTH_URL=${OS_AUTH_URL}
 EOF
-
-chmod 0744 "${HOME}/openrc"

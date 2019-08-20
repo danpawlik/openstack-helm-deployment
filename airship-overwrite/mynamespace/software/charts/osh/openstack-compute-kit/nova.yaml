@@ -55,9 +55,9 @@ data:
           virt_type: qemu
     pod:
       replicas:
-        api_metadata: 1
+        api_metadata: 3
         placement: 1
-        osapi: 1
+        osapi: 3
         conductor: 1
         consoleauth: 1
         scheduler: 1

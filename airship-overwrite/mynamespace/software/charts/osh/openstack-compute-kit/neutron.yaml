@@ -2,7 +2,7 @@
 schema: armada/Chart/v1
 metadata:
   schema: metadata/Document/v1
-  name: mynamespace-neutron-airskiff
+  name: mynamespace-neutron
   layeringDefinition:
     abstract: false
     layer: site
@@ -41,7 +41,7 @@ data:
   values:
     pod:
       replicas:
-        server: 1
+        server: 3
     labels:
       agent:
         l3:
