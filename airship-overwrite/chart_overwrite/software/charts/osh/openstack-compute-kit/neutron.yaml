@@ -2,7 +2,7 @@
 schema: armada/Chart/v1
 metadata:
   schema: metadata/Document/v1
-  name: mynamespace-neutron
+  name: {{ namespace }}-neutron
   layeringDefinition:
     abstract: false
     layer: site
@@ -24,20 +24,20 @@ metadata:
         path: .values.conf.auto_bridge_add.br-ex
   storagePolicy: cleartext
 data:
-  chart_name: mynamespace-neutron
-  release: mynamespace-neutron
-  namespace: mynamespace
+  chart_name: {{ namespace }}-neutron
+  release: {{ namespace }}-neutron
+  namespace: {{ namespace }}
   upgrade:
     no_hooks: false
     pre:
       delete:
         - type: job
           labels:
-            release_group: airship-mynamespace-neutron
+            release_group: airship-{{ namespace }}-neutron
   wait:
     timeout: 900
     labels:
-      release_group: airship-mynamespace-neutron
+      release_group: airship-{{ namespace }}-neutron
   values:
     pod:
       replicas:
@@ -71,4 +71,17 @@ data:
             bridge_mappings: public:br-ex
       auto_bridge_add:
         br-ex: docker0
+{% if treasuremap_params['NEUTRON_IMAGE'] is defined %}
+    images:
+      tags:
+        neutron_db_sync: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+        neutron_server: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+        neutron_dhcp: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+        neutron_metadata: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+        neutron_l3: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+        neutron_l2gw: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+        neutron_openvswitch_agent: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+        neutron_linuxbridge_agent: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+        neutron_bagpipe_bgp: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+{% endif %}
 ...

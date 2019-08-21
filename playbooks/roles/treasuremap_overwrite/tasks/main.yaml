@@ -25,9 +25,5 @@
 
   - name: Change namespace to defined one
     shell: |
-      find treasuremap -type f -exec sed -i -e "s/mynamespace/{{ namespace }}/g" {} \;
+      find treasuremap/site/ -type f -exec sed -i -e "s/mynamespace/{{ namespace }}/g" {} \;
     ignore_errors: true
-
-  # FIXME: install openvswitch not in the container, but on the host.
-  # It is not posssible to run openvswitch in multiple namespaces (without
-  # a lot of changes)

@@ -119,19 +119,19 @@
         addr: "{{ server_info.openstack | json_query(vrack_addr) }}"
 
 
-    - name: Check if vrack_mapping.txt file exists
-      stat:
-        path: vrack_mapping.txt
-      register: vrack_file
-
-    - when: not vrack_file.stat.exists
-      name: Create vrack mapping file
-      template:
-        src: vrack_mapping.txt
-        dest: vrack_mapping.txt
-        owner: ubuntu
-        group: ubuntu
-        mode: '0644'
-      delegate_to: "{{ item }}"
-      delegate_facts: True
-      loop: "{{ groups['all'] }}"
+#    - name: Check if vrack_mapping.txt file exists
+#      stat:
+#        path: vrack_mapping.txt
+#      register: vrack_file
+#
+#    - when: not vrack_file.stat.exists
+#      name: Create vrack mapping file
+#      template:
+#        src: vrack_mapping.txt
+#        dest: vrack_mapping.txt
+#        owner: ubuntu
+#        group: ubuntu
+#        mode: '0644'
+#      delegate_to: "{{ item }}"
+#      delegate_facts: True
+#      loop: "{{ groups['all'] }}"

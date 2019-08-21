@@ -2,7 +2,7 @@
 schema: armada/Chart/v1
 metadata:
   schema: metadata/Document/v1
-  name: mynamespace-nova
+  name: {{ namespace }}-nova
   layeringDefinition:
     abstract: false
     layer: site
@@ -22,22 +22,22 @@ metadata:
         path: .values.dependencies.static
   storagePolicy: cleartext
 data:
-  chart_name: mynamespace-nova
-  release: mynamespace-nova
-  namespace: mynamespace
+  chart_name: {{ namespace }}-nova
+  release: {{ namespace }}-nova
+  namespace: {{ namespace }}
   upgrade:
     no_hooks: false
     pre:
       delete:
         - type: job
           labels:
-            release_group: airship-mynamespace-nova
+            release_group: airship-{{ namespace }}-nova
     post:
       create: []
   wait:
     timeout: 900
     labels:
-      release_group: airship-mynamespace-nova
+      release_group: airship-{{ namespace }}-nova
   values:
     labels:
       agent:
@@ -68,8 +68,19 @@ data:
         compute:
           pod:
             - requireSameNode: true
-#              labels:
-#                application: libvirt
-#                component: libvirt
-#
+{% if treasuremap_params['NOVA_IMAGE'] is defined %}
+    images:
+      tags:
+        nova_api: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_cell_setup: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_compute: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_compute_ssh: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_conductor: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_consoleauth: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_db_sync: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_novncproxy: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_placement: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_scheduler: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_spiceproxy: {{ treasuremap_params['NOVA_IMAGE'] }}
+{% endif %}
 ...

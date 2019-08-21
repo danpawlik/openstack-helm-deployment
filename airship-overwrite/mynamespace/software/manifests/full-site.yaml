@@ -24,6 +24,7 @@ data:
     - mynamespace-memcached-airskiff
     - mynamespace-keystone-airskiff
     - mynamespace-glance-airskiff
-      #    - mynamespace-cinder-airskiff
+    # Enable cinder when Ceph is deployed
+    #    - mynamespace-cinder-airskiff
     - mynamespace-compute-kit-airskiff
 ...

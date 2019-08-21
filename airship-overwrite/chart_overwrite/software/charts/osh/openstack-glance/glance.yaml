@@ -2,7 +2,7 @@
 schema: armada/Chart/v1
 metadata:
   schema: metadata/Document/v1
-  name: mynamespace-glance-airskiff
+  name: {{ namespace }}-glance-airskiff
   layeringDefinition:
     abstract: false
     layer: site
@@ -18,13 +18,13 @@ metadata:
         path: .values.ceph_client
   storagePolicy: cleartext
 data:
-  chart_name: mynamespace-glance
-  release: mynamespace-glance
-  namespace: mynamespace
+  chart_name: {{ namespace }}-glance
+  release: {{ namespace }}-glance
+  namespace: {{ namespace }}
   wait:
     timeout: 300
     labels:
-      release_group: airship-mynamespace-glance
+      release_group: airship-{{ namespace }}-glance
   install:
     no_hooks: false
   upgrade:
@@ -33,7 +33,7 @@ data:
       delete:
         - type: job
           labels:
-            release_group: airship-mynamespace-glance
+            release_group: airship-{{ namespace }}-glance
   test:
     enabled: false
   values:
@@ -44,4 +44,11 @@ data:
         api: 3
         registry: 3
     storage: pvc
+{% if treasuremap_params['GLANCE_IMAGE'] is defined %}
+    images:
+      tags:
+        glance_db_sync: {{ treasuremap_params['GLANCE_IMAGE'] }}
+        glance_api: {{ treasuremap_params['GLANCE_IMAGE'] }}
+        glance_registry: {{ treasuremap_params['GLANCE_IMAGE'] }}
+{% endif %}
 ...

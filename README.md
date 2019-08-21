@@ -40,7 +40,7 @@ Please add also this key into authorized_keys on the Ansible server.
 
 Example:
 ```
-ssh-keygen -trsa 2048 $HOME/.ssh/id_rsa_ansible
+ssh-keygen -trsa -b 2048 -o $HOME/.ssh/id_rsa_ansible
 ```
 
 2. Add into .ssh/config information, that Ansible can use the
@@ -88,7 +88,7 @@ source openrc
 export ANSIBLE_HOST_KEY_CHECKING=False
 export TREASUREMAP_OVERWRITE=true
 export NAMESPACE=testns
-export USE_SHIPYARD_ACTION=false
+export USE_SHIPYARD_ACTION=true # in this case, 100-custom-deploy-osh.sh will be used instead of 100-deploy-osh.sh
 export SETUP_AIRSKIFF=true
 # If you use OVH public cloud, create vrack (optional - tempest can communicate with VMs)
 VRACK_NET_NAME=vrack
@@ -125,6 +125,11 @@ export DOCKER_REPO_LOGIN=
 export DOCKER_REPO_PASSWORD=
 
 TREASUREMAP_OVERWRITE=true # overwrite airskiff site manifests
+```
+
+If you want to change images of Glance, Nova and Neutron to custom:
+```
+export TREASUREMAP_PARAMS="{'GLANCE_IMAGE': 'docker.io/openstackhelm/glance:master-ubuntu_bionic', 'NOVA_IMAGE':'docker.io/openstackhelm/nova:master-ubuntu_bionic', 'NEUTRON_IMAGE':'docker.io/openstackhelm/neutron:master-ubuntu_bionic'}"
 ```
 
 Just for Openstack Helm multinode playbook:
