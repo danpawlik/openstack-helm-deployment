@@ -76,23 +76,28 @@
     loop_control:
       loop_var: server_info
 
-  - when: new_k8s_contr_result.changed
-    name: wait for instances k8s_contr to be ready
-    wait_for:
-      port: 22
-      delay: 5
-      timeout: 150
-      host: "{{ item }}"
-    with_items: "{{ groups['k8s_contr'] }}"
+  - when: new_k8s_contr_result.changed or new_k8s_minion_result.changed
+    name: if the infra is fresh
+    set_fact:
+      new_infra: true
 
-  - when: new_k8s_minion_result.changed
-    name: wait for instances k8s_minion to be ready
-    wait_for:
-      port: 22
-      delay: 5
-      timeout: 150
-      host: "{{ item }}"
-    with_items: "{{ groups['k8s_minion'] }}"
+  - when: new_infra is defined
+    block:
+    - name: wait for instances k8s_contr to be ready
+      wait_for:
+        port: 22
+        delay: 5
+        timeout: 150
+        host: "{{ item }}"
+      with_items: "{{ groups['k8s_contr'] }}"
+
+    - name: wait for instances k8s_minion to be ready
+      wait_for:
+        port: 22
+        delay: 5
+        timeout: 150
+        host: "{{ item }}"
+      with_items: "{{ groups['k8s_minion'] }}"
 
   - when: vrack_net_name is defined
     block:
@@ -118,20 +123,14 @@
         name: "{{ server_info.openstack.name }}"
         addr: "{{ server_info.openstack | json_query(vrack_addr) }}"
 
-
-#    - name: Check if vrack_mapping.txt file exists
-#      stat:
-#        path: vrack_mapping.txt
-#      register: vrack_file
-#
-#    - when: not vrack_file.stat.exists
-#      name: Create vrack mapping file
-#      template:
-#        src: vrack_mapping.txt
-#        dest: vrack_mapping.txt
-#        owner: ubuntu
-#        group: ubuntu
-#        mode: '0644'
-#      delegate_to: "{{ item }}"
-#      delegate_facts: True
-#      loop: "{{ groups['all'] }}"
+    - when: new_infra is defined
+      name: Create vrack mapping file
+      template:
+        src: vrack_mapping.txt
+        dest: vrack_mapping.txt
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['all'] }}"

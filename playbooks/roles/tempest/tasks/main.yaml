@@ -53,12 +53,13 @@
   shell: |
     bash -x scripts/check-service-replication.sh >> tempest-preparation-logs 2>&1
   environment:
-    NAMESPACE: openstack
+    NAMESPACE: "{{ namespace }}"
 
 - name: Prepare tempest test
   sudo: yes
   sudo_user: ubuntu
   shell: |
+    export OPENRC_PATH="$HOME/openrc-{{ namespace }}"
     bash -x scripts/prepare-tempest.sh >> tempest-preparation-logs 2>&1
   register: tempest_output
 

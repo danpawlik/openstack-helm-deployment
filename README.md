@@ -73,6 +73,7 @@ To set the name, you can just export variables:
 export CONTR_NAME=airskiff_contr-1
 export MINION_1_NAME=airskiff-minion-1
 export MINION_2_NAME=airskiff-minion-2
+export OPENSTACK_KEYPAIR_NAME=ansible_key
 ```
 
 3. Now you need to read openrc file, because playbooks will read credentials
@@ -80,6 +81,13 @@ ans spawn VMs.
 
 ```
 source openrc
+```
+
+3 a). Additionaly spawn ssh-agent and export variable:
+```
+eval $(ssh-agent -s)
+ssh-add <YOUR KEY>
+export ANSIBLE_SSH_COMMON_ARGS="-o ForwardAgent=yes -o ControlMaster=auto -o ControlPersist=60s "
 ```
 
 4. Now you just need to execute Ansible playbook:
@@ -90,27 +98,25 @@ export TREASUREMAP_OVERWRITE=true
 export NAMESPACE=testns
 export USE_SHIPYARD_ACTION=true # in this case, 100-custom-deploy-osh.sh will be used instead of 100-deploy-osh.sh
 export SETUP_AIRSKIFF=true
-# If you use OVH public cloud, create vrack (optional - tempest can communicate with VMs)
-VRACK_NET_NAME=vrack
+export VRACK_NET_NAME=vrack     # If you use OVH public cloud, create vrack (optional - tempest can communicate with VMs)
 ```
 - for Openstack Helm:
 ```
 export ANSIBLE_HOST_KEY_CHECKING=False
 export SETUP_OSH=true
 # If you use OVH public cloud, create vrack (optional - tempest can communicate with VMs)
-VRACK_NET_NAME=vrack
+export VRACK_NET_NAME=vrack
 ```
 
 Then execute ansible playbooks:
 ```
-ansible-playbook playbooks/osh-deploy-cluster.yaml-vv
+ansible-playbook playbooks/osh-deploy-cluster.yaml -vv
 ansible-playbook playbooks/osh-deploy-openstack.yaml -vv
 ```
 
 NOTE:
 Available export variables:
 ```
-export ANSIBLE_SSH_KEYNAME=id_rsa_ansible
 export OPENSTACK_KEYPAIR_NAME=ansible_key
 
 export CONTR_NAME=bob_contr

@@ -36,6 +36,7 @@
   shell: |
     export OS_PASSWORD=$(grep 'password' "$HOME/treasuremap/site/{{ namespace }}/secrets/passphrases/osh_keystone_admin_password.yaml" | grep data | awk '{print $2}')
     export NAMESPACE="{{ namespace }}"
+    export OPENRC_FILE="openrc-{{ namespace }}"
     bash "$HOME/scripts/set-openrc.sh"
   ignore_errors: yes
   run_once: true

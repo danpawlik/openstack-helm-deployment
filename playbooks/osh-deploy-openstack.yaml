@@ -19,19 +19,9 @@
         minion_image: "Ubuntu 18.04"
         minion_net_name: Ext-Net
         vrack_net_name: "{{ lookup('env', 'VRACK_NET_NAME') if lookup('env', 'VRACK_NET_NAME') != '' else '' }}"
-        # Name of the docker registry that later ansible will pull images
-        repo_name: docker.io
         openstack_keypair_name: "{{ lookup('env', 'OPENSTACK_KEYPAIR_NAME') if lookup('env', 'OPENSTACK_KEYPAIR_NAME') != '' else 'ansible_key' }}"
-        ansible_ssh_keyname: "{{ lookup('env', 'ANSIBLE_SSH_KEYNAME') if lookup('env', 'ANSIBLE_SSH_KEYNAME') != '' else 'id_rsa_ansible'  }}"
   tags:
     - local_inventory
-
-- name: Add ssh key if not present
-  hosts: localhost
-  remote_user: ubuntu
-  gather_facts: False
-  roles:
-    - ssh_keys
 
 - name: Create servers
   hosts: localhost
@@ -49,7 +39,6 @@
     - name: Set k8s_hosts as fact
       set_fact:
         openstack_keypair_name: "{{ lookup('env', 'OPENSTACK_KEYPAIR_NAME') if lookup('env', 'OPENSTACK_KEYPAIR_NAME') != '' else 'ansible_key' }}"
-        ansible_ssh_keyname: "{{ lookup('env', 'ANSIBLE_SSH_KEYNAME') if lookup('env', 'ANSIBLE_SSH_KEYNAME') != '' else 'id_rsa_ansible'  }}"
         install_docker_ce: "{{ true if lookup('env', 'INSTALL_DOCKER_CE') == 'true' else false }}"
         repo_name: "{{ lookup('env', 'DOCKER_REPO_NAME') }}"
         repo_login: "{{ lookup('env', 'DOCKER_REPO_LOGIN') }}"

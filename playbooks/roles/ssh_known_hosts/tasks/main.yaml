@@ -14,9 +14,16 @@
     args:
       executable: /bin/bash
 
+  - name: Generate temporary ssh key that will be used by contr
+    openssh_keypair:
+      path: "/tmp/{{ ssh_name }}"
+    vars:
+      - ssh_name: "ssh-{{ 99999999 | random }}"
+    register: ssh_keygen_result
+
   - name: Install private key on k8s_contr
     copy:
-      src: "{{ ansible_env.HOME}}/.ssh/{{ ansible_ssh_keyname }}"
+      src: "{{ ssh_keygen_result.filename }}"
       dest: .ssh/id_rsa
       mode: 0600
       group: ubuntu
@@ -24,10 +31,11 @@
     delegate_to: "{{ item }}"
     delegate_facts: True
     loop: "{{ groups['k8s_contr'] }}"
+    ignore_errors: false
 
   - name: Install public key on all hosts
     copy:
-      src: "{{ ansible_env.HOME}}/.ssh/{{ ansible_ssh_keyname }}.pub"
+      src: "{{ ssh_keygen_result.filename }}.pub"
       dest: .ssh/id_rsa.pub
       mode: 0600
       group: ubuntu
@@ -35,3 +43,4 @@
     delegate_to: "{{ item }}"
     delegate_facts: True
     loop: "{{ groups['all'] }}"
+    ignore_errors: false

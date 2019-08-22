@@ -12,11 +12,11 @@
     delegate_facts: True
     loop: "{{ groups['k8s_minion'] }}"
 
-  - name: Accept SSH key self k8s_contr
+  - name: Accept SSH key on all host
     shell: cat .ssh/id_rsa.pub | tee -a .ssh/authorized_keys
     delegate_to: "{{ item }}"
     delegate_facts: True
-    loop: "{{ groups['k8s_contr'] }}"
+    loop: "{{ groups['all'] }}"
 
   - name: Ensure SSH connectivity between k8s_contr and k8s_minion
     shell: |

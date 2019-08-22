@@ -1,15 +1,5 @@
 ---
 - block:
-  - name: check if id_rsa_ansible is available on host
-    stat:
-      path: "{{ ansible_env.HOME }}/.ssh/id_rsa_ansible"
-    register: ssh_key_status
-    ignore_errors: true
-
-  - when: ssh_key_status.stat.exists == False
-    fail:
-      msg: "id_rsa_ansible key is not available in $HOME/.ssh dir"
-
   - name: Check if keypair exists
     shell: |
       openstack --os-region-name "{{ lookup('env', 'OS_REGION_NAME') }}" \
@@ -23,16 +13,28 @@
     register: keypair_result
     ignore_errors: false
 
-  # NOTE: I use shell because os_keypair raise error when auth is provided
   - when: keypair_result.rc == 1
-    name: Add keypair
-    command: |
-      openstack --os-region-name "{{ lookup('env', 'OS_REGION_NAME') }}" \
-                --os-auth-url  "{{ lookup('env', 'OS_AUTH_URL') }}" \
-                --os-username "{{ lookup('env', 'OS_USERNAME') }}" \
-                --os-password "{{ lookup('env', 'OS_PASSWORD') }}" \
-                --os-project-name "{{ lookup('env', 'OS_TENANT_NAME') }}" \
-                --os-domain-name "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}" \
-                --os-project-domain-name "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}" \
-                keypair create "{{ openstack_keypair_name }}" \
-                --public-key ".ssh/{{ ansible_ssh_keyname }}.pub"
+    block:
+    - name: check if id_rsa_ansible is available on host
+      stat:
+        path: "{{ ansible_env.HOME }}/.ssh/{{ ansible_ssh_keyname }}"
+      register: ssh_key_status
+      ignore_errors: true
+
+    - when: ssh_key_status.stat.exists == False
+      fail:
+        msg: "id_rsa_ansible key is not available in $HOME/.ssh dir"
+
+    # NOTE: I use shell because os_keypair raise error when auth is provided
+    - when: keypair_result.rc == 1
+      name: Add keypair
+      command: |
+        openstack --os-region-name "{{ lookup('env', 'OS_REGION_NAME') }}" \
+                  --os-auth-url  "{{ lookup('env', 'OS_AUTH_URL') }}" \
+                  --os-username "{{ lookup('env', 'OS_USERNAME') }}" \
+                  --os-password "{{ lookup('env', 'OS_PASSWORD') }}" \
+                  --os-project-name "{{ lookup('env', 'OS_TENANT_NAME') }}" \
+                  --os-domain-name "{{ lookup('env', 'OS_USER_DOMAIN_NAME') }}" \
+                  --os-project-domain-name "{{ lookup('env', 'OS_PROJECT_DOMAIN_NAME') }}" \
+                  keypair create "{{ openstack_keypair_name }}" \
+                  --public-key ".ssh/{{ ansible_ssh_keyname }}.pub"
