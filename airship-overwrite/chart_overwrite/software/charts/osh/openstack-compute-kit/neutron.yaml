@@ -35,7 +35,7 @@ data:
           labels:
             release_group: airship-{{ namespace }}-neutron
   wait:
-    timeout: 900
+    timeout: 1200
     labels:
       release_group: airship-{{ namespace }}-neutron
   values:
@@ -71,6 +71,42 @@ data:
             bridge_mappings: public:br-ex
       auto_bridge_add:
         br-ex: docker0
+# it is not required for Ocata - for now default OSH image relase
+# https://github.com/openstack/openstack-helm/blob/master/neutron/values_overrides/stein.yaml
+{% if treasuremap_params['OPENSTACK_RELEASE'] is defined %}
+      paste:
+        app:neutronversions:
+          paste.app_factory: neutron.pecan_wsgi.app:versions_factory
+    pod:
+      probes:
+        dhcp_agent:
+          dhcp_agent:
+            readiness:
+              enabled: false
+            liveness:
+              enabled: false
+        l3_agent:
+          l3_agent:
+            readiness:
+              enabled: false
+            liveness:
+              enabled: false
+        metadata_agent:
+          metadata_agent:
+            readiness:
+              enabled: false
+            liveness:
+              enabled: false
+        ovs_agent:
+          ovs_agent:
+            liveness:
+              enabled: false
+        sriov_agent:
+          sriov_agent:
+            readiness:
+              enabled: false
+{% endif %}
+
 {% if treasuremap_params['NEUTRON_IMAGE'] is defined %}
     images:
       tags:
@@ -83,5 +119,13 @@ data:
         neutron_openvswitch_agent: {{ treasuremap_params['NEUTRON_IMAGE'] }}
         neutron_linuxbridge_agent: {{ treasuremap_params['NEUTRON_IMAGE'] }}
         neutron_bagpipe_bgp: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+{% if treasuremap_params['HEAT_IMAGE'] is defined %}
+        bootstrap: {{ treasuremap_params['HEAT_IMAGE'] }}
+        db_init: {{ treasuremap_params['HEAT_IMAGE'] }}
+        db_drop: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_user: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_service: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_endpoints: {{ treasuremap_params['HEAT_IMAGE'] }}
+{% endif %}
 {% endif %}
 ...

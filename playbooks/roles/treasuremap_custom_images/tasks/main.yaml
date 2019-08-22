@@ -28,6 +28,16 @@
     - templates/charts/osh/openstack-glance/*yaml
 
 - when: treasuremap_params is defined
+  name: Update charts with new values - keystone
+  template:
+    src: "{{ item }}"
+    dest: "treasuremap/site/{{ namespace }}/software/charts/osh/openstack-keystone/"
+    owner: ubuntu
+    group: ubuntu
+  with_fileglob:
+    - templates/charts/osh/openstack-keystone/*yaml
+
+- when: treasuremap_params is defined
   name: Update charts with new values - nova and neutron
   template:
     src: "{{ item }}"

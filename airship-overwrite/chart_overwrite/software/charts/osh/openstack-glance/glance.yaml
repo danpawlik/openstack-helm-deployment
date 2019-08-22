@@ -50,5 +50,13 @@ data:
         glance_db_sync: {{ treasuremap_params['GLANCE_IMAGE'] }}
         glance_api: {{ treasuremap_params['GLANCE_IMAGE'] }}
         glance_registry: {{ treasuremap_params['GLANCE_IMAGE'] }}
+{% if treasuremap_params['HEAT_IMAGE'] is defined %}
+        bootstrap: {{ treasuremap_params['HEAT_IMAGE'] }}
+        db_init: {{ treasuremap_params['HEAT_IMAGE'] }}
+        db_drop: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_user: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_service: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_endpoints: {{ treasuremap_params['HEAT_IMAGE'] }}
+{% endif %}
 {% endif %}
 ...

@@ -129,7 +129,19 @@ TREASUREMAP_OVERWRITE=true # overwrite airskiff site manifests
 
 If you want to change images of Glance, Nova and Neutron to custom:
 ```
-export TREASUREMAP_PARAMS="{'GLANCE_IMAGE': 'docker.io/openstackhelm/glance:master-ubuntu_bionic', 'NOVA_IMAGE':'docker.io/openstackhelm/nova:master-ubuntu_bionic', 'NEUTRON_IMAGE':'docker.io/openstackhelm/neutron:master-ubuntu_bionic'}"
+export TREASUREMAP_PARAMS="{
+'NOVA_IMAGE':'docker.io/openstackhelm/nova:stein-ubuntu_bionic',
+'NEUTRON_IMAGE':'docker.io/openstackhelm/neutron:stein-ubuntu_bionic',
+'KEYSTONE_IMAGE':'docker.io/openstackhelm/keystone:stein-ubuntu_bionic',
+'GLANCE_IMAGE': 'docker.io/openstackhelm/glance:stein-ubuntu_bionic',
+'HEAT_IMAGE':'docker.io/openstackhelm/heat:stein-ubuntu_bionic',
+'LIBVIRT_IMAGE': 'docker.io/openstackhelm/libvirt:latest-ubuntu_bionic',
+'OPENSTACK_RELEASE': 'stein' }"
+```
+
+If you want to use OpenvSwitch with DPDK, just add into TREASUREMAP_PARAMS:
+```
+'OPENVSWITCH_IMAGE': 'docker.io/openstackhelm/openvswitch:latest-ubuntu_bionic-dpdk',
 ```
 
 Just for Openstack Helm multinode playbook:

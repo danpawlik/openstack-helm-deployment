@@ -35,7 +35,7 @@ data:
     post:
       create: []
   wait:
-    timeout: 900
+    timeout: 1200
     labels:
       release_group: airship-{{ namespace }}-nova
   values:
@@ -82,5 +82,14 @@ data:
         nova_placement: {{ treasuremap_params['NOVA_IMAGE'] }}
         nova_scheduler: {{ treasuremap_params['NOVA_IMAGE'] }}
         nova_spiceproxy: {{ treasuremap_params['NOVA_IMAGE'] }}
+{% if treasuremap_params['HEAT_IMAGE'] is defined %}
+        bootstrap: {{ treasuremap_params['HEAT_IMAGE'] }}
+        db_drop: {{ treasuremap_params['HEAT_IMAGE'] }}
+        db_init: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_user: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_service: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_endpoints: {{ treasuremap_params['HEAT_IMAGE'] }}
+        nova_cell_setup_init: {{ treasuremap_params['HEAT_IMAGE'] }}
+{% endif %}
 {% endif %}
 ...
