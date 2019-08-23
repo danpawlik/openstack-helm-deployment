@@ -4,7 +4,7 @@
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    git clone https://opendev.org/airship/treasuremap.git treasuremap | tee -a logs
+    git clone https://opendev.org/airship/treasuremap.git treasuremap 2>&1 | tee -a logs
   ignore_errors: true
   loop: "{{ groups['k8s_contr'] }}"
   run_once: true

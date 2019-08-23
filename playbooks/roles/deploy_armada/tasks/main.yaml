@@ -4,7 +4,7 @@
   sudo_user: ubuntu
   shell: |
     cd /opt/openstack-helm-infra
-    bash -x ./tools/deployment/armada/010-armada-host-setup.sh | tee -a logs
+    bash -x ./tools/deployment/armada/010-armada-host-setup.sh 2>&1 | tee -a logs
   ignore_errors: false
   delegate_to: "{{ groups['airship_contr'][0] }}"
   run_once: True
@@ -14,7 +14,7 @@
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    sudo -H pip3 install --ignore-installed PyYAML | tee -a logs
+    sudo -H pip3 install --ignore-installed PyYAML 2>&1 | tee -a logs
   ignore_errors: false
   delegate_to: "{{ groups['airship_contr'] }}"
   run_once: True
@@ -24,7 +24,7 @@
   sudo_user: ubuntu
   shell: |
     cd /opt/openstack-helm-infra
-    bash -x ./tools/deployment/armada/015-armada-build.sh | tee -a logs
+    bash -x ./tools/deployment/armada/015-armada-build.sh 2>&1 | tee -a logs
   ignore_errors: false
   delegate_to: "{{ groups['airship_contr'] }}"
   run_once: True
@@ -34,7 +34,7 @@
   sudo_user: ubuntu
   shell: |
     cd /opt/openstack-helm-infra
-    bash -x ./tools/deployment/armada/020-armada-render-manifests.sh | tee -a logs
+    bash -x ./tools/deployment/armada/020-armada-render-manifests.sh 2>&1 | tee -a logs
   ignore_errors: false
   delegate_to: "{{ groups['airship_contr'] }}"
   run_once: True
@@ -44,7 +44,7 @@
   sudo_user: ubuntu
   shell: |
     cd /opt/openstack-helm-infra
-    bash -x ./tools/deployment/armada/025-armada-validate-manifests.sh | tee -a logs
+    bash -x ./tools/deployment/armada/025-armada-validate-manifests.sh 2>&1 | tee -a logs
   ignore_errors: false
   delegate_to: "{{ groups['airship_contr'] }}"
   run_once: True
@@ -54,7 +54,7 @@
   sudo_user: ubuntu
   shell: |
     cd /opt/openstack-helm-infra
-    bash -x ./tools/deployment/armada/030-armada-apply-manifests.sh | tee -a logs
+    bash -x ./tools/deployment/armada/030-armada-apply-manifests.sh 2>&1 | tee -a logs
   ignore_errors: false
   delegate_to: "{{ groups['airship_contr'] }}"
   run_once: True
@@ -64,7 +64,7 @@
   sudo_user: ubuntu
   shell: |
     cd /opt/openstack-helm-infra
-    bash -x ./tools/deployment/armada/035-armada-update-uuids.sh | tee -a logs
+    bash -x ./tools/deployment/armada/035-armada-update-uuids.sh 2>&1 | tee -a logs
   ignore_errors: false
   delegate_to: "{{ groups['airship_contr'] }}"
   run_once: True
@@ -74,7 +74,7 @@
   sudo_user: ubuntu
   shell: |
     cd /opt/openstack-helm-infra
-    bash -x ./tools/deployment/armada/040-armada-update-passwords.sh | tee -a logs
+    bash -x ./tools/deployment/armada/040-armada-update-passwords.sh 2>&1 | tee -a logs
   ignore_errors: false
   delegate_to: "{{ groups['airship_contr'] }}"
   run_once: True

@@ -110,7 +110,7 @@
     - name: Upgrade host
       sudo: yes
       sudo_user: root
-      shell: bash /root/airship-install.sh >> /home/ubuntu/logs 2>&1
+      shell: bash /root/airship-install.sh 2>&1 | tee -a /home/ubuntu/logs
       register: install_status
       ignore_errors: yes
       run_once: True

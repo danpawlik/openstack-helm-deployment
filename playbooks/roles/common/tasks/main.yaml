@@ -14,7 +14,7 @@
     sudo: yes
     sudo_user: ubuntu
     shell: |
-      bash -x scripts/upgrade-host.sh | tee -a logs
+      bash -x scripts/upgrade-host.sh 2>&1 | tee -a logs
     ignore_errors: yes
 
   - name: remove nano

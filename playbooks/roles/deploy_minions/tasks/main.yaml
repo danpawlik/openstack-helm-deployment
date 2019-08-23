@@ -2,11 +2,11 @@
 - name: Run scripts on k8s_minion
   sudo: yes
   sudo_user: ubuntu
-  shell: /bin/bash -x scripts/setup-new-host.sh | tee -a logs
+  shell: /bin/bash -x scripts/setup-new-host.sh 2>&1 | tee -a logs
   ignore_errors: yes
 
 - name: Symlink tools to homedir tools
   sudo: yes
   sudo_user: ubuntu
-  shell: ln -f -s /opt/openstack-helm-infra/tools /home/ubuntu/tools | tee -a logs
+  shell: ln -f -s /opt/openstack-helm-infra/tools /home/ubuntu/tools 2>&1 | tee -a logs
   ignore_errors: false

@@ -6,7 +6,7 @@
     sudo_user: ubuntu
     shell: |
       cd treasuremap && \
-      ./tools/deployment/airskiff/developer/000-install-packages.sh >> /home/ubuntu/logs 2>&1
+      ./tools/deployment/airskiff/developer/000-install-packages.sh 2>&1 | tee -a /home/ubuntu/logs
     ignore_errors: true
     run_once: True
 
@@ -15,7 +15,7 @@
     sudo_user: ubuntu
     shell: |
       cd treasuremap && \
-       ./tools/deployment/airskiff/developer/005-clone-dependencies.sh >> /home/ubuntu/logs 2>&1
+      ./tools/deployment/airskiff/developer/005-clone-dependencies.sh 2>&1 | tee -a /home/ubuntu/logs
     ignore_errors: true
     run_once: true
 
@@ -24,7 +24,7 @@
     sudo_user: ubuntu
     shell: |
       cd treasuremap && \
-      sudo  ./tools/deployment/airskiff/developer/020-setup-client.sh >> /home/ubuntu/logs 2>&1
+      sudo  ./tools/deployment/airskiff/developer/020-setup-client.sh 2>&1 | tee -a /home/ubuntu/logs
     ignore_errors: yes
     run_once: true
 
@@ -51,7 +51,7 @@
     sudo_user: ubuntu
     shell: |
       cd treasuremap && \
-      sudo ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh >> /home/ubuntu/logs 2>&1
+      sudo ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh 2>&1 | tee -a /home/ubuntu/logs
     ignore_errors: false
     run_once: true
 

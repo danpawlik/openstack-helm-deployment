@@ -19,5 +19,5 @@
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x scripts/install-kubernetes.sh >> /home/ubuntu/logs 2>&1
+  bash -x scripts/install-kubernetes.sh 2>&1 | tee -a /home/ubuntu/logs
   ignore_errors: false

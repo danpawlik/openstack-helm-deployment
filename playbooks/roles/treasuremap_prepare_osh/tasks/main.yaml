@@ -7,7 +7,7 @@
     shell: |
       export TARGET_MANIFEST='full-site'
       cd treasuremap && \
-      sudo  ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh >> /home/ubuntu/logs 2>&1
+      sudo  ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh 2>&1 | tee -a /home/ubuntu/logs
     ignore_errors: yes
     run_once: true
 
@@ -16,7 +16,7 @@
     sudo_user: ubuntu
     shell: |
       cd treasuremap && \
-      sudo  ./tools/deployment/airskiff/developer/100-deploy-osh.sh >> /home/ubuntu/logs 2>&1
+      sudo  ./tools/deployment/airskiff/developer/100-deploy-osh.sh 2>&1 | tee -a /home/ubuntu/logs
     ignore_errors: yes
     run_once: true
 
@@ -26,7 +26,7 @@
   sudo_user: ubuntu
   shell: |
     cd treasuremap && \
-    sudo TARGET_MANIFEST='full-site' PL_SITE="{{ namespace }}" ./tools/deployment/airskiff/developer/100-custom-deploy-osh.sh >> /home/ubuntu/logs 2>&1
+    sudo TARGET_MANIFEST='full-site' PL_SITE="{{ namespace }}" ./tools/deployment/airskiff/developer/100-custom-deploy-osh.sh 2>&1 | tee -a /home/ubuntu/logs
   ignore_errors: yes
   run_once: true
 

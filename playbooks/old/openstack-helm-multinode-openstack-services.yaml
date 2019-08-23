@@ -30,7 +30,7 @@
   remote_user: ubuntu
   gather_facts: False
   roles:
-    - ssh_keys
+    - ssh_keypair
   tags:
     - keypair_add
 

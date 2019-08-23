@@ -41,7 +41,7 @@
       sudo_user: ubuntu
       shell: |
         cd treasuremap && \
-        ./tools/deployment/airskiff/developer/010-deploy-k8s.sh >> /home/ubuntu/logs 2>&1
+        ./tools/deployment/airskiff/developer/010-deploy-k8s.sh 2>&1 | tee -a /home/ubuntu/logs
       ignore_errors: true
       run_once: true
 
@@ -57,5 +57,5 @@
       sudo: yes
       sudo_user: ubuntu
       shell: |
-        bash -x scripts/install-kubernetes.sh >> /home/ubuntu/logs 2>&1
+        bash -x scripts/install-kubernetes.sh 2>&1 | tee -a /home/ubuntu/logs
       ignore_errors: false

@@ -37,11 +37,6 @@ EOF
     echo "You should reboot host"
 fi
 
-if [ -z "${NODE_TWO_IP}" ]; then
-    echo "You need to set ip address of node 2. Exit"
-    exit 1
-fi
-
 if [ -n "${USE_PROXY}" ] && [ -z "${PROXY_ADDRESS}" ]; then
     echo "If you want to use proxy, pls export PROXY_ADDRESS"
     exit 1
@@ -109,6 +104,7 @@ NODE_ONE_IP=$(ip addr | awk "/inet/ && /${HOST_IFACE}/{sub(/\/.*$/,\"\",\$2); pr
 echo "${NODE_ONE_IP} $(hostname)" | sudo tee -a /etc/hosts;
 
 # Contr will be also a node
+if [ -n "${NODE_TWO_IP}" ]; then
 cat > "${OSH_INFRA_PATH}/tools/gate/devel/multinode-inventory.yaml" <<EOF
 all:
   children:
@@ -129,6 +125,7 @@ all:
           ansible_ssh_private_key_file: /etc/openstack-helm/deploy-key.pem
           ansible_ssh_extra_args: -o StrictHostKeyChecking=no
 EOF
+fi
 
 if [ -n "${NODE_THREE_IP}" ]; then
     cat >> "${OSH_INFRA_PATH}/tools/gate/devel/multinode-inventory.yaml" <<EOF
@@ -181,7 +178,7 @@ fi
 echo " " > /home/ubuntu/.ssh/known_hosts
 ssh-keyscan -H "$NODE_ONE_IP" >> /home/ubuntu/.ssh/known_hosts
 
-for IP_ADDRESS in $NODE_TWO_IP $NODE_THREE_IP;
+for IP_ADDRESS in $( grep 'ansible_host:' "${OSH_INFRA_PATH}/tools/gate/devel/multinode-inventory.yaml" | awk '{print $2}' | grep -v "${NODE_ONE_IP}");
 do
     echo "starting rsync: $IP_ADDRESS"
     ssh-keyscan -H "$IP_ADDRESS" >> /home/ubuntu/.ssh/known_hosts
@@ -191,7 +188,7 @@ done
 sudo chown -R ubuntu: /opt
 
 sudo DEBIAN_FRONTEND=noninteractive apt install -y ceph ceph-common nfs-common
-sudo ln -s /home/ubuntu/.kube /root/.kube
+sudo ln -f -s /home/ubuntu/.kube /root/.kube
 
 if [ -d "$OSH_PATH" ] && [ -d "$OSH_INFRA_PATH" ] ; then
     # Install helm controller, k8s and join host

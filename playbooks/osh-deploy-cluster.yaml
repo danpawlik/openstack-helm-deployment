@@ -28,7 +28,7 @@
   remote_user: ubuntu
   gather_facts: False
   roles:
-    - ssh_keys
+    - ssh_keypair
 
 - name: Create servers
   hosts: localhost
@@ -58,6 +58,14 @@
         setup_airskiff: "{{ true if lookup('env', 'SETUP_AIRSKIFF') == 'true' else false }}"
         setup_osh: "{{ true if lookup('env', 'SETUP_OSH') == 'true' else false }}"
         additional_ssh_key: "{{ lookup('env', 'ADDITIONAL_SSH_KEY') }}"
+        kube_version: "{{ lookup('env', 'KUBE_VERSION') | default('v1.13.7') }}"
+
+- name: Add ssh key for to authorized_key
+  hosts: localhost
+  remote_user: ubuntu
+  gather_facts: False
+  roles:
+    - ssh_key
 
 - name: Add VMs to known hosts and install keys on the hosts
   hosts: localhost

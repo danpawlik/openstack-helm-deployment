@@ -2,10 +2,25 @@
 - name: Clone OSH repo
   sudo: yes
   sudo_user: ubuntu
-  shell: bash -x scripts/clone-osh-repo.sh | tee -a logs
+  shell: bash -x scripts/clone-osh-repo.sh 2>&1 | tee -a logs
   register: clone_status
   ignore_errors: yes
   run_once: True
+
+- name: check if OSH infra dir exists
+  stat:
+    path: /opt/openstack-helm-infra
+  register: osh_infra_dir
+
+- when: osh_infra_dir.stat.isdir
+  name: Generate OSH infra inventory
+  template:
+    src: "{{ item }}"
+    dest: /opt/openstack-helm-infra/tools/gate/devel/multinode-inventory.yaml
+    owner: ubuntu
+    group: ubuntu
+  with_fileglob:
+    - templates/multinode-inventory.yaml
 
 - name: Show current groups
   debug:
@@ -15,13 +30,11 @@
 - name: Run scripts on k8s_contr
   become: true
   become_user: ubuntu
-  shell: scripts/setup-controller.sh | tee -a logs
+  shell: scripts/setup-controller.sh 2>&1 | tee -a logs
   args:
     executable: /bin/bash
   environment:
     ANSIBLE_LOG_PATH: ansible.logs
-    NODE_TWO_IP: "{{ groups['k8s_minion'][0] }}"
-    NODE_THREE_IP: "{{ groups['k8s_minion'][1] if (groups['k8s_minion'] | length>1) }}"
-    KUBE_VERSION: "{{ lookup('env', 'KUBE_VERSION') | default('v1.13.7') }}"
+    KUBE_VERSION: "{{ kube_version }}"
   run_once: True
   ignore_errors: True

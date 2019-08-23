@@ -24,7 +24,7 @@
   sudo_user: ubuntu
   shell: |
     if [ -d 'treasuremap' ]; then
-      bash -x scripts/check-shipyard-actions.sh > tempest-preparation-logs 2>&1
+      bash -x scripts/check-shipyard-actions.sh 2>&1 | tee -a tempest-preparation-logs
     fi
   ignore_errors: false
   environment:
@@ -36,7 +36,7 @@
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x openstack-helm-infra/tools/deployment/common/wait-for-pods.sh openstack >> tempest-preparation-logs 2>&1
+    bash -x openstack-helm-infra/tools/deployment/common/wait-for-pods.sh openstack 2>&1 | tee -a tempest-preparation-logs
   ignore_errors: false
 
 - when: not treasuremap_dir.stat.exists
@@ -44,14 +44,14 @@
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x /opt/openstack-helm-infra/tools/deployment/common/wait-for-pods.sh openstack >> tempest-preparation-logs 2>&1
+    bash -x /opt/openstack-helm-infra/tools/deployment/common/wait-for-pods.sh openstack 2>&1 | tee -a tempest-preparation-logs
   ignore_errors: false
 
 - name: Check services replication
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x scripts/check-service-replication.sh >> tempest-preparation-logs 2>&1
+    bash -x scripts/check-service-replication.sh 2>&1 | tee -a tempest-preparation-logs
   environment:
     NAMESPACE: "{{ namespace }}"
 
@@ -60,14 +60,14 @@
   sudo_user: ubuntu
   shell: |
     export OPENRC_PATH="$HOME/openrc-{{ namespace }}"
-    bash -x scripts/prepare-tempest.sh >> tempest-preparation-logs 2>&1
+    bash -x scripts/prepare-tempest.sh 2>&1 | tee -a tempest-preparation-logs
   register: tempest_output
 
 - name: Execute tempest test
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x scripts/run-tempest.sh > tempest-test-output 2>&1
+    bash -x scripts/run-tempest.sh 2>&1 | tee -a tempest-test-output
   register: tempest_output
   environment:
     WHITELIST_FILE: "{{ whitelist_file }}"

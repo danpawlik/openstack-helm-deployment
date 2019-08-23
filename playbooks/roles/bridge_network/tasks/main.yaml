@@ -9,9 +9,9 @@
   become: true
   become_user: ubuntu
   shell: |
-    echo "Setting ip address {{ item}} for $(hostname)" | tee -a tempest-preparation-logs
+    echo "Setting ip address {{ item}} for $(hostname)" 2>&1 | tee -a tempest-preparation-logs
     export BRIDGE_ADDRESS="{{ item }}"
-    bash -x scripts/bridge_network.sh | tee -a tempest-preparation-logs
+    bash -x scripts/bridge_network.sh 2>&1 | tee -a tempest-preparation-logs
   ignore_errors: True
   with_random_choice:
     - "172.24.4.10"
