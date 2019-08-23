@@ -57,7 +57,7 @@
         use_shipyard_action: "{{ true if lookup('env', 'USE_SHIPYARD_ACTION') == 'true' else false }}"
         setup_airskiff: "{{ true if lookup('env', 'SETUP_AIRSKIFF') == 'true' else false }}"
         setup_osh: "{{ true if lookup('env', 'SETUP_OSH') == 'true' else false }}"
-
+        additional_ssh_key: "{{ lookup('env', 'ADDITIONAL_SSH_KEY') }}"
 
 - name: Add VMs to known hosts and install keys on the hosts
   hosts: localhost

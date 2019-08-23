@@ -131,6 +131,9 @@ export DOCKER_REPO_LOGIN=
 export DOCKER_REPO_PASSWORD=
 
 TREASUREMAP_OVERWRITE=true # overwrite airskiff site manifests
+
+# if you want to add new SSH key to authorized_keys, set path to the pub key
+export ADDITIONAL_SSH_KEY=
 ```
 
 If you want to change images of Glance, Nova and Neutron to custom:

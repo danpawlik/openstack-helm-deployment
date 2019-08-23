@@ -1,0 +1,17 @@
+---
+- name: Login into docker repository
+  shell: |
+    bash -x scripts/namespace-cleaner.sh
+  ignore_errors: true
+  environment:
+    NAMESPACE: "{{ namespace }}"
+
+- name: Get Helm deployments
+  shell: |
+    helm list -a
+  ignore_errors: true
+
+- name: Get Kubernetes info
+  shell: |
+    kubectl get all --all-namespaces
+  ignore_errors: true
