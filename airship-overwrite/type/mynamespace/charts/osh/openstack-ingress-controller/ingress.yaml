@@ -15,6 +15,8 @@ metadata:
     actions:
       - method: replace
         path: .values.pod
+      - method: merge
+        path: .
   storagePolicy: cleartext
 data:
   chart_name: {{ namespace }}-ingress-controller

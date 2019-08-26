@@ -37,11 +37,13 @@
         find treasuremap/site/ -type f -exec sed -i -e "s/mynamespace/{{ namespace }}/g" {} \;
       ignore_errors: true
 
-    - name: Change endpoints namespace to null
+    # FIXME: check if that affects openstack-rabbitmq-exporter
+    - name: Change endpoints namespace to null and rabbitmq hostname
       shell: |
         sed -i "s/namespace: openstack/namespace: null/g" "treasuremap/type/{{ namespace }}/config/endpoints.yaml"
+        sed -i "s/\<default: openstack-rabbitmq\>/default: rabbitmq/g" "treasuremap/type/{{ namespace }}/config/endpoints.yaml"
+        sed -i "s/name: airship-openstack-rabbitmq-rabbitmq/name: airship-{{ namespace }}-rabbitmq-rabbitmq/g" "treasuremap/type/{{ namespace }}/config/endpoints.yaml"
       ignore_errors: true
-
 
   - name: Update charts with new values - openstack-ingress-controller
     template:

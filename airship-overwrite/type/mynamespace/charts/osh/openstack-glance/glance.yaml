@@ -13,12 +13,12 @@ metadata:
       name: glance-global
       component: glance
     actions:
-      - method: merge
-        path: .
       - method: replace
         path: .values.pod
       - method: delete
         path: .values.ceph_client
+      - method: merge
+        path: .
   storagePolicy: cleartext
 data:
   chart_name: {{ namespace }}-glance
