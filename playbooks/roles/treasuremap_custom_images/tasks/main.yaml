@@ -1,48 +1,9 @@
-
-#- name: Ensure software config directory
-#  file:
-#    path: treasuremap/site/airskiff/software/config
-#    owner: ubuntu
-#    group: ubuntu
-#    mode: 0755
-#    state: directory
-
-# FIXME: waiting for @marekc256 to check his solution
-#- name: Upload custom docker image list
-#  template:
-#    src: "{{ item }}"
-#    dest: "treasuremap/site/{{ namespace }}/software/config/"
-#    owner: ubuntu
-#    group: ubuntu
-#  with_fileglob:
-#    - templates/config/*.yaml
-
-- when: treasuremap_params is defined
-  name: Update charts with new values - glance
+---
+- name: Upload custom docker image list
   template:
     src: "{{ item }}"
-    dest: "treasuremap/site/{{ namespace }}/software/charts/osh/openstack-glance/"
+    dest: "treasuremap/site/{{ namespace }}/software/config/"
     owner: ubuntu
     group: ubuntu
   with_fileglob:
-    - templates/charts/osh/openstack-glance/*yaml
-
-- when: treasuremap_params is defined
-  name: Update charts with new values - keystone
-  template:
-    src: "{{ item }}"
-    dest: "treasuremap/site/{{ namespace }}/software/charts/osh/openstack-keystone/"
-    owner: ubuntu
-    group: ubuntu
-  with_fileglob:
-    - templates/charts/osh/openstack-keystone/*yaml
-
-- when: treasuremap_params is defined
-  name: Update charts with new values - nova and neutron
-  template:
-    src: "{{ item }}"
-    dest: "treasuremap/site/{{ namespace }}/software/charts/osh/openstack-compute-kit/"
-    owner: ubuntu
-    group: ubuntu
-  with_fileglob:
-    - templates/charts/osh/openstack-compute-kit/*yaml
+    - templates/site/software/config/*.yaml

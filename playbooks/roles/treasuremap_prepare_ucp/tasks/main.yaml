@@ -1,23 +1,14 @@
 ---
 - when: setup_airskiff
   block:
-  - name: 000-install-packages.sh
+  - name: 000-clone-dependencies.sh
     sudo: yes
     sudo_user: ubuntu
     shell: |
       cd treasuremap && \
-      ./tools/deployment/airskiff/developer/000-install-packages.sh 2>&1 | tee -a /home/ubuntu/logs
+      ./tools/deployment/airskiff/developer/000-clone-dependencies.sh 2>&1 | tee -a /home/ubuntu/logs
     ignore_errors: true
     run_once: True
-
-  - name: 005-clone-dependencies.sh
-    sudo: yes
-    sudo_user: ubuntu
-    shell: |
-      cd treasuremap && \
-      ./tools/deployment/airskiff/developer/005-clone-dependencies.sh 2>&1 | tee -a /home/ubuntu/logs
-    ignore_errors: true
-    run_once: true
 
   - name: 020-setup-client.sh
     sudo: yes

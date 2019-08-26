@@ -1,0 +1,43 @@
+---
+schema: armada/Chart/v1
+metadata:
+  schema: metadata/Document/v1
+  name: libvirt
+  replacement: true
+  labels:
+    name: libvirt-type
+  layeringDefinition:
+    abstract: false
+    layer: type
+    parentSelector:
+      name: libvirt-global
+      component: libvirt
+    actions:
+      - method: replace
+        path: .values
+      - method: merge
+        path: .
+  storagePolicy: cleartext
+data:
+  chart_name: {{ namespace }}-libvirt
+  release: {{ namespace }}-libvirt
+  namespace: {{ namespace }}
+  install:
+    no_hooks: false
+  upgrade:
+    no_hooks: false
+    pre:
+      delete:
+        - type: job
+          labels:
+            release_group: {{ namespace }}-libvirt
+  values:
+    labels:
+      agent:
+        libvirt:
+          node_selector_key: openstack-compute-node
+          node_selector_value: enabled
+    conf:
+      ceph:
+        enabled: false
+...

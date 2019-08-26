@@ -59,9 +59,10 @@
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    export OPENRC_PATH="$HOME/openrc-{{ namespace }}"
     bash -x scripts/prepare-tempest.sh 2>&1 | tee -a tempest-preparation-logs
   register: tempest_output
+  environment:
+    OPENRC_PATH: "{{ openrc_path }}"
 
 - name: Execute tempest test
   sudo: yes

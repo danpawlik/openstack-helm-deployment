@@ -1,0 +1,118 @@
+---
+schema: pegleg/SoftwareVersions/v1
+metadata:
+  schema: metadata/Document/v1
+  replacement: true
+  name: software-versions
+  labels:
+    name: software-versions-airskiff-ubuntu
+  layeringDefinition:
+    abstract: false
+    layer: site
+    parentSelector:
+      name: software-versions-global
+    actions:
+      - method: merge
+        path: .
+  storagePolicy: cleartext
+data:
+  images:
+    ucp:
+      armada:
+        api: "quay.io/airshipit/armada:latest-ubuntu_xenial"
+      deckhand:
+        deckhand: "quay.io/airshipit/deckhand:latest-ubuntu_xenial"
+      shipyard:
+        shipyard: "quay.io/airshipit/shipyard:latest-ubuntu_xenial"
+        shipyard_db_sync: "quay.io/airshipit/shipyard:latest-ubuntu_xenial"
+        airflow: "quay.io/airshipit/airflow:latest-ubuntu_xenial"
+        airflow_db_sync: "quay.io/airshipit/airflow:latest-ubuntu_xenial"
+    osh:
+{% if treasuremap_params['KEYSTONE_IMAGE'] is defined %}
+      keystone:
+        keystone_api: {{ treasuremap_params['KEYSTONE_IMAGE'] }}
+        keystone_credential_rotate: {{ treasuremap_params['KEYSTONE_IMAGE'] }}
+        keystone_credential_setup: {{ treasuremap_params['KEYSTONE_IMAGE'] }}
+        keystone_db_sync: {{ treasuremap_params['KEYSTONE_IMAGE'] }}
+        keystone_domain_manage: {{ treasuremap_params['KEYSTONE_IMAGE'] }}
+        keystone_fernet_rotate: {{ treasuremap_params['KEYSTONE_IMAGE'] }}
+        keystone_fernet_setup: {{ treasuremap_params['KEYSTONE_IMAGE'] }}
+{% if treasuremap_params['HEAT_IMAGE'] is defined %}
+        bootstrap: {{ treasuremap_params['HEAT_IMAGE'] }}
+        db_init: {{ treasuremap_params['HEAT_IMAGE'] }}
+        db_drop: {{ treasuremap_params['HEAT_IMAGE'] }}
+        keystone_bootstrap: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_user: {{ treasuremap_params['HEAT_IMAGE'] }}
+{% endif %}
+{% endif %}
+
+{% if treasuremap_params['GLANCE_IMAGE'] is defined %}
+      glance:
+        glance_db_sync: {{ treasuremap_params['GLANCE_IMAGE'] }}
+        glance_api: {{ treasuremap_params['GLANCE_IMAGE'] }}
+        glance_registry: {{ treasuremap_params['GLANCE_IMAGE'] }}
+{% if treasuremap_params['HEAT_IMAGE'] is defined %}
+        bootstrap: {{ treasuremap_params['HEAT_IMAGE'] }}
+        db_init: {{ treasuremap_params['HEAT_IMAGE'] }}
+        db_drop: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_user: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_service: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_endpoints: {{ treasuremap_params['HEAT_IMAGE'] }}
+{% endif %}
+{% endif %}
+
+{% if treasuremap_params['NEUTRON_IMAGE'] is defined %}
+      neutron:
+        neutron_db_sync: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+        neutron_server: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+        neutron_dhcp: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+        neutron_metadata: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+        neutron_l3: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+        neutron_l2gw: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+        neutron_openvswitch_agent: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+        neutron_linuxbridge_agent: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+        neutron_bagpipe_bgp: {{ treasuremap_params['NEUTRON_IMAGE'] }}
+{% if treasuremap_params['HEAT_IMAGE'] is defined %}
+        bootstrap: {{ treasuremap_params['HEAT_IMAGE'] }}
+        db_init: {{ treasuremap_params['HEAT_IMAGE'] }}
+        db_drop: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_user: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_service: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_endpoints: {{ treasuremap_params['HEAT_IMAGE'] }}
+{% endif %}
+{% endif %}
+
+{% if treasuremap_params['NOVA_IMAGE'] is defined %}
+      nova:
+        nova_api: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_cell_setup: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_compute: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_compute_ssh: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_conductor: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_consoleauth: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_db_sync: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_novncproxy: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_placement: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_scheduler: {{ treasuremap_params['NOVA_IMAGE'] }}
+        nova_spiceproxy: {{ treasuremap_params['NOVA_IMAGE'] }}
+{% if treasuremap_params['HEAT_IMAGE'] is defined %}
+        bootstrap: {{ treasuremap_params['HEAT_IMAGE'] }}
+        db_drop: {{ treasuremap_params['HEAT_IMAGE'] }}
+        db_init: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_user: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_service: {{ treasuremap_params['HEAT_IMAGE'] }}
+        ks_endpoints: {{ treasuremap_params['HEAT_IMAGE'] }}
+        nova_cell_setup_init: {{ treasuremap_params['HEAT_IMAGE'] }}
+{% endif %}
+{% endif %}
+
+{% if treasuremap_params['OPENVSWITCH_IMAGE'] is defined %}
+      openvswitch:
+        openvswitch: {{ treasuremap_params['OPENVSWITCH_IMAGE'] }}
+{% endif %}
+
+{% if treasuremap_params['LIBVIRT_IMAGE'] is defined %}
+      libvirt:
+        libvirt: {{ treasuremap_params['LIBVIRT_IMAGE'] }}
+{% endif %}
+...

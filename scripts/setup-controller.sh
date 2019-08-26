@@ -183,6 +183,8 @@ do
     echo "starting rsync: $IP_ADDRESS"
     ssh-keyscan -H "$IP_ADDRESS" >> /home/ubuntu/.ssh/known_hosts
     rsync  -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" -i "${SSH_KEY_PATH}" -aq /opt/ "ubuntu@${IP_ADDRESS}:/opt/"
+    # NOTE: OSH infra tools dir needs to be in $HOME dir
+    ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "${SSH_KEY_PATH}" "ubuntu@${IP_ADDRESS}" "ln -s ${OSH_INFRA_PATH}/tools ${HOME}/tools"
 done
 
 sudo chown -R ubuntu: /opt

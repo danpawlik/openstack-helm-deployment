@@ -1,0 +1,35 @@
+---
+schema: armada/Chart/v1
+metadata:
+  schema: metadata/Document/v1
+  name: openvswitch
+  replacement: true
+  labels:
+    name: openvswitch-type
+  layeringDefinition:
+    abstract: false
+    layer: type
+    parentSelector:
+      name: openvswitch-global
+    actions:
+      - method: merge
+        path: .
+  storagePolicy: cleartext
+data:
+  chart_name: {{ namespace }}-openvswitch
+  release: {{ namespace }}-openvswitch
+  namespace: {{ namespace }}
+  wait:
+    timeout: 900
+    labels:
+      release_group: {{ namespace }}-openvswitch
+  install:
+    no_hooks: false
+  upgrade:
+    no_hooks: false
+    pre:
+      delete:
+        - type: job
+          labels:
+            release_group: airship-{{ namespace }}-openvswitch
+...

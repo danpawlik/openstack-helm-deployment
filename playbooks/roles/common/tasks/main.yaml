@@ -40,3 +40,10 @@
       packages:
       - nfs-common
       - python-wheel
+
+- name: Change owner to Ubuntu for opt dir
+  become: true
+  become_user: ubuntu
+  shell: |
+    sudo chown -R ubuntu:ubuntu /opt
+  ignore_errors: True

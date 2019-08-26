@@ -7,23 +7,102 @@
     register: treasuremap_dir
 
   - when: treasuremap_dir.stat.exists
-    name: Copy airskiff site to other namespace eg msite1
-    shell: |
-      cp -av treasuremap/site/airskiff "treasuremap/site/{{ namespace }}"
-    ignore_errors: true
+    block:
+    - name: Copy airskiff site to other namespace eg msite1
+      shell: |
+        cp -av treasuremap/site/airskiff "treasuremap/site/{{ namespace }}"
+      ignore_errors: true
 
-  - when: treasuremap_dir.stat.exists
-    name: Copy trasuremap overwrite files
-    synchronize:
-      src: airship-overwrite/mynamespace/
-      dest: "treasuremap/site/{{ namespace }}"
+    - name: Copy skiff type to other namespace
+      shell: |
+        cp -av treasuremap/type/skiff "treasuremap/type/{{ namespace }}"
+      ignore_errors: true
 
-  - name: Copy trasuremap overwrite files
-    synchronize:
-      src: airship-overwrite/tools/
-      dest: treasuremap/tools/
+    - name: Update site-definitions yaml file
+      template:
+        src: "{{ item }}"
+        dest: "treasuremap/site/{{ namespace }}/"
+        owner: ubuntu
+        group: ubuntu
+      with_fileglob:
+        - templates/site/*yaml
 
-  - name: Change namespace to defined one
-    shell: |
-      find treasuremap/site/ -type f -exec sed -i -e "s/mynamespace/{{ namespace }}/g" {} \;
-    ignore_errors: true
+    - name: Copy trasuremap overwrite files
+      synchronize:
+        src: airship-overwrite/tools/
+        dest: treasuremap/tools/
+
+    - name: Change namespace to defined one
+      shell: |
+        find treasuremap/site/ -type f -exec sed -i -e "s/mynamespace/{{ namespace }}/g" {} \;
+      ignore_errors: true
+
+    - name: Change endpoints namespace to null
+      shell: |
+        sed -i "s/namespace: openstack/namespace: null/g" "treasuremap/type/{{ namespace }}/config/endpoints.yaml"
+      ignore_errors: true
+
+
+  - name: Update charts with new values - openstack-ingress-controller
+    template:
+      src: "{{ item }}"
+      dest: "treasuremap/type/{{ namespace }}/charts/osh/openstack-ingress-controller/"
+      owner: ubuntu
+      group: ubuntu
+    with_fileglob:
+      - templates/charts/osh/openstack-ingress-controller/*yaml
+
+  - when: treasuremap_params is defined
+    name: Update charts with new values - mariadb
+    template:
+      src: "{{ item }}"
+      dest: "treasuremap/type/{{ namespace }}/charts/osh/openstack-mariadb/"
+      owner: ubuntu
+      group: ubuntu
+    with_fileglob:
+      - templates/charts/osh/openstack-mariadb/*yaml
+
+  - name: Update charts with new values - rabbitmq
+    template:
+      src: "{{ item }}"
+      dest: "treasuremap/type/{{ namespace }}/charts/osh/openstack-rabbitmq/"
+      owner: ubuntu
+      group: ubuntu
+    with_fileglob:
+      - templates/charts/osh/openstack-rabbitmq/*yaml
+
+  - name: Update charts with new values - memcached
+    template:
+      src: "{{ item }}"
+      dest: "treasuremap/type/{{ namespace }}/charts/osh/openstack-memcached/"
+      owner: ubuntu
+      group: ubuntu
+    with_fileglob:
+      - templates/charts/osh/openstack-memcached/*yaml
+
+  - name: Update charts with new values - glance
+    template:
+      src: "{{ item }}"
+      dest: "treasuremap/type/{{ namespace }}/charts/osh/openstack-glance/"
+      owner: ubuntu
+      group: ubuntu
+    with_fileglob:
+      - templates/charts/osh/openstack-glance/*yaml
+
+  - name: Update charts with new values - keystone
+    template:
+      src: "{{ item }}"
+      dest: "treasuremap/type/{{ namespace }}/charts/osh/openstack-keystone/"
+      owner: ubuntu
+      group: ubuntu
+    with_fileglob:
+      - templates/charts/osh/openstack-keystone/*yaml
+
+  - name: Update charts with new values - nova and neutron
+    template:
+      src: "{{ item }}"
+      dest: "treasuremap/type/{{ namespace }}/charts/osh/openstack-compute-kit/"
+      owner: ubuntu
+      group: ubuntu
+    with_fileglob:
+      - templates/charts/osh/openstack-compute-kit/*yaml

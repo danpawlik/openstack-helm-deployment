@@ -1,0 +1,50 @@
+---
+schema: armada/Chart/v1
+metadata:
+  schema: metadata/Document/v1
+  name: glance
+  replacement: true
+  labels:
+    name: glance-type
+  layeringDefinition:
+    abstract: false
+    layer: type
+    parentSelector:
+      name: glance-global
+      component: glance
+    actions:
+      - method: merge
+        path: .
+      - method: replace
+        path: .values.pod
+      - method: delete
+        path: .values.ceph_client
+  storagePolicy: cleartext
+data:
+  chart_name: {{ namespace }}-glance
+  release: {{ namespace }}-glance
+  namespace: {{ namespace }}
+  wait:
+    timeout: 300
+    labels:
+      release_group: airship-{{ namespace }}-glance
+  install:
+    no_hooks: false
+  upgrade:
+    no_hooks: false
+    pre:
+      delete:
+        - type: job
+          labels:
+            release_group: airship-{{ namespace }}-glance
+  test:
+    enabled: false
+  values:
+    bootstrap:
+      enabled: false
+    pod:
+      replicas:
+        api: 3
+        registry: 3
+    storage: pvc
+...

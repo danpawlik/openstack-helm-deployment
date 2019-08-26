@@ -4,9 +4,7 @@
   - name: Disable services that are not required
     shell: |
       sed -i '/openstack-heat/d'  treasuremap/global/software/manifests/full-site.yaml
-      sed -i '/openstack-heat/d'  treasuremap/site/airskiff/software/manifests/full-site.yaml
-      sed -i 's/openstack-heat: enabled/openstack-heat: disabled/g' treasuremap/site/airskiff/profiles/host/cp_r720.yaml
-      sed -i 's/openstack-heat: enabled/openstack-heat: disabled/g' treasuremap/global/profiles/host/cp.yaml
+      sed -i '/openstack-heat/d'  treasuremap/type/skiff/manifests/full-site.yaml
     ignore_errors: true
     run_once: true
 
