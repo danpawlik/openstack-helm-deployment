@@ -41,6 +41,7 @@
       set_fact:
         vrack_interface: "{{ lookup('env', 'VRACK_INTERFACE') if lookup('env', 'VRACK_INTERFACE') != '' else 'ens4'  }}"
         openrc_path: "{{ lookup('env', 'OPENRC_PATH') if lookup('env', 'OPENRC_PATH') != '' else '/home/ubuntu/openrc' }}"
+        namespace: "{{ lookup('env', 'NAMESPACE') if lookup('env', 'NAMESPACE') != '' else 'testnamespace' }}"
 
 # Copy
 - name: Copy required scripts
@@ -69,8 +70,8 @@
   become: True
   vars:
     ansible_host_key_checking: false
-    whitelist_file: "$HOME/tempest/whitelist.list"
-    blacklist_file: "$HOME/tempest/blacklist.list"
+    whitelist_file: "tempest/whitelist.list"
+    blacklist_file: "tempest/blacklist.list"
     tempest_params: "--concurrency 4"
     tempest_branch: "master"
   roles:

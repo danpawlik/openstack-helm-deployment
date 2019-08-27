@@ -123,8 +123,7 @@
         name: "{{ server_info.openstack.name }}"
         addr: "{{ server_info.openstack | json_query(vrack_addr) }}"
 
-    - when: new_infra is defined
-      name: Create vrack mapping file
+    - name: Create vrack mapping file
       template:
         src: vrack_mapping.txt
         dest: vrack_mapping.txt

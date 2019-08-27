@@ -1,13 +1,4 @@
 ---
-- name: Check if openrc file exist
-  stat:
-    path: openrc
-  register: openrc_file
-
-- when:  openrc_file.stat.exists == False
-  fail:
-    msg: "Could not find openrc file. Can't continue"
-
 - name: Copy tempest conf
   synchronize:
     src: tempest/
@@ -75,7 +66,13 @@
     BLACKLIST_FILE: "{{ blacklist_file }}"
     TEMPEST_PARAMS: "{{ tempest_params }}"
     TEMPEST_BRANCH: "{{ tempest_branch }}"
+    NAMESPACE: "{{ namespace }}"
 
-- when: Get tempest_output var
-  debug:
-    var: tempest_output
+#- name: Get tempest outputs
+#  sudo: yes
+#  sudo_user: ubuntu
+#  shell: |
+#    echo -e "################# tempest-preparation-logs ################# \n\n\n\n"
+#    cat tempest-preparation-logs
+#    echo -e "################# tempest-test-output ################## \n\n\n\n"
+#    cat tempest-test-output

@@ -40,4 +40,10 @@ data:
     conf:
       ceph:
         enabled: false
+
+{% if treasuremap_params['LIBVIRT_IMAGE'] is defined %}
+    images:
+      tags:
+        libvirt: {{ treasuremap_params['LIBVIRT_IMAGE'] }}
+{% endif %}
 ...

@@ -114,5 +114,9 @@ data:
 {% if treasuremap_params['LIBVIRT_IMAGE'] is defined %}
       libvirt:
         libvirt: {{ treasuremap_params['LIBVIRT_IMAGE'] }}
+
+    osh_infra:
+      libvirt:
+        libvirt: {{ treasuremap_params['LIBVIRT_IMAGE'] }}
 {% endif %}
 ...

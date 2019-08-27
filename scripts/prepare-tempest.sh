@@ -2,12 +2,19 @@
 
 set -x
 
-OPENRC_PATH=${OPENRC_PATH:-'/home/ubuntu/openrc'}
-TEMPEST_CONF_PATH=${TEMPEST_CONF_PATH:-'/home/ubuntu/tempest/tempest.conf'}
+OPENRC_PATH=${OPENRC_PATH:-''}
+NAMESPACE=${NAMESPACE:-''}
+TEMPEST_CONF_PATH=${TEMPEST_CONF_PATH:-'tempest/tempest.conf'}
 
 if [ ! -f "${OPENRC_PATH}" ]; then
-    echo "Could not find openrc file. Exit"
-    exit 1
+    echo "Could not find openrc file. Checking file: openrc-${NAMESPACE}"
+    if [ ! -f "openrc-${NAMESPACE}" ]; then
+        echo "Could not find openrc file to tempest. Exit"
+        exit 1
+    else
+        echo "Taking file from: openrc-${NAMESPACE}"
+        OPENRC_PATH="openrc-${NAMESPACE}"
+    fi
 fi
 
 if [ ! -f "${TEMPEST_CONF_PATH}" ]; then
@@ -20,7 +27,7 @@ source $OPENRC_PATH
 IMAGES=$(openstack image list -c Name -f value)
 if echo $IMAGES | grep -iqv 'Centos'; then
     if [ ! -f "/home/ubuntu/tempest/CentOS-7-x86_64-GenericCloud.qcow2" ]; then
-        wget http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2 \
+        wget -q http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2 \
            -O /home/ubuntu/tempest/CentOS-7-x86_64-GenericCloud.qcow2
     fi
 
@@ -39,7 +46,7 @@ fi
 
 if echo $IMAGES | grep -iqv 'Ubuntu'; then
     if [ ! -f "/home/ubuntu/tempest/bionic-server-cloudimg-amd64.img" ]; then
-        wget http://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img \
+        wget -q http://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img \
             -O /home/ubuntu/tempest/bionic-server-cloudimg-amd64.img
     fi
 
@@ -80,9 +87,14 @@ do
     openstack security group rule create "${sec_group}"  --protocol tcp --dst-port 22:22 --remote-ip 0.0.0.0/0
 done
 
-OPENSTACK_ADMIN_PASSWORD=$(grep OS_PASSWORD /home/ubuntu/openrc  | cut -f2 -d'=')
+OPENSTACK_ADMIN_PASSWORD=$(grep OS_PASSWORD "${OPENRC_PATH}"  | cut -f2 -d'=')
 if grep -q "OPENSTACK_ADMIN_PASSWORD" "${TEMPEST_CONF_PATH}"; then
     sed -i "s/OPENSTACK_ADMIN_PASSWORD/$OPENSTACK_ADMIN_PASSWORD/g" "${TEMPEST_CONF_PATH}"
+fi
+
+OPENSTACK_AUTH_URI=$(grep OS_AUTH_URL "${OPENRC_PATH}"  | cut -f2 -d'=')
+if grep -q "OPENSTACK_AUTH_URI" "${TEMPEST_CONF_PATH}"; then
+    sed -i 's|OPENSTACK_AUTH_URI|'$OPENSTACK_AUTH_URI'|g' "${TEMPEST_CONF_PATH}"
 fi
 
 SUBNET_LIST=$(openstack subnet list -c Name -f value)

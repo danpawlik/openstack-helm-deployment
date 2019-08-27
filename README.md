@@ -172,4 +172,10 @@ OSH_EXTRA_HELM_ARGS_NOVA
 OSH_EXTRA_HELM_ARGS_RABBITMQ
 ```
 
+To run tempest tests:
+```
+OPENRC_PATH='/home/ubuntu/openrc'
+ansible-playbook playbooks/tempest-run.yaml
+```
+
 Please note, that repo and scripts are still under construction.

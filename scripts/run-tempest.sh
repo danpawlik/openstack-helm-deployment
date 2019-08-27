@@ -4,12 +4,11 @@ set -x
 
 DEBUG=${DEBUG:-"false"}
 INSTALL_TEMPEST=${INSTALL_TEMPEST:-"true"}
-TEMPEST_CONF=${TEMPEST_CONF:-"/home/ubuntu/tempest/tempest.conf"}
+TEMPEST_CONF=${TEMPEST_CONF:-"tempest/tempest.conf"}
 WHITELIST_FILE=${WHITELIST_FILE:-''}
 BLACKLIST_FILE=${BLACKLIST_FILE:-''}
 TEMPEST_PARAMS=${TEMPEST_PARAMS:-''}
 TEMPEST_BRANCH=${TEMPEST_BRANCH:-'master'}
-SAVE_STATE=${SAVE_STATE:-'true'}
 
 COMMAND=""
 
@@ -31,10 +30,6 @@ fi
 
 if [ -n "${BLACKLIST_FILE}" ]; then
     COMMAND+="--blacklist-file ${BLACKLIST_FILE} "
-fi
-
-if [ "${SAVE_STATE}" = 'true' ]; then
-    COMMAND+="  --save-state "
 fi
 
 if [ -n "${TEMPEST_PARAMS}" ]; then

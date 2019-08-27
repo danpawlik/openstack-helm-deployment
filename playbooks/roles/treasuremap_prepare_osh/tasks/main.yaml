@@ -34,7 +34,7 @@
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    export OS_PASSWORD=$(grep 'password' "$HOME/treasuremap/site/{{ namespace }}/secrets/passphrases/osh_keystone_admin_password.yaml" | grep data | awk '{print $2}')
+    export OS_PASSWORD=$(grep 'password' "$HOME/treasuremap/type/{{ namespace }}/secrets/passphrases/osh_keystone_admin_password.yaml" | grep data | awk '{print $2}')
     export NAMESPACE="{{ namespace }}"
     export OPENRC_FILE="openrc-{{ namespace }}"
     bash "$HOME/scripts/set-openrc.sh"
