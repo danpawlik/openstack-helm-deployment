@@ -1,0 +1,31 @@
+---
+- name:
+  hosts: localhost
+  tasks:
+    - name: Set k8s_hosts as fact
+      set_fact:
+        k8s_hosts:
+          k8s_contr:
+            - "{{ lookup('env', 'CONTR_NAME') if lookup('env', 'CONTR_NAME') != '' else 'osh_bob_contr' }}"
+          k8s_minion:
+            # If you need more minion nodes, just add same entry
+            - "{{ lookup('env', 'MINION_1_NAME') if lookup('env', 'MINION_1_NAME') != '' else 'osh_stevard_minion'  }}"
+            - "{{ lookup('env', 'MINION_2_NAME') if lookup('env', 'MINION_2_NAME') != '' else 'osh_kevin_minion'  }}"
+        contr_flavor: b2-60
+        contr_image: "Ubuntu 18.04"
+        contr_key_name: ansible_key
+        contr_net_name: Ext-Net
+        minion_flavor: b2-30
+        minion_image: "Ubuntu 18.04"
+        minion_net_name: Ext-Net
+        vrack_net_name: "{{ lookup('env', 'VRACK_NET_NAME') if lookup('env', 'VRACK_NET_NAME') != '' else '' }}"
+        openstack_keypair_name: "{{ lookup('env', 'OPENSTACK_KEYPAIR_NAME') if lookup('env', 'OPENSTACK_KEYPAIR_NAME') != '' else 'ansible_key' }}"
+  tags:
+    - local_inventory
+
+- name: Delete VMs
+  hosts:
+    - localhost
+  gather_facts: False
+  roles:
+    - delete_vms

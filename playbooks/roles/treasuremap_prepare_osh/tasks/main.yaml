@@ -21,12 +21,22 @@
     run_once: true
 
 - when: use_shipyard_action and setup_airskiff
-  name: Use custom 100-deploy-osh.sh script
-  sudo: yes
-  sudo_user: ubuntu
-  shell: |
-    cd treasuremap && \
-    sudo TARGET_MANIFEST='full-site' PL_SITE="{{ namespace }}" ./tools/deployment/airskiff/developer/100-custom-deploy-osh.sh 2>&1 | tee -a /home/ubuntu/logs
+  block:
+  - name: Use custom 100-deploy-osh.sh script
+    sudo: yes
+    sudo_user: ubuntu
+    shell: |
+      cd treasuremap && \
+      sudo TARGET_MANIFEST='full-site' PL_SITE="{{ namespace }}" ./tools/deployment/airskiff/developer/100-custom-deploy-osh.sh 2>&1 | tee -a "$HOME/custom-deploy-osh-logs"
+    ignore_errors: yes
+    run_once: true
+
+  - name: Cat log file
+    sudo: yes
+    sudo_user: ubuntu
+    shell: |
+      echo -e "Cat custom-deploy-osh-log"
+      cat "$HOME/custom-deploy-osh-logs"
   ignore_errors: yes
   run_once: true
 

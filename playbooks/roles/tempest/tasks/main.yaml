@@ -68,11 +68,11 @@
     TEMPEST_BRANCH: "{{ tempest_branch }}"
     NAMESPACE: "{{ namespace }}"
 
-#- name: Get tempest outputs
-#  sudo: yes
-#  sudo_user: ubuntu
-#  shell: |
-#    echo -e "################# tempest-preparation-logs ################# \n\n\n\n"
-#    cat tempest-preparation-logs
-#    echo -e "################# tempest-test-output ################## \n\n\n\n"
-#    cat tempest-test-output
+- name: Get tempest outputs
+  sudo: yes
+  sudo_user: ubuntu
+  shell: |
+    echo -e "################# tempest-preparation-logs #################"
+    cat tempest-preparation-logs
+    echo -e "################# tempest-test-output ##################"
+    cat tempest-test-output

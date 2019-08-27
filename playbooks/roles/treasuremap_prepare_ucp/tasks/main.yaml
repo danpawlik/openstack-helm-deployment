@@ -46,11 +46,19 @@
     ignore_errors: false
     run_once: true
 
+  - name: Increase postgresql statefulset app
+    sudo: yes
+    sudo_user: ubuntu
+    shell: |
+      kubectl -n ucp scale statefulsets postgresql --replicas=3
+    ignore_errors: true
+    run_once: true
+
   - name: Setup openrc
     sudo: yes
     sudo_user: ubuntu
     shell: |
-      export OS_PASSWORD=$(grep 'password' "$HOME/treasuremap/site/airskiff/secrets/passphrases/osh_keystone_admin_password.yaml" | grep data | awk '{print $2}')
+      export OS_PASSWORD=$(grep 'password' "$HOME/treasuremap/type/skiff/secrets/passphrases/osh_keystone_admin_password.yaml" | grep data | awk '{print $2}')
       bash "$HOME/scripts/set-openrc.sh"
     ignore_errors: yes
     run_once: true
