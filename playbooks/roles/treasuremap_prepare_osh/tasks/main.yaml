@@ -7,7 +7,7 @@
     shell: |
       export TARGET_MANIFEST='full-site'
       cd treasuremap && \
-      sudo  ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh 2>&1 | tee -a /home/ubuntu/logs
+      sudo  ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh 2>&1 | tee -a "${HOME}/deploy-osh-logs"
     ignore_errors: yes
     run_once: true
 
@@ -16,9 +16,18 @@
     sudo_user: ubuntu
     shell: |
       cd treasuremap && \
-      sudo  ./tools/deployment/airskiff/developer/100-deploy-osh.sh 2>&1 | tee -a /home/ubuntu/logs
+      sudo  ./tools/deployment/airskiff/developer/100-deploy-osh.sh 2>&1 | tee -a "${HOME}/deploy-osh-logs"
     ignore_errors: yes
     run_once: true
+
+  - name: Cat log file
+    sudo: yes
+    sudo_user: ubuntu
+    shell: |
+      echo -e "Cat deploy-osh-log"
+      cat "$HOME/deploy-osh-logs"
+  ignore_errors: yes
+  run_once: true
 
 - when: use_shipyard_action and setup_airskiff
   block:
@@ -27,7 +36,7 @@
     sudo_user: ubuntu
     shell: |
       cd treasuremap && \
-      sudo TARGET_MANIFEST='full-site' PL_SITE="{{ namespace }}" ./tools/deployment/airskiff/developer/100-custom-deploy-osh.sh 2>&1 | tee -a "$HOME/custom-deploy-osh-logs"
+      sudo TARGET_MANIFEST='full-site' PL_SITE="{{ namespace }}" ./tools/deployment/airskiff/developer/100-custom-deploy-osh.sh 2>&1 | tee "$HOME/custom-deploy-osh-logs"
     ignore_errors: yes
     run_once: true
 

@@ -30,6 +30,8 @@ data:
   chart_name: {{ namespace }}-neutron
   release: {{ namespace }}-neutron
   namespace: {{ namespace }}
+  test:
+    enabled: false
   upgrade:
     no_hooks: false
     pre:

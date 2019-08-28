@@ -27,6 +27,7 @@ data:
         shipyard_db_sync: "quay.io/airshipit/shipyard:latest-ubuntu_xenial"
         airflow: "quay.io/airshipit/airflow:latest-ubuntu_xenial"
         airflow_db_sync: "quay.io/airshipit/airflow:latest-ubuntu_xenial"
+{% if treasuremap_params is defined %}
     osh:
 {% if treasuremap_params['KEYSTONE_IMAGE'] is defined %}
       keystone:
@@ -118,5 +119,6 @@ data:
     osh_infra:
       libvirt:
         libvirt: {{ treasuremap_params['LIBVIRT_IMAGE'] }}
+{% endif %}
 {% endif %}
 ...

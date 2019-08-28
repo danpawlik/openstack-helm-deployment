@@ -4,6 +4,12 @@
     src: tempest/
     dest: tempest/
 
+- name: Set ubuntu owner on tempest dir
+  sudo: yes
+  sudo_user: ubuntu
+  shell: |
+    sudo chown -R ubuntu:ubuntu "${HOME}/tempest"
+
 - name: Check if trasuremap exists
   stat:
     path: treasuremap
@@ -15,7 +21,7 @@
   sudo_user: ubuntu
   shell: |
     if [ -d 'treasuremap' ]; then
-      bash -x scripts/check-shipyard-actions.sh 2>&1 | tee -a tempest-preparation-logs
+      bash -x scripts/check-shipyard-actions.sh 2>&1 | tee tempest-preparation-logs
     fi
   ignore_errors: false
   environment:
@@ -59,7 +65,7 @@
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x scripts/run-tempest.sh 2>&1 | tee -a tempest-test-output
+    bash -x scripts/run-tempest.sh 2>&1 | tee tempest-test-output
   register: tempest_output
   environment:
     WHITELIST_FILE: "{{ whitelist_file }}"

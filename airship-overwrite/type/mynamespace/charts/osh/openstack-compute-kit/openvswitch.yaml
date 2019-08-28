@@ -19,6 +19,8 @@ data:
   chart_name: {{ namespace }}-openvswitch
   release: {{ namespace }}-openvswitch
   namespace: {{ namespace }}
+  test:
+    enabled: false
   wait:
     timeout: 900
     labels:
@@ -31,5 +33,5 @@ data:
       delete:
         - type: job
           labels:
-            release_group: airship-{{ namespace }}-openvswitch
+            release_group: {{ namespace }}-openvswitch
 ...

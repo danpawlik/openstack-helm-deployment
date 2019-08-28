@@ -28,6 +28,8 @@ data:
   chart_name: {{ namespace }}-nova
   release: {{ namespace }}-nova
   namespace: {{ namespace }}
+  test:
+    enabled: false
   upgrade:
     no_hooks: false
     pre:

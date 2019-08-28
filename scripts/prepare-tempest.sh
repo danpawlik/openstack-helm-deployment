@@ -37,8 +37,7 @@ if echo $IMAGES | grep -iqv 'Centos'; then
       --disk-format qcow2 \
       --public --id "${IMAGE_ID}" \
       --file /home/ubuntu/tempest/CentOS-7-x86_64-GenericCloud.qcow2
-else
-    IMAGE_ID=$(openstack image list | grep -i "Centos" | awk '{print $2}')
+
     if grep -q "IMAGE_REF_ALT" "${TEMPEST_CONF_PATH}"; then
         sed -i "s/IMAGE_REF_ALT/$IMAGE_ID/g" "${TEMPEST_CONF_PATH}"
     fi
@@ -56,8 +55,7 @@ if echo $IMAGES | grep -iqv 'Ubuntu'; then
         --disk-format qcow2 \
         --public --id "${IMAGE_ID}" \
         --file /home/ubuntu/tempest/bionic-server-cloudimg-amd64.img
-else
-    IMAGE_ID=$(openstack image list | grep -i "Ubuntu" | awk '{print $2}')
+
     if grep -q "IMAGE_REF" "${TEMPEST_CONF_PATH}"; then
         sed -i "s/IMAGE_REF/$IMAGE_ID/g" "${TEMPEST_CONF_PATH}"
     fi

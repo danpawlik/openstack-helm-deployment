@@ -6,7 +6,7 @@
     sudo_user: ubuntu
     shell: |
       cd treasuremap && \
-      ./tools/deployment/airskiff/developer/000-clone-dependencies.sh 2>&1 | tee -a /home/ubuntu/logs
+      ./tools/deployment/airskiff/developer/000-clone-dependencies.sh 2>&1 | tee -a "${HOME}/logs"
     ignore_errors: true
     run_once: True
 
@@ -15,7 +15,7 @@
     sudo_user: ubuntu
     shell: |
       cd treasuremap && \
-      sudo  ./tools/deployment/airskiff/developer/020-setup-client.sh 2>&1 | tee -a /home/ubuntu/logs
+      sudo  ./tools/deployment/airskiff/developer/020-setup-client.sh 2>&1 | tee -a "${HOME}/logs"
     ignore_errors: yes
     run_once: true
 
@@ -37,28 +37,37 @@
       kubectl label nodes --all --overwrite ucp-control-plane=enabled
     ignore_errors: true
 
-  - name: 030-armada-bootstrap.sh
-    sudo: yes
-    sudo_user: ubuntu
+  - name: Check if UCP namespace is deployed
     shell: |
-      cd treasuremap && \
-      sudo ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh 2>&1 | tee -a /home/ubuntu/logs
+      kubectl get namespaces --no-headers | grep -q ucp
+    register: ucp_namespace
     ignore_errors: false
     run_once: true
 
-  - name: Increase postgresql statefulset app
-    sudo: yes
-    sudo_user: ubuntu
-    shell: |
-      kubectl -n ucp scale statefulsets postgresql --replicas=3
-    ignore_errors: true
-    run_once: true
+  - when: ucp_namespace.rc == 1
+    block:
+    - name: 030-armada-bootstrap.sh
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        cd treasuremap && \
+        sudo ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh 2>&1 | tee -a "${HOME}/logs"
+      ignore_errors: false
+      run_once: true
 
-  - name: Setup openrc
-    sudo: yes
-    sudo_user: ubuntu
-    shell: |
-      export OS_PASSWORD=$(grep 'password' "$HOME/treasuremap/type/skiff/secrets/passphrases/osh_keystone_admin_password.yaml" | grep data | awk '{print $2}')
-      bash "$HOME/scripts/set-openrc.sh"
-    ignore_errors: yes
-    run_once: true
+    - name: Increase postgresql statefulset app
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        kubectl -n ucp scale statefulsets postgresql --replicas=3
+      ignore_errors: true
+      run_once: true
+
+    - name: Setup openrc
+      sudo: yes
+      sudo_user: ubuntu
+      shell: |
+        export OS_PASSWORD=$(grep 'password' "$HOME/treasuremap/type/skiff/secrets/passphrases/osh_keystone_admin_password.yaml" | grep data | awk '{print $2}')
+        bash "$HOME/scripts/set-openrc.sh"
+      ignore_errors: yes
+      run_once: true

@@ -22,6 +22,8 @@ data:
   chart_name: {{ namespace }}-libvirt
   release: {{ namespace }}-libvirt
   namespace: {{ namespace }}
+  test:
+    enabled: false
   install:
     no_hooks: false
   upgrade:
