@@ -6,7 +6,7 @@
     sudo_user: ubuntu
     shell: |
       cd treasuremap && \
-      ./tools/deployment/airskiff/developer/000-clone-dependencies.sh 2>&1 | tee -a "${HOME}/logs"
+      ./tools/deployment/airskiff/developer/000-clone-dependencies.sh 2>&1 | tee -a "${HOME}/logs/deploy-ucp-{{ namespace }}"
     ignore_errors: true
     run_once: True
 
@@ -15,7 +15,7 @@
     sudo_user: ubuntu
     shell: |
       cd treasuremap && \
-      sudo  ./tools/deployment/airskiff/developer/020-setup-client.sh 2>&1 | tee -a "${HOME}/logs"
+      sudo  ./tools/deployment/airskiff/developer/020-setup-client.sh 2>&1 | tee -a "${HOME}/logs/deploy-ucp-{{ namespace }}"
     ignore_errors: yes
     run_once: true
 
@@ -41,7 +41,7 @@
     shell: |
       kubectl get namespaces --no-headers | grep -q ucp
     register: ucp_namespace
-    ignore_errors: false
+    ignore_errors: true
     run_once: true
 
   - when: ucp_namespace.rc == 1
@@ -51,7 +51,7 @@
       sudo_user: ubuntu
       shell: |
         cd treasuremap && \
-        sudo ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh 2>&1 | tee -a "${HOME}/logs"
+        sudo ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh 2>&1 | tee -a "${HOME}/logs/deploy-ucp-{{ namespace }}"
       ignore_errors: false
       run_once: true
 

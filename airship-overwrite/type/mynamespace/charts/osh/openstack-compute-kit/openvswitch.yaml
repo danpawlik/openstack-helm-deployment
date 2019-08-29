@@ -24,7 +24,7 @@ data:
   wait:
     timeout: 900
     labels:
-      release_group: {{ namespace }}-openvswitch
+      release_group: airship-{{ namespace }}-openvswitch
   install:
     no_hooks: false
   upgrade:
@@ -33,5 +33,5 @@ data:
       delete:
         - type: job
           labels:
-            release_group: {{ namespace }}-openvswitch
+            release_group: airship-{{ namespace }}-openvswitch
 ...

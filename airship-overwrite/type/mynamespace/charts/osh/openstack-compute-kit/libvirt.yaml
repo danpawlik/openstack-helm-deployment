@@ -32,7 +32,7 @@ data:
       delete:
         - type: job
           labels:
-            release_group: {{ namespace }}-libvirt
+            release_group: airship-{{ namespace }}-libvirt
   values:
     labels:
       agent:

@@ -7,7 +7,7 @@
     shell: |
       export TARGET_MANIFEST='full-site'
       cd treasuremap && \
-      sudo  ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh 2>&1 | tee -a "${HOME}/deploy-osh-logs"
+      sudo  ./tools/deployment/airskiff/developer/030-armada-bootstrap.sh 2>&1 | tee -a "${HOME}/logs/deploy-osh-{{ namespace }}"
     ignore_errors: yes
     run_once: true
 
@@ -16,37 +16,18 @@
     sudo_user: ubuntu
     shell: |
       cd treasuremap && \
-      sudo  ./tools/deployment/airskiff/developer/100-deploy-osh.sh 2>&1 | tee -a "${HOME}/deploy-osh-logs"
+      sudo  ./tools/deployment/airskiff/developer/100-deploy-osh.sh 2>&1 | tee -a "${HOME}/logs/deploy-osh-{{ namespace }}"
     ignore_errors: yes
     run_once: true
-
-  - name: Cat log file
-    sudo: yes
-    sudo_user: ubuntu
-    shell: |
-      echo -e "Cat deploy-osh-log"
-      cat "$HOME/deploy-osh-logs"
-  ignore_errors: yes
-  run_once: true
 
 - when: use_shipyard_action and setup_airskiff
-  block:
-  - name: Use custom 100-deploy-osh.sh script
-    sudo: yes
-    sudo_user: ubuntu
-    shell: |
-      cd treasuremap && \
-      sudo TARGET_MANIFEST='full-site' PL_SITE="{{ namespace }}" ./tools/deployment/airskiff/developer/100-custom-deploy-osh.sh 2>&1 | tee "$HOME/custom-deploy-osh-logs"
-    ignore_errors: yes
-    run_once: true
-
-  - name: Cat log file
-    sudo: yes
-    sudo_user: ubuntu
-    shell: |
-      echo -e "Cat custom-deploy-osh-log"
-      cat "$HOME/custom-deploy-osh-logs"
-  ignore_errors: yes
+  name: Use custom 100-deploy-osh.sh script
+  sudo: yes
+  sudo_user: ubuntu
+  shell: |
+    cd treasuremap && \
+    sudo TARGET_MANIFEST='full-site' PL_SITE="{{ namespace }}" "./tools/deployment/airskiff/developer/100-custom-deploy-osh.sh" 2>&1 | tee -a "${HOME}/logs/deploy-osh-{{ namespace }}"
+  ignore_errors: true
   run_once: true
 
 - name: Setup openrc for new namespace
@@ -57,5 +38,14 @@
     export NAMESPACE="{{ namespace }}"
     export OPENRC_FILE="openrc-{{ namespace }}"
     bash "$HOME/scripts/set-openrc.sh"
+  ignore_errors: yes
+  run_once: true
+
+- name: Get all info about K8S state and Helm state
+  sudo: yes
+  sudo_user: ubuntu
+  shell: |
+    kubectl get all -n "{{ namespace }}" | tee -a "logs/osh-state-{{ namespace }}"
+    helm list -a | tee -a "logs/osh-state-{{ namespace }}"
   ignore_errors: yes
   run_once: true

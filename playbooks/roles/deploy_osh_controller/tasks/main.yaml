@@ -2,7 +2,7 @@
 - name: Clone OSH repo
   sudo: yes
   sudo_user: ubuntu
-  shell: bash -x scripts/clone-osh-repo.sh 2>&1 | tee -a logs
+  shell: bash -x scripts/clone-osh-repo.sh 2>&1 | tee -a "logs/cluster-logs-{{ ansible_nodename }}-{{ namespace }}"
   register: clone_status
   ignore_errors: yes
   run_once: True
@@ -30,7 +30,7 @@
 - name: Run scripts on k8s_contr
   become: true
   become_user: ubuntu
-  shell: scripts/setup-controller.sh 2>&1 | tee -a logs
+  shell: scripts/setup-controller.sh 2>&1 | tee -a "logs/cluster-logs-{{ ansible_nodename }}-{{ namespace }}"
   args:
     executable: /bin/bash
   environment:

@@ -19,5 +19,5 @@
   sudo: yes
   sudo_user: ubuntu
   shell: |
-  bash -x scripts/install-kubernetes.sh 2>&1 | tee -a /home/ubuntu/logs
+    bash -x scripts/install-kubernetes.sh 2>&1 | tee -a "logs/cluster-logs-{{ ansible_nodename }}-{{ namespace }}"
   ignore_errors: false

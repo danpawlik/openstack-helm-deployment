@@ -1,5 +1,11 @@
 ---
 - block:
+  - name: Create log dir if not present
+    sudo: yes
+    sudo_user: ubuntu
+    shell: |
+      mkdir -p logs
+
   # FIXME: add new iptabls rules
   - name: "Accept traffic on minions to k8s_contr"
     iptables:
@@ -14,7 +20,7 @@
     sudo: yes
     sudo_user: ubuntu
     shell: |
-      bash -x scripts/upgrade-host.sh 2>&1 | tee -a logs
+      bash -x scripts/upgrade-host.sh 2>&1 | tee -a "logs/cluster-logs-{{ ansible_nodename }}-{{ namespace }}"
     ignore_errors: yes
 
   - name: remove nano

@@ -36,13 +36,13 @@ data:
       delete:
         - type: job
           labels:
-            release_group: {{ namespace }}-nova
+            release_group: airship-{{ namespace }}-nova
     post:
       create: []
   wait:
     timeout: 1200
     labels:
-      release_group: {{ namespace }}-nova
+      release_group: airship-{{ namespace }}-nova
   values:
     labels:
       agent:

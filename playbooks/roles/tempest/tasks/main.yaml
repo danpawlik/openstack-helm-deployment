@@ -3,12 +3,14 @@
   synchronize:
     src: tempest/
     dest: tempest/
+  run_once: true
 
 - name: Set ubuntu owner on tempest dir
   sudo: yes
   sudo_user: ubuntu
   shell: |
     sudo chown -R ubuntu:ubuntu "${HOME}/tempest"
+  run_once: true
 
 - name: Check if trasuremap exists
   stat:
@@ -21,51 +23,56 @@
   sudo_user: ubuntu
   shell: |
     if [ -d 'treasuremap' ]; then
-      bash -x scripts/check-shipyard-actions.sh 2>&1 | tee tempest-preparation-logs
+      bash -x scripts/check-shipyard-actions.sh 2>&1 | tee "logs/tempest-preparation-logs-{{ ansible_nodename }}-{{ namespace }}"
     fi
   ignore_errors: false
   environment:
     ACTION_NAME: ''
     TIMEOUT: 2000
+  run_once: true
 
 - when: treasuremap_dir.stat.exists
   name: Wait for services to be deployed on airskiff host
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x openstack-helm-infra/tools/deployment/common/wait-for-pods.sh openstack 2>&1 | tee -a tempest-preparation-logs
+    bash -x openstack-helm-infra/tools/deployment/common/wait-for-pods.sh openstack 2>&1 | tee -a "logs/tempest-preparation-logs-{{ ansible_nodename }}-{{ namespace }}"
   ignore_errors: false
+  run_once: true
 
 - when: not treasuremap_dir.stat.exists
   name: Wait for services to be deployed on openstack host
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x /opt/openstack-helm-infra/tools/deployment/common/wait-for-pods.sh openstack 2>&1 | tee -a tempest-preparation-logs
+    bash -x /opt/openstack-helm-infra/tools/deployment/common/wait-for-pods.sh openstack 2>&1 | tee -a "logs/tempest-preparation-logs-{{ ansible_nodename }}-{{ namespace }}"
   ignore_errors: false
+  run_once: true
 
 - name: Check services replication
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x scripts/check-service-replication.sh 2>&1 | tee -a tempest-preparation-logs
+    bash -x scripts/check-service-replication.sh 2>&1 | tee -a "logs/tempest-preparation-logs-{{ ansible_nodename }}-{{ namespace }}"
   environment:
     NAMESPACE: "{{ namespace }}"
+  run_once: true
 
 - name: Prepare tempest test
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x scripts/prepare-tempest.sh 2>&1 | tee -a tempest-preparation-logs
+    bash -x scripts/prepare-tempest.sh 2>&1 | tee -a "logs/tempest-preparation-{{ ansible_nodename }}-{{ namespace }}"
   register: tempest_output
   environment:
     OPENRC_PATH: "{{ openrc_path }}"
+  run_once: true
 
 - name: Execute tempest test
   sudo: yes
   sudo_user: ubuntu
   shell: |
-    bash -x scripts/run-tempest.sh 2>&1 | tee tempest-test-output
+    bash -x scripts/run-tempest.sh 2>&1 | tee "logs/tempest-test-output-{{ ansible_nodename }}-{{ namespace }}"
   register: tempest_output
   environment:
     WHITELIST_FILE: "{{ whitelist_file }}"
@@ -73,12 +80,4 @@
     TEMPEST_PARAMS: "{{ tempest_params }}"
     TEMPEST_BRANCH: "{{ tempest_branch }}"
     NAMESPACE: "{{ namespace }}"
-
-- name: Get tempest outputs
-  sudo: yes
-  sudo_user: ubuntu
-  shell: |
-    echo -e "################# tempest-preparation-logs #################"
-    cat tempest-preparation-logs
-    echo -e "################# tempest-test-output ##################"
-    cat tempest-test-output
+  run_once: true

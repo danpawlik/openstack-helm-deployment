@@ -123,7 +123,17 @@
         name: "{{ server_info.openstack.name }}"
         addr: "{{ server_info.openstack | json_query(vrack_addr) }}"
 
-    - name: Create vrack mapping file
+    - name: check vrack file
+      stat:
+        path: "${HOME}/vrack_mapping.txt"
+      register: vrack_file
+      delegate_to: "{{ item }}"
+      delegate_facts: True
+      loop: "{{ groups['all'] }}"
+
+    # NOTE: I assume, that if one host has this file, all will have it too.
+    - when:  not vrack_file.results[0].stat.exists
+      name: Create vrack mapping file
       template:
         src: vrack_mapping.txt
         dest: vrack_mapping.txt
