@@ -39,7 +39,7 @@
       - ccze
 
   - when: not setup_minikube
-    name: Install NFS common package
+    name: Install NFS common, python-wheel
     apt:
       name: "{{ packages }}"
     vars:

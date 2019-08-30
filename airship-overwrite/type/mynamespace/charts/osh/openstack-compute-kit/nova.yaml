@@ -57,7 +57,10 @@ data:
         enabled: false
       nova:
         libvirt:
-          virt_type: qemu
+          virt_type: kvm
+          cpu_mode: custom
+          cpu_model: Haswell
+          cpu_model_extra_flags: vmx
     pod:
       replicas:
         api_metadata: 3

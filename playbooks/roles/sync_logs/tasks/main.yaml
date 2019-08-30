@@ -4,8 +4,6 @@
   sudo_user: ubuntu
   synchronize:
     mode: pull
-    src: "{{ item }}"
+    src: "~/logs/*-{{ namespace }}"
     dest: "{{ lookup('env','HOME') }}/logs/"
-    with_lines: "find logs/ -name *-{{ namespace }}"
-  run_once: true
   ignore_errors: true

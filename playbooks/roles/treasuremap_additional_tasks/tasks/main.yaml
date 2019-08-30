@@ -4,12 +4,6 @@
   - name: Disable services that are not required
     shell: |
       sed -i '/openstack-heat/d'  treasuremap/global/software/manifests/full-site.yaml
-      sed -i '/openstack-heat/d'  treasuremap/type/skiff/manifests/full-site.yaml
-    ignore_errors: true
-    run_once: true
-
-  - name: Change virt_type to kvm
-    shell: |
-      sed -i 's/virt_type: qemu/virt_type: kvm/g' treasuremap/site/airskiff/software/charts/osh/openstack-compute-kit/nova.yaml
+      sed -i '/openstack-heat/d'  "treasuremap/type/{{ namespace }}/manifests/full-site.yaml"
     ignore_errors: true
     run_once: true

@@ -52,7 +52,7 @@
       owner: ubuntu
       group: ubuntu
     with_fileglob:
-      - templates/charts/osh/openstack-ingress-controller/*yaml
+      - templates/type/charts/osh/openstack-ingress-controller/*yaml
 
   - when: treasuremap_params is defined
     name: Update charts with new values - mariadb
@@ -62,7 +62,7 @@
       owner: ubuntu
       group: ubuntu
     with_fileglob:
-      - templates/charts/osh/openstack-mariadb/*yaml
+      - templates/type/charts/osh/openstack-mariadb/*yaml
 
   - name: Update charts with new values - rabbitmq
     template:
@@ -71,7 +71,7 @@
       owner: ubuntu
       group: ubuntu
     with_fileglob:
-      - templates/charts/osh/openstack-rabbitmq/*yaml
+      - templates/type/charts/osh/openstack-rabbitmq/*yaml
 
   - name: Update charts with new values - memcached
     template:
@@ -80,7 +80,7 @@
       owner: ubuntu
       group: ubuntu
     with_fileglob:
-      - templates/charts/osh/openstack-memcached/*yaml
+      - templates/type/charts/osh/openstack-memcached/*yaml
 
   - name: Update charts with new values - glance
     template:
@@ -89,7 +89,7 @@
       owner: ubuntu
       group: ubuntu
     with_fileglob:
-      - templates/charts/osh/openstack-glance/*yaml
+      - templates/type/charts/osh/openstack-glance/*yaml
 
   - name: Update charts with new values - keystone
     template:
@@ -98,13 +98,22 @@
       owner: ubuntu
       group: ubuntu
     with_fileglob:
-      - templates/charts/osh/openstack-keystone/*yaml
+      - templates/type/charts/osh/openstack-keystone/*yaml
 
-  - name: Update charts with new values - nova and neutron
+  - name: Update charts with new values - nova, neutron, openvswitch and libvirt
     template:
       src: "{{ item }}"
       dest: "treasuremap/type/{{ namespace }}/charts/osh/openstack-compute-kit/"
       owner: ubuntu
       group: ubuntu
     with_fileglob:
-      - templates/charts/osh/openstack-compute-kit/*yaml
+      - templates/type/charts/osh/openstack-compute-kit/*yaml
+
+  - name: Update full-site manifest
+    template:
+      src: "{{ item }}"
+      dest: "treasuremap/type/{{ namespace }}/manifests/full-site.yaml"
+      owner: ubuntu
+      group: ubuntu
+    with_fileglob:
+      - templates/type/manifests/*yaml

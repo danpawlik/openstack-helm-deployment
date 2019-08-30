@@ -42,6 +42,7 @@
 - name: Download all logs
   hosts:
     - k8s_contr
+    - k8s_minion
   remote_user: ubuntu
   gather_facts: False
   roles:

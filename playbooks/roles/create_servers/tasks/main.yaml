@@ -129,7 +129,7 @@
       register: vrack_file
       delegate_to: "{{ item }}"
       delegate_facts: True
-      loop: "{{ groups['all'] }}"
+      loop: "{{ groups['k8s_contr'] }}"
 
     # NOTE: I assume, that if one host has this file, all will have it too.
     - when:  not vrack_file.results[0].stat.exists
