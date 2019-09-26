@@ -1,6 +1,5 @@
 ---
-- when: setup_airskiff
-  block:
+- block:
   - name: 000-clone-dependencies.sh
     sudo: yes
     sudo_user: ubuntu

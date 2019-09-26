@@ -1,9 +1,7 @@
 ---
-- when: setup_airskiff
-  block:
-  - name: Disable services that are not required
-    shell: |
-      sed -i '/openstack-heat/d'  treasuremap/global/software/manifests/full-site.yaml
-      sed -i '/openstack-heat/d'  "treasuremap/type/{{ namespace }}/manifests/full-site.yaml"
-    ignore_errors: true
-    run_once: true
+- name: Disable services that are not required
+  shell: |
+    sed -i '/openstack-heat/d'  treasuremap/global/software/manifests/full-site.yaml
+    sed -i '/openstack-heat/d'  "treasuremap/type/{{ namespace }}/manifests/full-site.yaml"
+  ignore_errors: true
+  run_once: true

@@ -1,6 +1,5 @@
 ---
-- when: setup_airskiff and treasuremap_overwrite
-  block:
+- block:
   - name: Check if trasuremap exists
     stat:
       path: treasuremap

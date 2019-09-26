@@ -94,16 +94,13 @@ export ANSIBLE_SSH_COMMON_ARGS="-o ForwardAgent=yes -o ControlMaster=auto -o Con
 - for Airskiff:
 ```
 export ANSIBLE_HOST_KEY_CHECKING=False
-export TREASUREMAP_OVERWRITE=true
 export NAMESPACE=testns
 export USE_SHIPYARD_ACTION=true # in this case, 100-custom-deploy-osh.sh will be used instead of 100-deploy-osh.sh
-export SETUP_AIRSKIFF=true
 export VRACK_NET_NAME=vrack     # If you use OVH public cloud, create vrack (optional - tempest can communicate with VMs)
 ```
 - for Openstack Helm:
 ```
 export ANSIBLE_HOST_KEY_CHECKING=False
-export SETUP_OSH=true
 # If you use OVH public cloud, create vrack (optional - tempest can communicate with VMs)
 export VRACK_NET_NAME=vrack
 ```
@@ -151,25 +148,6 @@ export TREASUREMAP_PARAMS="{
 If you want to use OpenvSwitch with DPDK, just add into TREASUREMAP_PARAMS:
 ```
 'OPENVSWITCH_IMAGE': 'docker.io/openstackhelm/openvswitch:latest-ubuntu_bionic-dpdk',
-```
-
-Just for Openstack Helm multinode playbook:
-```
-OSH_EXTRA_HELM_ARGS
-OSH_EXTRA_HELM_ARGS_BARBICAN
-OSH_EXTRA_HELM_ARGS_CEPH_DEPLOY
-OSH_EXTRA_HELM_ARGS_CEPH_NS_ACTIVATE
-OSH_EXTRA_HELM_ARGS_CINDER
-OSH_EXTRA_HELM_ARGS_GLANCE
-OSH_EXTRA_HELM_ARGS_HEAT
-OSH_EXTRA_HELM_ARGS_INGRESS_KUBE_SYSTEM
-OSH_EXTRA_HELM_ARGS_KEYSTONE
-OSH_EXTRA_HELM_ARGS_LIBVIRT
-OSH_EXTRA_HELM_ARGS_MARIADB
-OSH_EXTRA_HELM_ARGS_MEMCACHED
-OSH_EXTRA_HELM_ARGS_NEUTRON
-OSH_EXTRA_HELM_ARGS_NOVA
-OSH_EXTRA_HELM_ARGS_RABBITMQ
 ```
 
 To run tempest tests:

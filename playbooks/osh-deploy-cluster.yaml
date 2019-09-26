@@ -51,12 +51,9 @@
         repo_password: "{{ lookup('env', 'DOCKER_REPO_PASSWORD') }}"
         etcd_on_ramdisk: "{{ true if lookup('env', 'ETC_ON_RAMDISK') == 'true' else false }}"
         setup_minikube: "{{ true if lookup('env', 'SETUP_MINIKUBE') == 'true' else false }}"
-        treasuremap_overwrite: "{{ true if lookup('env', 'TREASUREMAP_OVERWRITE') == '' else false }}"
         treasuremap_params: "{{ lookup('env', 'TREASUREMAP_PARAMS') if lookup('env', 'TREASUREMAP_PARAMS') != '' else '' }}"
         namespace: "{{ lookup('env', 'NAMESPACE') if lookup('env', 'NAMESPACE') != '' else 'testnamespace' }}"
         use_shipyard_action: "{{ true if lookup('env', 'USE_SHIPYARD_ACTION') == 'true' else false }}"
-        setup_airskiff: "{{ true if lookup('env', 'SETUP_AIRSKIFF') == 'true' else false }}"
-        setup_osh: "{{ true if lookup('env', 'SETUP_OSH') == 'true' else false }}"
         additional_ssh_key: "{{ lookup('env', 'ADDITIONAL_SSH_KEY') }}"
         kube_version: "{{ lookup('env', 'KUBE_VERSION') | default('v1.13.7') }}"
 
@@ -129,18 +126,6 @@
   roles:
     - ramdisk_etcd
 
-- name: Install Docker-CE
-  hosts:
-    - k8s_contr
-    - k8s_minion
-  strategy: free
-  gather_facts: False
-  remote_user: ubuntu
-  become: True
-  roles:
-    - docker_ce_install
-
-
 - name: Install required packages for k8s node
   hosts:
     - k8s_minion
@@ -190,16 +175,6 @@
   roles:
     - k8s_docker_repo
 
-- name: Install required services if OSH
-  hosts:
-    - k8s_contr
-  gather_facts: False
-  remote_user: ubuntu
-  become: True
-  roles:
-    - deploy_osh_basic_services
-
-# For airskiff
 - name: Do post treasuremap things if Airskiff
   hosts:
     - k8s_contr

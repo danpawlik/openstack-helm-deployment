@@ -1,5 +1,5 @@
 ---
-- when: not use_shipyard_action and setup_airskiff
+- when: not use_shipyard_action
   block:
   - name: 030-armada-bootstrap.sh
     sudo: yes
@@ -20,7 +20,7 @@
     ignore_errors: yes
     run_once: true
 
-- when: use_shipyard_action and setup_airskiff
+- when: use_shipyard_action
   name: Use custom 100-deploy-osh.sh script
   sudo: yes
   sudo_user: ubuntu

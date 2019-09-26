@@ -1,10 +1,15 @@
 ---
-- when: setup_airskiff
+- name: Check if treasuremap exists
+  stat:
+    path: treasuremap
+  run_once: true
+  register: treasuremap_dir
+
+- when: not treasuremap_dir.stat.exists
   name: Clone treasuremap repo
   sudo: yes
   sudo_user: ubuntu
   shell: |
     git clone https://opendev.org/airship/treasuremap.git treasuremap 2>&1 | tee -a "logs/cluster-logs-{{ ansible_nodename }}-{{ namespace }}"
   ignore_errors: true
-  loop: "{{ groups['k8s_contr'] }}"
   run_once: true

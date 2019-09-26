@@ -1,7 +1,13 @@
-- name: Create kubelet repo credential file
-  template:
-    src: config.json.j2
-    dest: /var/lib/kubelet/config.json
-    owner: root
-    group: root
-    mode: 0600
+---
+- block:
+  - name: Create kubelet dir before install
+    shell: |
+      sudo mkdir -p /var/lib/kubelet/
+
+  - name: Create kubelet repo credential file
+    template:
+      src: config.json.j2
+      dest: /var/lib/kubelet/config.json
+      owner: root
+      group: root
+      mode: 0600
