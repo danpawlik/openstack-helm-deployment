@@ -66,6 +66,7 @@
   register: tempest_output
   environment:
     OPENRC_PATH: "{{ openrc_path }}"
+    NAMESPACE: "{{ namespace }}"
   run_once: true
 
 - name: Execute tempest test

@@ -40,7 +40,7 @@
     - name: Set k8s_hosts as fact
       set_fact:
         vrack_interface: "{{ lookup('env', 'VRACK_INTERFACE') if lookup('env', 'VRACK_INTERFACE') != '' else 'ens4'  }}"
-        openrc_path: "{{ lookup('env', 'OPENRC_PATH') if lookup('env', 'OPENRC_PATH') != '' else '/home/ubuntu/openrc' }}"
+        openrc_path: "{{ lookup('env', 'OPENRC_PATH') if lookup('env', 'OPENRC_PATH') != '' else '' }}"
         namespace: "{{ lookup('env', 'NAMESPACE') if lookup('env', 'NAMESPACE') != '' else 'testnamespace' }}"
 
 # Copy
