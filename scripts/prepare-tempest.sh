@@ -24,26 +24,29 @@ fi
 
 source $OPENRC_PATH
 
-IMAGES=$(openstack image list -c Name -f value)
-if echo $IMAGES | grep -iqv 'Centos'; then
+IMAGE_ID_ALT=$(openstack image list -c ID -c Name --status active | grep -iE "Centos 7.")
+if [ -z "${IMAGE_ID_ALT}" ]; then
     if [ ! -f "/home/ubuntu/tempest/CentOS-7-x86_64-GenericCloud.qcow2" ]; then
         wget -q http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2 \
            -O /home/ubuntu/tempest/CentOS-7-x86_64-GenericCloud.qcow2
     fi
 
-    IMAGE_ID=$(uuidgen)
+    IMAGE_ID_ALT=$(uuidgen)
     openstack image create 'Centos 7' \
       --container-format bare \
       --disk-format qcow2 \
-      --public --id "${IMAGE_ID}" \
+      --public --id "${IMAGE_ID_ALT}" \
       --file /home/ubuntu/tempest/CentOS-7-x86_64-GenericCloud.qcow2
-
-    if grep -q "IMAGE_REF_ALT" "${TEMPEST_CONF_PATH}"; then
-        sed -i "s/IMAGE_REF_ALT/$IMAGE_ID/g" "${TEMPEST_CONF_PATH}"
-    fi
+else
+    IMAGE_ID_ALT=$(echo "${IMAGE_ID_ALT}" | awk '{print $2}' )
 fi
 
-if echo $IMAGES | grep -iqv 'Ubuntu'; then
+if grep -q "IMAGE_REF_ALT" "${TEMPEST_CONF_PATH}"; then
+    sed -i "s/IMAGE_REF_ALT/$IMAGE_ID_ALT/g" "${TEMPEST_CONF_PATH}"
+fi
+
+IMAGE_ID=$(openstack image list -c ID -c Name --status active | grep -iE "Ubuntu 18.04.")
+if [ -z "${IMAGE_ID}" ]; then
     if [ ! -f "/home/ubuntu/tempest/bionic-server-cloudimg-amd64.img" ]; then
         wget -q http://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-amd64.img \
             -O /home/ubuntu/tempest/bionic-server-cloudimg-amd64.img
@@ -55,10 +58,12 @@ if echo $IMAGES | grep -iqv 'Ubuntu'; then
         --disk-format qcow2 \
         --public --id "${IMAGE_ID}" \
         --file /home/ubuntu/tempest/bionic-server-cloudimg-amd64.img
+else
+    IMAGE_ID=$(echo "${IMAGE_ID}" | awk '{print $2}' )
+fi
 
-    if grep -q "IMAGE_REF" "${TEMPEST_CONF_PATH}"; then
-        sed -i "s/IMAGE_REF/$IMAGE_ID/g" "${TEMPEST_CONF_PATH}"
-    fi
+if grep -q "IMAGE_REF" "${TEMPEST_CONF_PATH}"; then
+    sed -i "s/IMAGE_REF/$IMAGE_ID/g" "${TEMPEST_CONF_PATH}"
 fi
 
 FLAVOR_LIST=$(openstack flavor list -f value -c Name | grep tempest)
