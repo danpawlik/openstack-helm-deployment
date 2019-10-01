@@ -60,7 +60,7 @@ data:
           virt_type: kvm
           cpu_mode: custom
           cpu_model: Haswell
-          cpu_model_extra_flags: vmx
+          cpu_model_extra_flags: vmx, hle, rtm
     pod:
       replicas:
         api_metadata: 3
