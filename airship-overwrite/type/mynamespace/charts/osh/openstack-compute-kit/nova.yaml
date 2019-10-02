@@ -59,8 +59,8 @@ data:
         libvirt:
           virt_type: kvm
           cpu_mode: custom
-          cpu_model: Haswell
-          cpu_model_extra_flags: vmx, hle, rtm
+          cpu_model: Haswell-noTSX
+          cpu_model_extra_flags: vmx,pcid
     pod:
       replicas:
         api_metadata: 3
